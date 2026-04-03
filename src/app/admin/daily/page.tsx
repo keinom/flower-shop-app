@@ -53,7 +53,7 @@ export default async function DailyPage({ searchParams }: DailyPageProps) {
 
   const { data: allOrders } = await supabase
     .from("orders")
-    .select("id, status, product_name, quantity, delivery_name, delivery_address, delivery_time_start, delivery_time_end, total_amount, customers(id, name)")
+    .select("id, status, product_name, quantity, delivery_name, delivery_address, delivery_date, delivery_time_start, delivery_time_end, total_amount, customers(id, name)")
     .in("delivery_date", [baseDate, date2])
     .not("status", "eq", "キャンセル")
     .order("delivery_time_start", { ascending: true, nullsFirst: false })
