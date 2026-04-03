@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ORDER_PURPOSES } from "@/lib/constants";
+import { ORDER_PURPOSES, DELIVERY_TIME_OPTIONS } from "@/lib/constants";
 import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
 import { updateAdminOrder } from "@/app/admin/orders/[id]/edit/actions";
 
@@ -21,6 +21,7 @@ interface Props {
     delivery_name: string;
     delivery_address: string | null;
     delivery_date: string | null;
+    delivery_time: string | null;
     delivery_phone: string | null;
     delivery_email: string | null;
     purpose: string | null;
@@ -102,15 +103,37 @@ export function AdminOrderEditClient({
           </div>
         </div>
 
-        <div>
-          <label htmlFor="delivery_date" className="label">お届け希望日</label>
-          <input
-            id="delivery_date"
-            name="delivery_date"
-            type="date"
-            defaultValue={dv.delivery_date ?? ""}
-            className="input"
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="delivery_date" className="label">お届け希望日</label>
+            <input
+              id="delivery_date"
+              name="delivery_date"
+              type="date"
+              defaultValue={dv.delivery_date ?? ""}
+              className="input"
+            />
+          </div>
+          <div>
+            <label htmlFor="delivery_time" className="label">
+              希望時間帯
+              <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
+            </label>
+            <input
+              id="delivery_time"
+              name="delivery_time"
+              type="text"
+              list="delivery_time_options_edit"
+              defaultValue={dv.delivery_time ?? ""}
+              placeholder="例: 午前中、14:00〜16:00"
+              className="input"
+            />
+            <datalist id="delivery_time_options_edit">
+              {DELIVERY_TIME_OPTIONS.map((opt) => (
+                <option key={opt} value={opt} />
+              ))}
+            </datalist>
+          </div>
         </div>
       </section>
 

@@ -17,6 +17,7 @@ export async function updateAdminOrder(formData: FormData) {
   const deliveryName    = (formData.get("delivery_name") as string)?.trim();
   const deliveryAddress = (formData.get("delivery_address") as string)?.trim() || null;
   const deliveryDate    = (formData.get("delivery_date") as string) || null;
+  const deliveryTime    = (formData.get("delivery_time") as string)?.trim() || null;
   const deliveryPhone   = (formData.get("delivery_phone") as string)?.trim() || null;
   const deliveryEmail   = (formData.get("delivery_email") as string)?.trim() || null;
   const purpose         = (formData.get("purpose") as string)?.trim() || null;
@@ -68,6 +69,7 @@ export async function updateAdminOrder(formData: FormData) {
       delivery_name:    deliveryName,
       delivery_address: deliveryAddress,
       delivery_date:    deliveryDate,
+      delivery_time:    deliveryTime,
       delivery_phone:   deliveryPhone,
       delivery_email:   deliveryEmail,
       product_name:     summaryName,

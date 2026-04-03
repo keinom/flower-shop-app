@@ -117,9 +117,16 @@ export default async function OrderDetailPage({
             <InfoRow label="メールアドレス">{(order as { delivery_email?: string | null }).delivery_email ?? "—"}</InfoRow>
             <InfoRow label="お届け希望日">
               {order.delivery_date
-                ? new Date(order.delivery_date).toLocaleDateString("ja-JP", {
-                    year: "numeric", month: "long", day: "numeric", weekday: "short",
-                  })
+                ? <>
+                    {new Date(order.delivery_date).toLocaleDateString("ja-JP", {
+                      year: "numeric", month: "long", day: "numeric", weekday: "short",
+                    })}
+                    {(order as { delivery_time?: string | null }).delivery_time && (
+                      <span className="ml-2 text-sm text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
+                        {(order as { delivery_time: string }).delivery_time}
+                      </span>
+                    )}
+                  </>
                 : "—"}
             </InfoRow>
           </dl>

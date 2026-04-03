@@ -83,6 +83,7 @@ export interface Database {
           delivery_name: string;
           delivery_address: string | null;
           delivery_date: string | null;
+          delivery_time: string | null;
           delivery_phone: string | null;
           delivery_email: string | null;
           product_name: string | null;
@@ -101,6 +102,7 @@ export interface Database {
           delivery_name: string;
           delivery_address?: string | null;
           delivery_date?: string | null;
+          delivery_time?: string | null;
           delivery_phone?: string | null;
           delivery_email?: string | null;
           product_name?: string | null;
@@ -119,6 +121,7 @@ export interface Database {
           delivery_name?: string;
           delivery_address?: string | null;
           delivery_date?: string | null;
+          delivery_time?: string | null;
           delivery_phone?: string | null;
           delivery_email?: string | null;
           product_name?: string | null;

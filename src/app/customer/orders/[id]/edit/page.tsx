@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { ORDER_PURPOSES } from "@/lib/constants";
+import { ORDER_PURPOSES, DELIVERY_TIME_OPTIONS } from "@/lib/constants";
 import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
 import { updateCustomerOrder } from "./actions";
 
@@ -133,16 +133,38 @@ export default async function CustomerEditOrderPage({
               />
             </div>
           </div>
-          <div>
-            <label htmlFor="delivery_date" className="label">お届け希望日</label>
-            <input
-              id="delivery_date"
-              name="delivery_date"
-              type="date"
-              min={today}
-              defaultValue={order.delivery_date ?? ""}
-              className="input"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="delivery_date" className="label">お届け希望日</label>
+              <input
+                id="delivery_date"
+                name="delivery_date"
+                type="date"
+                min={today}
+                defaultValue={order.delivery_date ?? ""}
+                className="input"
+              />
+            </div>
+            <div>
+              <label htmlFor="delivery_time" className="label">
+                希望時間帯
+                <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
+              </label>
+              <input
+                id="delivery_time"
+                name="delivery_time"
+                type="text"
+                list="delivery_time_options_customer"
+                defaultValue={(order as { delivery_time?: string | null }).delivery_time ?? ""}
+                placeholder="例: 午前中、14:00〜16:00"
+                className="input"
+              />
+              <datalist id="delivery_time_options_customer">
+                {DELIVERY_TIME_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt} />
+                ))}
+              </datalist>
+            </div>
           </div>
         </section>
 
