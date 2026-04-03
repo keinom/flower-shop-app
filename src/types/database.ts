@@ -35,6 +35,7 @@ export interface Database {
           display_name?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       customers: {
         Row: {
@@ -70,6 +71,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       orders: {
         Row: {
@@ -117,6 +119,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       order_status_logs: {
         Row: {
@@ -146,6 +149,7 @@ export interface Database {
           note?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
     };
     Views: {
