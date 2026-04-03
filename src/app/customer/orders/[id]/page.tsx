@@ -133,9 +133,15 @@ export default async function CustomerOrderDetailPage({
                     {new Date(order.delivery_date).toLocaleDateString("ja-JP", {
                       year: "numeric", month: "long", day: "numeric", weekday: "short",
                     })}
-                    {(order as { delivery_time?: string | null }).delivery_time && (
+                    {formatDeliveryTime(
+                      (order as { delivery_time_start?: string | null }).delivery_time_start ?? null,
+                      (order as { delivery_time_end?: string | null }).delivery_time_end ?? null
+                    ) && (
                       <span className="ml-2 text-sm text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
-                        {(order as { delivery_time: string }).delivery_time}
+                        {formatDeliveryTime(
+                          (order as { delivery_time_start?: string | null }).delivery_time_start ?? null,
+                          (order as { delivery_time_end?: string | null }).delivery_time_end ?? null
+                        )}
                       </span>
                     )}
                   </>
@@ -375,6 +381,14 @@ function ProgressSteps({ currentStatus }: { currentStatus: OrderStatus }) {
       })}
     </div>
   );
+}
+
+function formatDeliveryTime(start: string | null, end: string | null): string | null {
+  const fmt = (t: string) => t.slice(0, 5);
+  if (!start && !end) return null;
+  if (!start) return `〜${fmt(end!)}`;
+  if (!end)   return `${fmt(start)}〜`;
+  return `${fmt(start)}〜${fmt(end)}`;
 }
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {

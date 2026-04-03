@@ -48,15 +48,6 @@ export const ORDER_PURPOSES = [
 ] as const;
 
 /**
- * お届け希望時間帯の選択肢
- */
-export const DELIVERY_TIME_OPTIONS = [
-  "午前中（〜12:00）",
-  "午後（12:00〜17:00）",
-  "夕方以降（17:00〜）",
-] as const;
-
-/**
  * ページネーション設定
  */
 export const PAGE_SIZE = 20;

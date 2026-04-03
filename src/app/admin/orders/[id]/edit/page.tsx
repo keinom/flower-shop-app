@@ -70,8 +70,9 @@ export default async function EditOrderPage({
         defaultValues={{
           delivery_name:    order.delivery_name,
           delivery_address: order.delivery_address ?? null,
-          delivery_date:    order.delivery_date    ?? null,
-          delivery_time:    (order as { delivery_time?: string | null }).delivery_time ?? null,
+          delivery_date:       order.delivery_date ?? null,
+          delivery_time_start: (order as { delivery_time_start?: string | null }).delivery_time_start ?? null,
+          delivery_time_end:   (order as { delivery_time_end?: string | null }).delivery_time_end ?? null,
           delivery_phone:   (order as { delivery_phone?: string | null }).delivery_phone ?? null,
           delivery_email:   (order as { delivery_email?: string | null }).delivery_email ?? null,
           purpose:          order.purpose          ?? null,
