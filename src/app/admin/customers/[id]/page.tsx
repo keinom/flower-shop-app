@@ -20,7 +20,7 @@ export default async function CustomerDetailPage({
 
   const { data: customer } = await supabase
     .from("customers")
-    .select("*, profiles(display_name)")
+    .select("*")
     .eq("id", id)
     .single();
 
@@ -32,9 +32,7 @@ export default async function CustomerDetailPage({
     .eq("customer_id", id)
     .order("created_at", { ascending: false });
 
-  const hasAccount =
-    !!(customer.profiles as { display_name: string | null } | null)
-      ?.display_name || !!customer.profile_id;
+  const hasAccount = !!customer.profile_id;
 
   return (
     <div className="space-y-6 max-w-3xl">
