@@ -9,8 +9,16 @@ interface OrderItem {
   unit_price: string; // 文字列で管理（空欄許容）
 }
 
+interface DefaultItem {
+  product_name: string;
+  description: string | null;
+  quantity: number;
+  unit_price: number;
+}
+
 interface Props {
   taxRate: number;
+  defaultItems?: DefaultItem[];
 }
 
 const EMPTY_ITEM: OrderItem = {
@@ -20,8 +28,21 @@ const EMPTY_ITEM: OrderItem = {
   unit_price: "",
 };
 
-export function OrderItemsInput({ taxRate }: Props) {
-  const [items, setItems] = useState<OrderItem[]>([{ ...EMPTY_ITEM }]);
+function toFormItem(item: DefaultItem): OrderItem {
+  return {
+    product_name: item.product_name,
+    description: item.description ?? "",
+    quantity: item.quantity,
+    unit_price: String(item.unit_price),
+  };
+}
+
+export function OrderItemsInput({ taxRate, defaultItems }: Props) {
+  const [items, setItems] = useState<OrderItem[]>(
+    defaultItems && defaultItems.length > 0
+      ? defaultItems.map(toFormItem)
+      : [{ ...EMPTY_ITEM }]
+  );
 
   function addItem() {
     setItems((prev) => [...prev, { ...EMPTY_ITEM }]);

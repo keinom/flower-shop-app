@@ -6,7 +6,7 @@ import type { OrderStatus } from "@/types";
 
 interface CustomerOrderDetailPageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ created?: string }>;
+  searchParams: Promise<{ created?: string; success?: string; error?: string }>;
 }
 
 export default async function CustomerOrderDetailPage({
@@ -14,7 +14,7 @@ export default async function CustomerOrderDetailPage({
   searchParams,
 }: CustomerOrderDetailPageProps) {
   const { id } = await params;
-  const { created } = await searchParams;
+  const { created, success, error: errorParam } = await searchParams;
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -64,6 +64,18 @@ export default async function CustomerOrderDetailPage({
         </Link>
         <h1 className="text-xl font-bold text-gray-900">注文詳細</h1>
       </div>
+
+      {success && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
+          <span className="text-green-500 text-xl mt-0.5">✓</span>
+          <p className="text-sm font-medium text-green-800">{decodeURIComponent(success)}</p>
+        </div>
+      )}
+      {errorParam && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+          {decodeURIComponent(errorParam)}
+        </div>
+      )}
 
       {/* 注文完了通知 */}
       {created && (
@@ -270,10 +282,15 @@ export default async function CustomerOrderDetailPage({
       )}
 
       {/* アクション */}
-      <div className="flex gap-3">
+      <div className="flex gap-3 flex-wrap">
         <Link href="/customer" className="btn-secondary">
           注文履歴に戻る
         </Link>
+        {order.status === "受付" && (
+          <Link href={`/customer/orders/${id}/edit`} className="btn-secondary">
+            ✏️ 注文を編集する
+          </Link>
+        )}
         {!isClosed && (
           <Link href="/customer/orders/new" className="btn-primary">
             新しい注文をする
@@ -281,12 +298,16 @@ export default async function CustomerOrderDetailPage({
         )}
       </div>
 
-      {/* キャンセル案内 */}
-      {!isClosed && (
+      {/* 編集可否の案内 */}
+      {order.status === "受付" ? (
+        <p className="text-xs text-gray-400 text-center">
+          受付完了になると編集できなくなります
+        </p>
+      ) : !isClosed ? (
         <p className="text-xs text-gray-400 text-center">
           注文の変更・キャンセルはお電話またはメールにてご連絡ください
         </p>
-      )}
+      ) : null}
     </div>
   );
 }

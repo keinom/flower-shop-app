@@ -55,6 +55,14 @@ export default async function OrderDetailPage({
         </Link>
         <h1 className="text-xl font-bold text-gray-900">注文詳細</h1>
         <StatusBadge status={order.status as OrderStatus} />
+        <div className="ml-auto">
+          <Link
+            href={`/admin/orders/${id}/edit`}
+            className="btn-secondary text-sm"
+          >
+            ✏️ 編集
+          </Link>
+        </div>
       </div>
 
       {sp.created && (
