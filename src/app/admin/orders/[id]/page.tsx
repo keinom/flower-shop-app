@@ -87,7 +87,7 @@ export default async function OrderDetailPage({
             <InfoRow label="注文日">
               {new Date(order.created_at).toLocaleDateString("ja-JP")}
             </InfoRow>
-            <InfoRow label="商品名">{order.product_name}</InfoRow>
+            <InfoRow label="商品名">{order.product_name ?? "—"}</InfoRow>
             <InfoRow label="数量">{order.quantity} 点</InfoRow>
             <InfoRow label="用途">{order.purpose}</InfoRow>
           </dl>
@@ -98,14 +98,15 @@ export default async function OrderDetailPage({
           <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">お届け情報</h2>
           <dl className="space-y-3 text-sm">
             <InfoRow label="お届け先名">{order.delivery_name}</InfoRow>
-            <InfoRow label="お届け先住所">{order.delivery_address}</InfoRow>
+            <InfoRow label="お届け先住所">{order.delivery_address ?? "—"}</InfoRow>
+            <InfoRow label="電話番号">{(order as { delivery_phone?: string | null }).delivery_phone ?? "—"}</InfoRow>
+            <InfoRow label="メールアドレス">{(order as { delivery_email?: string | null }).delivery_email ?? "—"}</InfoRow>
             <InfoRow label="お届け希望日">
-              {new Date(order.delivery_date).toLocaleDateString("ja-JP", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                weekday: "short",
-              })}
+              {order.delivery_date
+                ? new Date(order.delivery_date).toLocaleDateString("ja-JP", {
+                    year: "numeric", month: "long", day: "numeric", weekday: "short",
+                  })
+                : "—"}
             </InfoRow>
           </dl>
         </div>

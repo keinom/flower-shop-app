@@ -11,12 +11,11 @@ export async function createAdminOrder(formData: FormData) {
   if (!user) redirect("/login");
 
   const customerType = formData.get("customer_type") as "existing" | "new";
-
   let customerId: string;
 
   if (customerType === "existing") {
     // ── 既存顧客 ──
-    const selectedId = formData.get("customer_id") as string;
+    const selectedId = (formData.get("customer_id") as string)?.trim();
     if (!selectedId) {
       redirect("/admin/orders/new?error=" + encodeURIComponent("顧客を選択してください"));
     }
@@ -47,27 +46,25 @@ export async function createAdminOrder(formData: FormData) {
     revalidatePath("/admin/customers");
   }
 
-  // ── 注文データを取得・バリデーション ──
+  // ── 注文データを取得 ──
   const deliveryName    = (formData.get("delivery_name") as string)?.trim();
-  const deliveryAddress = (formData.get("delivery_address") as string)?.trim();
-  const deliveryDate    = formData.get("delivery_date") as string;
-  const productName     = (formData.get("product_name") as string)?.trim();
+  const deliveryAddress = (formData.get("delivery_address") as string)?.trim() || null;
+  const deliveryDate    = (formData.get("delivery_date") as string) || null;
+  const deliveryPhone   = (formData.get("delivery_phone") as string)?.trim() || null;
+  const deliveryEmail   = (formData.get("delivery_email") as string)?.trim() || null;
+  const productName     = (formData.get("product_name") as string)?.trim() || null;
   const quantityRaw     = formData.get("quantity") as string;
   const purpose         = (formData.get("purpose") as string)?.trim() || null;
   const messageCard     = (formData.get("message_card") as string)?.trim() || null;
   const remarks         = (formData.get("remarks") as string)?.trim() || null;
 
-  const errors: string[] = [];
-  if (!deliveryName)    errors.push("お届け先名は必須です");
-  if (!deliveryAddress) errors.push("お届け先住所は必須です");
-  if (!deliveryDate)    errors.push("お届け希望日は必須です");
-  if (!productName)     errors.push("商品名は必須です");
+  if (!deliveryName) {
+    redirect("/admin/orders/new?error=" + encodeURIComponent("お届け先名は必須です"));
+  }
 
   const quantity = parseInt(quantityRaw, 10);
-  if (isNaN(quantity) || quantity < 1) errors.push("数量は1以上で入力してください");
-
-  if (errors.length > 0) {
-    redirect("/admin/orders/new?error=" + encodeURIComponent(errors.join("、")));
+  if (isNaN(quantity) || quantity < 1) {
+    redirect("/admin/orders/new?error=" + encodeURIComponent("数量は1以上で入力してください"));
   }
 
   // ── 注文を挿入 ──
@@ -79,6 +76,8 @@ export async function createAdminOrder(formData: FormData) {
       delivery_name:    deliveryName,
       delivery_address: deliveryAddress,
       delivery_date:    deliveryDate,
+      delivery_phone:   deliveryPhone,
+      delivery_email:   deliveryEmail,
       product_name:     productName,
       quantity,
       purpose,

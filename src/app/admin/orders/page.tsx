@@ -117,10 +117,12 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                         "—"
                       )}
                     </td>
-                    <td className="td font-medium">{order.product_name}</td>
+                    <td className="td font-medium">{order.product_name ?? "—"}</td>
                     <td className="td text-center">{order.quantity}</td>
                     <td className="td">
-                      {new Date(order.delivery_date).toLocaleDateString("ja-JP")}
+                      {order.delivery_date
+                        ? new Date(order.delivery_date).toLocaleDateString("ja-JP")
+                        : "—"}
                     </td>
                     <td className="td">
                       <StatusBadge status={order.status as OrderStatus} size="sm" />
