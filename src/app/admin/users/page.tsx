@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { deleteAdminUser } from "./actions";
+import { DeleteAdminButton } from "@/components/admin/DeleteAdminButton";
 
 interface AdminUsersPageProps {
   searchParams: Promise<{ error?: string; success?: string }>;
@@ -101,20 +101,10 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                   </td>
                   <td className="td">
                     {admin.id !== currentUser?.id && (
-                      <form action={deleteAdminUser}>
-                        <input type="hidden" name="user_id" value={admin.id} />
-                        <button
-                          type="submit"
-                          className="text-sm text-red-500 hover:text-red-700"
-                          onClick={(e) => {
-                            if (!confirm(`「${admin.display_name}」を削除しますか？`)) {
-                              e.preventDefault();
-                            }
-                          }}
-                        >
-                          削除
-                        </button>
-                      </form>
+                      <DeleteAdminButton
+                        userId={admin.id}
+                        displayName={admin.display_name}
+                      />
                     )}
                   </td>
                 </tr>
