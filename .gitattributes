@@ -1,0 +1,3 @@
+# 改行コードを LF に統一（Windows/Mac/Linux 共通）
+* text=auto eol=lf
+*.bat text eol=crlf

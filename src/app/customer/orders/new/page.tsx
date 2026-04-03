@@ -1,0 +1,215 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { ORDER_PURPOSES } from "@/lib/constants";
+import { createOrder } from "../actions";
+
+interface NewOrderPageProps {
+  searchParams: Promise<{ error?: string }>;
+}
+
+export default async function NewOrderPage({ searchParams }: NewOrderPageProps) {
+  const { error } = await searchParams;
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  // 顧客情報を取得（住所をデフォルト値に使う）
+  const { data: customer } = await supabase
+    .from("customers")
+    .select("name, address")
+    .eq("profile_id", user.id)
+    .single();
+
+  // 今日の日付（delivery_date の min 値用）
+  const today = new Date().toISOString().split("T")[0];
+
+  return (
+    <div className="space-y-5 max-w-2xl">
+      <div className="flex items-center gap-3">
+        <Link href="/customer" className="text-sm text-gray-500 hover:text-gray-700">
+          ← 注文履歴
+        </Link>
+        <h1 className="text-xl font-bold text-gray-900">新しい注文をする</h1>
+      </div>
+
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
+          {decodeURIComponent(error)}
+        </div>
+      )}
+
+      <form action={createOrder} className="space-y-6">
+        {/* ── お届け先情報 ── */}
+        <section className="card p-5 space-y-4">
+          <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">
+            お届け先情報
+          </h2>
+
+          <div>
+            <label htmlFor="delivery_name" className="label">
+              お届け先名 <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="delivery_name"
+              name="delivery_name"
+              type="text"
+              required
+              placeholder="例: 株式会社○○ 総務部"
+              className="input"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="delivery_address" className="label">
+              お届け先住所 <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="delivery_address"
+              name="delivery_address"
+              type="text"
+              required
+              placeholder="例: 東京都千代田区1-1-1 ○○ビル1F"
+              defaultValue={customer?.address ?? ""}
+              className="input"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="delivery_date" className="label">
+              お届け希望日 <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="delivery_date"
+              name="delivery_date"
+              type="date"
+              required
+              min={today}
+              className="input"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              ご希望日の3日前までにご注文ください
+            </p>
+          </div>
+        </section>
+
+        {/* ── 商品情報 ── */}
+        <section className="card p-5 space-y-4">
+          <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">
+            商品情報
+          </h2>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2 sm:col-span-1">
+              <label htmlFor="product_name" className="label">
+                商品名 <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="product_name"
+                name="product_name"
+                type="text"
+                required
+                placeholder="例: スタンド花（2段）、花束、アレンジメント"
+                className="input"
+              />
+            </div>
+            <div className="col-span-2 sm:col-span-1">
+              <label htmlFor="quantity" className="label">
+                数量 <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="quantity"
+                name="quantity"
+                type="number"
+                required
+                min={1}
+                defaultValue={1}
+                className="input"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="purpose" className="label">用途</label>
+            <div className="flex gap-2">
+              <select
+                id="purpose"
+                name="purpose"
+                className="input flex-1"
+                defaultValue=""
+              >
+                <option value="">選択してください（任意）</option>
+                {ORDER_PURPOSES.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">
+              リストにない場合は備考欄にご記入ください
+            </p>
+          </div>
+        </section>
+
+        {/* ── メッセージ・備考 ── */}
+        <section className="card p-5 space-y-4">
+          <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">
+            メッセージ・備考
+          </h2>
+
+          <div>
+            <label htmlFor="message_card" className="label">
+              メッセージカード内容
+              <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
+            </label>
+            <textarea
+              id="message_card"
+              name="message_card"
+              rows={3}
+              placeholder={"例: 開店おめでとうございます。\nご多幸をお祈り申し上げます。\n〇〇株式会社 一同"}
+              className="input resize-none"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              カードに印字する文章をそのままご入力ください
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="remarks" className="label">
+              備考・ご要望
+              <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
+            </label>
+            <textarea
+              id="remarks"
+              name="remarks"
+              rows={3}
+              placeholder="例: 白系でまとめてください / 午前中の配達希望 / 担当: 鈴木"
+              className="input resize-none"
+            />
+          </div>
+        </section>
+
+        {/* ── 確認・送信 ── */}
+        <div className="bg-brand-50 border border-brand-100 rounded-lg p-4 text-sm text-brand-800">
+          <p className="font-medium mb-1">ご注文前にご確認ください</p>
+          <ul className="text-xs space-y-1 text-brand-700 list-disc list-inside">
+            <li>注文後は店舗より確認のご連絡をする場合があります</li>
+            <li>価格はお問い合わせ・ご確認後にご案内します</li>
+            <li>変更・キャンセルはお早めにご連絡ください</li>
+          </ul>
+        </div>
+
+        <div className="flex gap-3">
+          <button type="submit" className="btn-primary px-8">
+            注文を送信する
+          </button>
+          <Link href="/customer" className="btn-secondary">
+            キャンセル
+          </Link>
+        </div>
+      </form>
+    </div>
+  );
+}
