@@ -60,6 +60,8 @@ export default async function AdminLayout({
             <NavItem href="/admin" label="ダッシュボード" icon="📊" exact />
             <NavItem href="/admin/orders" label="注文一覧" icon="📋" />
             <NavItem href="/admin/customers" label="顧客一覧" icon="👥" />
+            <div className="mt-2 mx-3 border-t border-gray-100" />
+            <NavItem href="/admin/users" label="管理者管理" icon="🔑" />
           </div>
         </nav>
 
