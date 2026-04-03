@@ -10,7 +10,7 @@ type CustomerRow = Database["public"]["Tables"]["customers"]["Row"];
 
 interface CustomerDetailPageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; success?: string; created?: string }>;
+  searchParams: Promise<{ error?: string; success?: string; created?: string; month?: string }>;
 }
 
 export default async function CustomerDetailPage({
@@ -32,11 +32,56 @@ export default async function CustomerDetailPage({
 
   const { data: orders } = await supabase
     .from("orders")
-    .select("id, status, product_name, delivery_date, created_at")
+    .select("id, status, product_name, quantity, delivery_date, created_at, total_amount")
     .eq("customer_id", id)
     .order("created_at", { ascending: false });
 
   const hasAccount = !!customer.profile_id;
+
+  // ── 月ナビゲーション用データ作成 ──
+  const allMonths: string[] = orders
+    ? [...new Set(orders.map((o) => o.created_at.slice(0, 7)))]
+        .sort()
+        .reverse()
+    : [];
+
+  // 選択中の月（デフォルトは最新月）
+  const selectedMonth =
+    sp.month && allMonths.includes(sp.month) ? sp.month : (allMonths[0] ?? "");
+
+  // 選択月の注文を抽出
+  const monthOrders = orders?.filter((o) =>
+    o.created_at.startsWith(selectedMonth)
+  ) ?? [];
+
+  // 注文日ごとにグループ化（YYYY-MM-DD → orders[]）
+  const byDate = monthOrders.reduce<Record<string, typeof monthOrders>>(
+    (acc, order) => {
+      const date = order.created_at.slice(0, 10);
+      if (!acc[date]) acc[date] = [];
+      acc[date].push(order);
+      return acc;
+    },
+    {}
+  );
+  const sortedDates = Object.keys(byDate).sort().reverse();
+
+  // 月合計金額
+  const monthTotal = monthOrders.reduce(
+    (sum, o) => sum + ((o as { total_amount?: number | null }).total_amount ?? 0),
+    0
+  );
+
+  // prev / next 月
+  const currentIndex = allMonths.indexOf(selectedMonth);
+  const prevMonth = currentIndex < allMonths.length - 1 ? allMonths[currentIndex + 1] : null;
+  const nextMonth = currentIndex > 0 ? allMonths[currentIndex - 1] : null;
+
+  // 表示用 "YYYY年M月" フォーマット
+  function formatMonth(ym: string) {
+    const [y, m] = ym.split("-");
+    return `${y}年${parseInt(m)}月`;
+  }
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -135,58 +180,164 @@ export default async function CustomerDetailPage({
         </div>
       )}
 
-      {/* 注文一覧 */}
+      {/* 注文履歴 */}
       <div className="card">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
           <h2 className="text-sm font-semibold text-gray-700">
-            注文履歴（{orders?.length ?? 0}件）
+            注文履歴（全{orders?.length ?? 0}件）
           </h2>
+          <Link
+            href={`/admin/orders/new`}
+            className="text-xs text-brand-600 hover:underline"
+          >
+            + 注文を作成
+          </Link>
         </div>
-        <div className="table-container rounded-none rounded-b-lg border-0">
-          <table className="table">
-            <thead>
-              <tr>
-                <th className="th">注文日</th>
-                <th className="th">商品名</th>
-                <th className="th">お届け希望日</th>
-                <th className="th">ステータス</th>
-                <th className="th"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {!orders || orders.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="td text-center text-gray-400 py-8">
-                    注文履歴がありません
-                  </td>
-                </tr>
-              ) : (
-                orders.map((order) => (
-                  <tr key={order.id} className="tr-hover">
-                    <td className="td text-gray-500 text-xs">
-                      {new Date(order.created_at).toLocaleDateString("ja-JP")}
-                    </td>
-                    <td className="td">{order.product_name}</td>
-                    <td className="td">
-                      {new Date(order.delivery_date).toLocaleDateString("ja-JP")}
-                    </td>
-                    <td className="td">
-                      <StatusBadge status={order.status as OrderStatus} size="sm" />
-                    </td>
-                    <td className="td">
-                      <Link
-                        href={`/admin/orders/${order.id}`}
-                        className="text-sm text-brand-600 hover:underline"
-                      >
-                        詳細
-                      </Link>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+
+        {allMonths.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-10">注文履歴がありません</p>
+        ) : (
+          <>
+            {/* ── 月ナビゲーション ── */}
+            <div className="px-5 py-3 border-b border-gray-100 space-y-2">
+              {/* 前後ナビ + 現在月 */}
+              <div className="flex items-center justify-between">
+                <Link
+                  href={prevMonth ? `/admin/customers/${id}?month=${prevMonth}` : "#"}
+                  className={`flex items-center gap-1 text-sm px-3 py-1.5 rounded-md transition-colors ${
+                    prevMonth
+                      ? "text-brand-600 hover:bg-brand-50"
+                      : "text-gray-300 pointer-events-none"
+                  }`}
+                >
+                  ← {prevMonth ? formatMonth(prevMonth) : ""}
+                </Link>
+                <span className="text-base font-bold text-gray-800">
+                  {formatMonth(selectedMonth)}
+                </span>
+                <Link
+                  href={nextMonth ? `/admin/customers/${id}?month=${nextMonth}` : "#"}
+                  className={`flex items-center gap-1 text-sm px-3 py-1.5 rounded-md transition-colors ${
+                    nextMonth
+                      ? "text-brand-600 hover:bg-brand-50"
+                      : "text-gray-300 pointer-events-none"
+                  }`}
+                >
+                  {nextMonth ? formatMonth(nextMonth) : ""} →
+                </Link>
+              </div>
+
+              {/* 全月リスト（スクロール可能） */}
+              <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+                {allMonths.map((ym) => (
+                  <Link
+                    key={ym}
+                    href={`/admin/customers/${id}?month=${ym}`}
+                    className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                      ym === selectedMonth
+                        ? "bg-brand-600 text-white border-brand-600"
+                        : "bg-white text-gray-600 border-gray-300 hover:border-brand-400"
+                    }`}
+                  >
+                    {formatMonth(ym)}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* ── 月合計 ── */}
+            <div className="flex items-center justify-between px-5 py-3 bg-brand-50 border-b border-brand-100">
+              <span className="text-sm text-gray-600">
+                {formatMonth(selectedMonth)} の注文 {monthOrders.length}件
+              </span>
+              <div className="text-right">
+                <span className="text-xs text-gray-500 mr-2">月合計（税込）</span>
+                <span className="text-lg font-bold text-brand-700">
+                  ¥{monthTotal.toLocaleString("ja-JP")}
+                </span>
+              </div>
+            </div>
+
+            {/* ── 注文日ごとのグループ ── */}
+            {sortedDates.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-10">
+                この月の注文はありません
+              </p>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {sortedDates.map((date) => {
+                  const dayOrders = byDate[date];
+                  const dayTotal = dayOrders.reduce(
+                    (sum, o) =>
+                      sum + ((o as { total_amount?: number | null }).total_amount ?? 0),
+                    0
+                  );
+                  return (
+                    <div key={date}>
+                      {/* 日付ヘッダー */}
+                      <div className="flex items-center justify-between px-5 py-2 bg-gray-50">
+                        <span className="text-xs font-semibold text-gray-600">
+                          {new Date(date + "T00:00:00").toLocaleDateString("ja-JP", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                            weekday: "short",
+                          })}
+                        </span>
+                        {dayTotal > 0 && (
+                          <span className="text-xs text-gray-500">
+                            小計 ¥{dayTotal.toLocaleString("ja-JP")}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* その日の注文 */}
+                      <table className="table w-full">
+                        <tbody className="divide-y divide-gray-50">
+                          {dayOrders.map((order) => (
+                            <tr key={order.id} className="tr-hover">
+                              <td className="td">
+                                <p className="font-medium text-sm text-gray-900">
+                                  {order.product_name ?? `${order.quantity}点`}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-0.5">
+                                  お届け希望日:{" "}
+                                  {order.delivery_date
+                                    ? new Date(order.delivery_date).toLocaleDateString("ja-JP")
+                                    : "未定"}
+                                </p>
+                              </td>
+                              <td className="td text-right">
+                                {(order as { total_amount?: number | null }).total_amount != null ? (
+                                  <span className="text-sm font-semibold text-gray-700">
+                                    ¥{(order as { total_amount: number }).total_amount.toLocaleString("ja-JP")}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-gray-400">—</span>
+                                )}
+                              </td>
+                              <td className="td">
+                                <StatusBadge status={order.status as OrderStatus} size="sm" />
+                              </td>
+                              <td className="td text-right">
+                                <Link
+                                  href={`/admin/orders/${order.id}`}
+                                  className="text-sm text-brand-600 hover:underline"
+                                >
+                                  詳細
+                                </Link>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
