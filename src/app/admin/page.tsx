@@ -32,7 +32,7 @@ export default async function AdminDashboard() {
   const totalOrders = orders?.length ?? 0;
   const activeOrders =
     orders?.filter((o) =>
-      ["受付", "制作中", "配達準備中"].includes(o.status)
+      ["受付", "受付完了", "作成中", "ラッピング中", "配達準備中", "配達中"].includes(o.status)
     ).length ?? 0;
 
   return (
@@ -99,7 +99,9 @@ export default async function AdminDashboard() {
                     </td>
                     <td className="td">{order.product_name}</td>
                     <td className="td">
-                      {new Date(order.delivery_date).toLocaleDateString("ja-JP")}
+                      {order.delivery_date
+                        ? new Date(order.delivery_date).toLocaleDateString("ja-JP")
+                        : "—"}
                     </td>
                     <td className="td">
                       <Link href={`/admin/orders/${order.id}`}>

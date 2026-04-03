@@ -60,7 +60,7 @@ export default async function CustomerTopPage({ searchParams }: CustomerTopPageP
   }, {} as Record<OrderStatus, number>);
 
   const activeCount = allOrders?.filter((o) =>
-    ["受付", "制作中", "配達準備中"].includes(o.status)
+    ["受付", "受付完了", "作成中", "ラッピング中", "配達準備中", "配達中"].includes(o.status)
   ).length ?? 0;
 
   return (

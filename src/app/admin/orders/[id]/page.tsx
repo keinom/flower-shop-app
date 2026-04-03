@@ -212,7 +212,7 @@ export default async function OrderDetailPage({
       )}
 
       {/* ステータス更新 */}
-      {order.status !== "完了" && order.status !== "キャンセル" && (
+      {order.status !== "配達完了" && order.status !== "キャンセル" && (
         <div className="card p-5">
           <h2 className="text-sm font-semibold text-gray-700 mb-1">ステータスを更新</h2>
           <p className="text-xs text-gray-500 mb-4">

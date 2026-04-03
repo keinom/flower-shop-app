@@ -7,10 +7,12 @@ export type UserRole = "admin" | "customer";
 
 export type OrderStatus =
   | "受付"
-  | "制作中"
+  | "受付完了"
+  | "作成中"
+  | "ラッピング中"
   | "配達準備中"
-  | "配達済み"
-  | "完了"
+  | "配達中"
+  | "配達完了"
   | "キャンセル";
 
 export interface Database {

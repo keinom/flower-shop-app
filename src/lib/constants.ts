@@ -5,10 +5,12 @@ import type { OrderStatus } from "@/types";
  */
 export const ORDER_STATUSES: OrderStatus[] = [
   "受付",
-  "制作中",
+  "受付完了",
+  "作成中",
+  "ラッピング中",
   "配達準備中",
-  "配達済み",
-  "完了",
+  "配達中",
+  "配達完了",
   "キャンセル",
 ];
 
@@ -19,12 +21,14 @@ export const ORDER_STATUS_COLORS: Record<
   OrderStatus,
   { bg: string; text: string }
 > = {
-  受付: { bg: "bg-blue-100", text: "text-blue-800" },
-  制作中: { bg: "bg-yellow-100", text: "text-yellow-800" },
+  受付:       { bg: "bg-blue-100",   text: "text-blue-800"   },
+  受付完了:   { bg: "bg-indigo-100", text: "text-indigo-800" },
+  作成中:     { bg: "bg-yellow-100", text: "text-yellow-800" },
+  ラッピング中: { bg: "bg-amber-100",  text: "text-amber-800"  },
   配達準備中: { bg: "bg-orange-100", text: "text-orange-800" },
-  配達済み: { bg: "bg-purple-100", text: "text-purple-800" },
-  完了: { bg: "bg-green-100", text: "text-green-800" },
-  キャンセル: { bg: "bg-gray-100", text: "text-gray-600" },
+  配達中:     { bg: "bg-purple-100", text: "text-purple-800" },
+  配達完了:   { bg: "bg-green-100",  text: "text-green-800"  },
+  キャンセル: { bg: "bg-gray-100",   text: "text-gray-600"   },
 };
 
 /**

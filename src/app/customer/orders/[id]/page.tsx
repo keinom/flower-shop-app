@@ -53,7 +53,7 @@ export default async function CustomerOrderDetailPage({
     .eq("order_id", id)
     .order("created_at", { ascending: true });
 
-  const isClosed = order.status === "完了" || order.status === "キャンセル";
+  const isClosed = order.status === "配達完了" || order.status === "キャンセル";
 
   return (
     <div className="space-y-5 max-w-2xl">
@@ -291,13 +291,15 @@ export default async function CustomerOrderDetailPage({
   );
 }
 
-/** 進捗ステップ表示（受付→制作中→配達準備中→配達済み→完了） */
+/** 進捗ステップ表示（受付→受付完了→作成中→ラッピング中→配達準備中→配達中→配達完了） */
 const PROGRESS_STEPS: OrderStatus[] = [
   "受付",
-  "制作中",
+  "受付完了",
+  "作成中",
+  "ラッピング中",
   "配達準備中",
-  "配達済み",
-  "完了",
+  "配達中",
+  "配達完了",
 ];
 
 function ProgressSteps({ currentStatus }: { currentStatus: OrderStatus }) {
@@ -325,7 +327,7 @@ function ProgressSteps({ currentStatus }: { currentStatus: OrderStatus }) {
                 {isDone ? "✓" : i + 1}
               </div>
               <span
-                className={`text-xs mt-1 text-center leading-tight w-12 ${
+                className={`text-xs mt-1 text-center leading-tight w-10 ${
                   isCurrent
                     ? "text-brand-700 font-medium"
                     : isDone
