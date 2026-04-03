@@ -38,7 +38,7 @@ export default async function CustomerTopPage({ searchParams }: CustomerTopPageP
   // 自分の注文を取得
   let query = supabase
     .from("orders")
-    .select("id, status, product_name, quantity, delivery_date, created_at, purpose")
+    .select("id, status, product_name, quantity, delivery_date, created_at, purpose, total_amount")
     .eq("customer_id", customer.id)
     .order("created_at", { ascending: false });
 
@@ -143,14 +143,22 @@ export default async function CustomerTopPage({ searchParams }: CustomerTopPageP
                     </span>
                   )}
                 </div>
-                <p className="font-medium text-gray-900 truncate">{order.product_name}</p>
+                <p className="font-medium text-gray-900 truncate">
+                  {order.product_name ?? `${order.quantity}点`}
+                </p>
                 <p className="text-sm text-gray-500 mt-0.5">
-                  {order.quantity}点 ／ お届け希望日:{" "}
-                  {new Date(order.delivery_date).toLocaleDateString("ja-JP", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+                  {(order as { total_amount?: number | null }).total_amount != null && (
+                    <span className="font-medium text-brand-700 mr-2">
+                      ¥{(order as { total_amount: number }).total_amount.toLocaleString("ja-JP")}
+                    </span>
+                  )}
+                  {order.delivery_date
+                    ? `お届け希望日: ${new Date(order.delivery_date).toLocaleDateString("ja-JP", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}`
+                    : "お届け日未定"}
                 </p>
               </div>
               <div className="flex items-center gap-3 ml-4 flex-shrink-0">

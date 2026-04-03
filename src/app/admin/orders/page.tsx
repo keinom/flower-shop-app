@@ -15,7 +15,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   let query = supabase
     .from("orders")
     .select(`
-      id, status, product_name, quantity, delivery_date, created_at,
+      id, status, product_name, quantity, delivery_date, created_at, total_amount,
       customers(id, name)
     `)
     .order("created_at", { ascending: false });
@@ -80,7 +80,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
               <th className="th">注文日</th>
               <th className="th">顧客名</th>
               <th className="th">商品名</th>
-              <th className="th">数量</th>
+              <th className="th">合計金額</th>
               <th className="th">お届け希望日</th>
               <th className="th">ステータス</th>
               <th className="th"></th>
@@ -117,8 +117,12 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                         "—"
                       )}
                     </td>
-                    <td className="td font-medium">{order.product_name ?? "—"}</td>
-                    <td className="td text-center">{order.quantity}</td>
+                    <td className="td font-medium">{order.product_name ?? `${order.quantity}点`}</td>
+                    <td className="td text-right">
+                      {(order as { total_amount?: number | null }).total_amount != null
+                        ? `¥${(order as { total_amount: number }).total_amount.toLocaleString("ja-JP")}`
+                        : "—"}
+                    </td>
                     <td className="td">
                       {order.delivery_date
                         ? new Date(order.delivery_date).toLocaleDateString("ja-JP")

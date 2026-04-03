@@ -39,6 +39,13 @@ export default async function CustomerOrderDetailPage({
 
   if (!order) notFound();
 
+  // 商品明細
+  const { data: orderItems } = await supabase
+    .from("order_items")
+    .select("id, product_name, quantity, unit_price")
+    .eq("order_id", id)
+    .order("created_at", { ascending: true });
+
   // ステータス変更履歴
   const { data: logs } = await supabase
     .from("order_status_logs")
@@ -108,12 +115,16 @@ export default async function CustomerOrderDetailPage({
           <InfoRow label="お届け先住所" value={order.delivery_address} />
           <InfoRow
             label="お届け希望日"
-            value={new Date(order.delivery_date).toLocaleDateString("ja-JP", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-              weekday: "short",
-            })}
+            value={
+              order.delivery_date
+                ? new Date(order.delivery_date).toLocaleDateString("ja-JP", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    weekday: "short",
+                  })
+                : null
+            }
           />
         </dl>
       </div>
@@ -123,11 +134,47 @@ export default async function CustomerOrderDetailPage({
         <h2 className="text-sm font-semibold text-gray-700 border-b pb-2 mb-4">
           商品情報
         </h2>
-        <dl className="space-y-3 text-sm">
-          <InfoRow label="商品名" value={order.product_name} />
-          <InfoRow label="数量" value={`${order.quantity} 点`} />
-          <InfoRow label="用途" value={order.purpose} />
-        </dl>
+        {orderItems && orderItems.length > 0 ? (
+          <>
+            <div className="space-y-2 text-sm">
+              {orderItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+                >
+                  <div>
+                    <p className="font-medium text-gray-900">{item.product_name}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {item.quantity}点 × ¥{item.unit_price.toLocaleString("ja-JP")}
+                    </p>
+                  </div>
+                  <p className="font-semibold text-gray-700">
+                    ¥{(item.quantity * item.unit_price).toLocaleString("ja-JP")}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-between items-center mt-3 pt-3 border-t">
+              <span className="text-sm font-semibold text-gray-700">合計金額</span>
+              <span className="text-base font-bold text-brand-700">
+                ¥{orderItems
+                  .reduce((sum, item) => sum + item.quantity * item.unit_price, 0)
+                  .toLocaleString("ja-JP")}
+              </span>
+            </div>
+            {order.purpose && (
+              <p className="text-xs text-gray-500 mt-3">
+                用途: {order.purpose}
+              </p>
+            )}
+          </>
+        ) : (
+          <dl className="space-y-3 text-sm">
+            <InfoRow label="商品名" value={order.product_name} />
+            <InfoRow label="数量" value={`${order.quantity} 点`} />
+            <InfoRow label="用途" value={order.purpose} />
+          </dl>
+        )}
       </div>
 
       {/* メッセージ・備考 */}

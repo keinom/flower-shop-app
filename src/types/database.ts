@@ -88,6 +88,7 @@ export interface Database {
           purpose: string | null;
           message_card: string | null;
           remarks: string | null;
+          total_amount: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -105,6 +106,7 @@ export interface Database {
           purpose?: string | null;
           message_card?: string | null;
           remarks?: string | null;
+          total_amount?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -122,8 +124,36 @@ export interface Database {
           purpose?: string | null;
           message_card?: string | null;
           remarks?: string | null;
+          total_amount?: number | null;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      order_items: {
+        Row: {
+          id: string;
+          order_id: string;
+          product_name: string;
+          quantity: number;
+          unit_price: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          order_id: string;
+          product_name: string;
+          quantity: number;
+          unit_price: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_id?: string;
+          product_name?: string;
+          quantity?: number;
+          unit_price?: number;
+          created_at?: string;
         };
         Relationships: [];
       };

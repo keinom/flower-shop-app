@@ -46,14 +46,12 @@ export async function createAdminOrder(formData: FormData) {
     revalidatePath("/admin/customers");
   }
 
-  // ── 注文データを取得 ──
+  // ── お届け先データを取得 ──
   const deliveryName    = (formData.get("delivery_name") as string)?.trim();
   const deliveryAddress = (formData.get("delivery_address") as string)?.trim() || null;
   const deliveryDate    = (formData.get("delivery_date") as string) || null;
   const deliveryPhone   = (formData.get("delivery_phone") as string)?.trim() || null;
   const deliveryEmail   = (formData.get("delivery_email") as string)?.trim() || null;
-  const productName     = (formData.get("product_name") as string)?.trim() || null;
-  const quantityRaw     = formData.get("quantity") as string;
   const purpose         = (formData.get("purpose") as string)?.trim() || null;
   const messageCard     = (formData.get("message_card") as string)?.trim() || null;
   const remarks         = (formData.get("remarks") as string)?.trim() || null;
@@ -62,10 +60,34 @@ export async function createAdminOrder(formData: FormData) {
     redirect("/admin/orders/new?error=" + encodeURIComponent("お届け先名は必須です"));
   }
 
-  const quantity = parseInt(quantityRaw, 10);
-  if (isNaN(quantity) || quantity < 1) {
-    redirect("/admin/orders/new?error=" + encodeURIComponent("数量は1以上で入力してください"));
+  // ── 商品明細を取得 ──
+  const itemProductNames = formData.getAll("item_product_name") as string[];
+  const itemQuantities   = formData.getAll("item_quantity") as string[];
+  const itemUnitPrices   = formData.getAll("item_unit_price") as string[];
+
+  if (itemProductNames.length === 0 || itemProductNames.every((n) => !n.trim())) {
+    redirect("/admin/orders/new?error=" + encodeURIComponent("商品を1つ以上入力してください"));
   }
+
+  const orderItems = itemProductNames.map((name, i) => {
+    const qty   = parseInt(itemQuantities[i] ?? "1", 10);
+    const price = parseInt(itemUnitPrices[i] ?? "0", 10);
+    return {
+      product_name: name.trim(),
+      quantity:     isNaN(qty)   ? 1 : Math.max(1, qty),
+      unit_price:   isNaN(price) ? 0 : Math.max(0, price),
+    };
+  }).filter((item) => item.product_name !== "");
+
+  if (orderItems.length === 0) {
+    redirect("/admin/orders/new?error=" + encodeURIComponent("商品名を入力してください"));
+  }
+
+  // 合計数量・合計金額を計算
+  const totalQuantity = orderItems.reduce((sum, item) => sum + item.quantity, 0);
+  const totalAmount   = orderItems.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
+  // orders.product_name: 1商品のみなら商品名、複数なら null
+  const summaryProductName = orderItems.length === 1 ? orderItems[0].product_name : null;
 
   // ── 注文を挿入 ──
   const { data: order, error: orderError } = await supabase
@@ -78,17 +100,35 @@ export async function createAdminOrder(formData: FormData) {
       delivery_date:    deliveryDate,
       delivery_phone:   deliveryPhone,
       delivery_email:   deliveryEmail,
-      product_name:     productName,
-      quantity,
+      product_name:     summaryProductName,
+      quantity:         totalQuantity,
       purpose,
       message_card:     messageCard,
       remarks,
+      total_amount:     totalAmount,
     })
     .select("id")
     .single();
 
   if (orderError || !order) {
     redirect("/admin/orders/new?error=" + encodeURIComponent("注文の登録に失敗しました"));
+  }
+
+  // ── 商品明細を挿入 ──
+  const itemsToInsert = orderItems.map((item) => ({
+    order_id:     order.id,
+    product_name: item.product_name,
+    quantity:     item.quantity,
+    unit_price:   item.unit_price,
+  }));
+
+  const { error: itemsError } = await supabase
+    .from("order_items")
+    .insert(itemsToInsert);
+
+  if (itemsError) {
+    // 注文は作成済みなので詳細ページに遷移（明細エラーは画面で通知）
+    redirect(`/admin/orders/${order.id}?created=true&error=` + encodeURIComponent("商品明細の登録に失敗しました"));
   }
 
   revalidatePath("/admin/orders");

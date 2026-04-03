@@ -33,6 +33,12 @@ export default async function OrderDetailPage({
     .eq("order_id", id)
     .order("created_at", { ascending: false });
 
+  const { data: orderItems } = await supabase
+    .from("order_items")
+    .select("id, product_name, quantity, unit_price")
+    .eq("order_id", id)
+    .order("created_at", { ascending: true });
+
   const customer = order.customers as { id: string; name: string } | null;
 
   // 次に選べるステータス（同じステータスは除外）
@@ -110,6 +116,51 @@ export default async function OrderDetailPage({
             </InfoRow>
           </dl>
         </div>
+      </div>
+
+      {/* 商品明細 */}
+      <div className="card p-5">
+        <h2 className="text-sm font-semibold text-gray-700 border-b pb-2 mb-4">商品明細</h2>
+        {orderItems && orderItems.length > 0 ? (
+          <>
+            <div className="table-container">
+              <table className="table text-sm">
+                <thead>
+                  <tr>
+                    <th className="th">商品名</th>
+                    <th className="th text-right">数量</th>
+                    <th className="th text-right">単価</th>
+                    <th className="th text-right">小計</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {orderItems.map((item) => (
+                    <tr key={item.id}>
+                      <td className="td font-medium">{item.product_name}</td>
+                      <td className="td text-right">{item.quantity}</td>
+                      <td className="td text-right">¥{item.unit_price.toLocaleString("ja-JP")}</td>
+                      <td className="td text-right font-medium">
+                        ¥{(item.quantity * item.unit_price).toLocaleString("ja-JP")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex justify-end mt-3 pt-3 border-t">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-semibold text-gray-700">合計金額</span>
+                <span className="text-lg font-bold text-brand-700">
+                  ¥{orderItems
+                    .reduce((sum, item) => sum + item.quantity * item.unit_price, 0)
+                    .toLocaleString("ja-JP")}
+                </span>
+              </div>
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-gray-400">明細データがありません</p>
+        )}
       </div>
 
       {/* メッセージカード・備考 */}

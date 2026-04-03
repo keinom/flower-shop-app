@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ORDER_PURPOSES } from "@/lib/constants";
 import { createAdminOrder } from "@/app/admin/orders/new/actions";
+import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
 
 interface Customer {
   id: string;
@@ -361,32 +362,7 @@ export function AdminOrderFormClient({ customers, today }: Props) {
       ══════════════════════════════════════════ */}
       <section className="card p-5 space-y-4">
         <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">商品情報</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="col-span-2 sm:col-span-1">
-            <label htmlFor="product_name" className="label">商品名</label>
-            <input
-              id="product_name"
-              name="product_name"
-              type="text"
-              placeholder="例: スタンド花（2段）、花束"
-              className="input"
-            />
-          </div>
-          <div className="col-span-2 sm:col-span-1">
-            <label htmlFor="quantity" className="label">
-              数量 <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="quantity"
-              name="quantity"
-              type="number"
-              required
-              min={1}
-              defaultValue={1}
-              className="input"
-            />
-          </div>
-        </div>
+        <OrderItemsInput />
         <div>
           <label htmlFor="purpose" className="label">用途</label>
           <select id="purpose" name="purpose" className="input" defaultValue="">
