@@ -8,7 +8,7 @@ import type { OrderStatus } from "@/types";
 
 interface OrderDetailPageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; success?: string }>;
+  searchParams: Promise<{ error?: string; success?: string; created?: string }>;
 }
 
 export default async function OrderDetailPage({
@@ -51,6 +51,11 @@ export default async function OrderDetailPage({
         <StatusBadge status={order.status as OrderStatus} />
       </div>
 
+      {sp.created && (
+        <div className="p-3 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
+          注文を作成しました
+        </div>
+      )}
       {sp.success && (
         <div className="p-3 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
           {decodeURIComponent(sp.success)}

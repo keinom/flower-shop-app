@@ -30,9 +30,14 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-900">注文一覧</h1>
-        <span className="text-sm text-gray-500">
-          {orders?.length ?? 0} 件
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-500">
+            {orders?.length ?? 0} 件
+          </span>
+          <Link href="/admin/orders/new" className="btn-primary">
+            + 注文を作成
+          </Link>
+        </div>
       </div>
 
       {/* ステータスフィルター */}
