@@ -58,6 +58,7 @@ export default async function AdminLayout({
         <nav className="w-48 bg-white border-r border-gray-200 flex-shrink-0">
           <div className="py-4">
             <NavItem href="/admin" label="ダッシュボード" icon="📊" exact />
+            <NavItem href="/admin/daily" label="日報" icon="📅" />
             <NavItem href="/admin/orders" label="注文一覧" icon="📋" />
             <NavItem href="/admin/customers" label="顧客一覧" icon="👥" />
             <div className="mt-2 mx-3 border-t border-gray-100" />
