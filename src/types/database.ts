@@ -148,13 +148,17 @@ export interface Database {
         };
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      [_ in never]: never;
+    };
     Functions: {
       is_admin: {
-        Args: Record<string, never>;
+        Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
     };
-    Enums: Record<string, never>;
+    Enums: {
+      [_ in never]: never;
+    };
   };
 }

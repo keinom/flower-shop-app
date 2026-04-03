@@ -4,6 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { issueAccount } from "../actions";
 import type { OrderStatus } from "@/types";
+import type { Database } from "@/types/database";
+
+type CustomerRow = Database["public"]["Tables"]["customers"]["Row"];
 
 interface CustomerDetailPageProps {
   params: Promise<{ id: string }>;
@@ -22,6 +25,7 @@ export default async function CustomerDetailPage({
     .from("customers")
     .select("*")
     .eq("id", id)
+    .returns<CustomerRow>()
     .single();
 
   if (!customer) notFound();
