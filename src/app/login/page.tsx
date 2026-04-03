@@ -17,7 +17,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             🌸
           </div>
           <h1 className="text-2xl font-bold text-gray-900">
-            花屋注文管理システム
+            花長注文管理システム
           </h1>
           <p className="text-sm text-gray-500 mt-1">
             ログインしてご利用ください

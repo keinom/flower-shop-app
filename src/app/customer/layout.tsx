@@ -37,7 +37,7 @@ export default async function CustomerLayout({
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-2">
               <span className="text-lg">🌸</span>
-              <span className="font-bold text-base">花屋注文管理システム</span>
+              <span className="font-bold text-base">花長注文管理システム</span>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-brand-100">

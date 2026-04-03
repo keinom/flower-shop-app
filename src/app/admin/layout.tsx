@@ -31,7 +31,7 @@ export default async function AdminLayout({
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-2">
               <span className="text-lg">🌸</span>
-              <span className="font-bold text-base">花屋注文管理システム</span>
+              <span className="font-bold text-base">花長注文管理システム</span>
               <span className="ml-2 text-xs bg-brand-500 text-white px-2 py-0.5 rounded">
                 管理者
               </span>
