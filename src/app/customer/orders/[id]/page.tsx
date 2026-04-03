@@ -42,7 +42,7 @@ export default async function CustomerOrderDetailPage({
   // 商品明細
   const { data: orderItems } = await supabase
     .from("order_items")
-    .select("id, product_name, quantity, unit_price")
+    .select("id, product_name, description, quantity, unit_price, tax_rate")
     .eq("order_id", id)
     .order("created_at", { ascending: true });
 
@@ -137,35 +137,58 @@ export default async function CustomerOrderDetailPage({
         {orderItems && orderItems.length > 0 ? (
           <>
             <div className="space-y-2 text-sm">
-              {orderItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
-                >
-                  <div>
-                    <p className="font-medium text-gray-900">{item.product_name}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {item.quantity}点 × ¥{item.unit_price.toLocaleString("ja-JP")}
-                    </p>
+              {orderItems.map((item) => {
+                const excl = item.quantity * item.unit_price;
+                const tax  = Math.round(excl * item.tax_rate / 100);
+                return (
+                  <div
+                    key={item.id}
+                    className="py-2.5 border-b border-gray-100 last:border-0"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium text-gray-900">{item.product_name}</p>
+                        {(item as { description?: string | null }).description && (
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {(item as { description: string }).description}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {item.quantity}点 × ¥{item.unit_price.toLocaleString("ja-JP")}（税抜）
+                        </p>
+                      </div>
+                      <p className="font-semibold text-gray-700 flex-shrink-0">
+                        ¥{(excl + tax).toLocaleString("ja-JP")}
+                      </p>
+                    </div>
                   </div>
-                  <p className="font-semibold text-gray-700">
-                    ¥{(item.quantity * item.unit_price).toLocaleString("ja-JP")}
-                  </p>
+                );
+              })}
+            </div>
+            {/* 税込合計サマリー */}
+            {(() => {
+              const totalExcl = orderItems.reduce((s, i) => s + i.quantity * i.unit_price, 0);
+              const taxRate   = orderItems[0].tax_rate;
+              const taxAmt    = Math.round(totalExcl * taxRate / 100);
+              return (
+                <div className="mt-3 pt-3 border-t space-y-1 text-sm">
+                  <div className="flex justify-between text-gray-500">
+                    <span>小計（税抜）</span>
+                    <span>¥{totalExcl.toLocaleString("ja-JP")}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-500">
+                    <span>消費税（{taxRate}%）</span>
+                    <span>¥{taxAmt.toLocaleString("ja-JP")}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-brand-700 text-base pt-1 border-t">
+                    <span>合計（税込）</span>
+                    <span>¥{(totalExcl + taxAmt).toLocaleString("ja-JP")}</span>
+                  </div>
                 </div>
-              ))}
-            </div>
-            <div className="flex justify-between items-center mt-3 pt-3 border-t">
-              <span className="text-sm font-semibold text-gray-700">合計金額</span>
-              <span className="text-base font-bold text-brand-700">
-                ¥{orderItems
-                  .reduce((sum, item) => sum + item.quantity * item.unit_price, 0)
-                  .toLocaleString("ja-JP")}
-              </span>
-            </div>
+              );
+            })()}
             {order.purpose && (
-              <p className="text-xs text-gray-500 mt-3">
-                用途: {order.purpose}
-              </p>
+              <p className="text-xs text-gray-500 mt-3">用途: {order.purpose}</p>
             )}
           </>
         ) : (

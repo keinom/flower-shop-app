@@ -15,6 +15,15 @@ export default async function NewAdminOrderPage({ searchParams }: NewAdminOrderP
     .select("id, name, phone, email, address")
     .order("name", { ascending: true });
 
+  // 現在の消費税率を取得
+  const { data: taxSetting } = await supabase
+    .from("tax_settings")
+    .select("rate")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  const taxRate = taxSetting?.rate ?? 10;
   const today = new Date().toISOString().split("T")[0];
 
   return (
@@ -32,7 +41,7 @@ export default async function NewAdminOrderPage({ searchParams }: NewAdminOrderP
         </div>
       )}
 
-      <AdminOrderFormClient customers={customers ?? []} today={today} />
+      <AdminOrderFormClient customers={customers ?? []} today={today} taxRate={taxRate} />
     </div>
   );
 }

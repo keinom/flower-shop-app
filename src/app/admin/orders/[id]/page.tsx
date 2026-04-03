@@ -35,7 +35,7 @@ export default async function OrderDetailPage({
 
   const { data: orderItems } = await supabase
     .from("order_items")
-    .select("id, product_name, quantity, unit_price")
+    .select("id, product_name, description, quantity, unit_price, tax_rate")
     .eq("order_id", id)
     .order("created_at", { ascending: true });
 
@@ -127,36 +127,59 @@ export default async function OrderDetailPage({
               <table className="table text-sm">
                 <thead>
                   <tr>
-                    <th className="th">商品名</th>
+                    <th className="th">商品名 / 説明</th>
                     <th className="th text-right">数量</th>
-                    <th className="th text-right">単価</th>
-                    <th className="th text-right">小計</th>
+                    <th className="th text-right">単価（税抜）</th>
+                    <th className="th text-right">小計（税込）</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {orderItems.map((item) => (
-                    <tr key={item.id}>
-                      <td className="td font-medium">{item.product_name}</td>
-                      <td className="td text-right">{item.quantity}</td>
-                      <td className="td text-right">¥{item.unit_price.toLocaleString("ja-JP")}</td>
-                      <td className="td text-right font-medium">
-                        ¥{(item.quantity * item.unit_price).toLocaleString("ja-JP")}
-                      </td>
-                    </tr>
-                  ))}
+                  {orderItems.map((item) => {
+                    const excl = item.quantity * item.unit_price;
+                    const tax  = Math.round(excl * item.tax_rate / 100);
+                    return (
+                      <tr key={item.id}>
+                        <td className="td">
+                          <p className="font-medium">{item.product_name}</p>
+                          {(item as { description?: string | null }).description && (
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {(item as { description: string }).description}
+                            </p>
+                          )}
+                        </td>
+                        <td className="td text-right">{item.quantity}</td>
+                        <td className="td text-right">¥{item.unit_price.toLocaleString("ja-JP")}</td>
+                        <td className="td text-right font-medium">
+                          ¥{(excl + tax).toLocaleString("ja-JP")}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
-            <div className="flex justify-end mt-3 pt-3 border-t">
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-semibold text-gray-700">合計金額</span>
-                <span className="text-lg font-bold text-brand-700">
-                  ¥{orderItems
-                    .reduce((sum, item) => sum + item.quantity * item.unit_price, 0)
-                    .toLocaleString("ja-JP")}
-                </span>
-              </div>
-            </div>
+            {/* 税込合計サマリー */}
+            {(() => {
+              const totalExcl = orderItems.reduce((s, i) => s + i.quantity * i.unit_price, 0);
+              const taxRate   = orderItems[0].tax_rate;
+              const taxAmt    = Math.round(totalExcl * taxRate / 100);
+              return (
+                <div className="mt-3 pt-3 border-t space-y-1 text-sm">
+                  <div className="flex justify-end gap-8 text-gray-600">
+                    <span>小計（税抜）</span>
+                    <span>¥{totalExcl.toLocaleString("ja-JP")}</span>
+                  </div>
+                  <div className="flex justify-end gap-8 text-gray-600">
+                    <span>消費税（{taxRate}%）</span>
+                    <span>¥{taxAmt.toLocaleString("ja-JP")}</span>
+                  </div>
+                  <div className="flex justify-end gap-8 font-bold text-base text-brand-700 pt-1 border-t">
+                    <span>合計（税込）</span>
+                    <span>¥{(totalExcl + taxAmt).toLocaleString("ja-JP")}</span>
+                  </div>
+                </div>
+              );
+            })()}
           </>
         ) : (
           <p className="text-sm text-gray-400">明細データがありません</p>

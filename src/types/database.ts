@@ -135,24 +135,54 @@ export interface Database {
           id: string;
           order_id: string;
           product_name: string;
+          description: string | null;
           quantity: number;
           unit_price: number;
+          tax_rate: number;
           created_at: string;
         };
         Insert: {
           id?: string;
           order_id: string;
           product_name: string;
+          description?: string | null;
           quantity: number;
           unit_price: number;
+          tax_rate?: number;
           created_at?: string;
         };
         Update: {
           id?: string;
           order_id?: string;
           product_name?: string;
+          description?: string | null;
           quantity?: number;
           unit_price?: number;
+          tax_rate?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      tax_settings: {
+        Row: {
+          id: string;
+          rate: number;
+          note: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          rate: number;
+          note?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          rate?: number;
+          note?: string | null;
+          created_by?: string | null;
           created_at?: string;
         };
         Relationships: [];

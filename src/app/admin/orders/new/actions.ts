@@ -62,31 +62,44 @@ export async function createAdminOrder(formData: FormData) {
 
   // ── 商品明細を取得 ──
   const itemProductNames = formData.getAll("item_product_name") as string[];
-  const itemQuantities   = formData.getAll("item_quantity") as string[];
-  const itemUnitPrices   = formData.getAll("item_unit_price") as string[];
+  const itemQuantities   = formData.getAll("item_quantity")     as string[];
+  const itemUnitPrices   = formData.getAll("item_unit_price")   as string[];
+  const itemDescriptions = formData.getAll("item_description")  as string[];
+  const itemTaxRates     = formData.getAll("item_tax_rate")     as string[];
 
   if (itemProductNames.length === 0 || itemProductNames.every((n) => !n.trim())) {
     redirect("/admin/orders/new?error=" + encodeURIComponent("商品を1つ以上入力してください"));
   }
 
-  const orderItems = itemProductNames.map((name, i) => {
-    const qty   = parseInt(itemQuantities[i] ?? "1", 10);
-    const price = parseInt(itemUnitPrices[i] ?? "0", 10);
-    return {
-      product_name: name.trim(),
-      quantity:     isNaN(qty)   ? 1 : Math.max(1, qty),
-      unit_price:   isNaN(price) ? 0 : Math.max(0, price),
-    };
-  }).filter((item) => item.product_name !== "");
+  const orderItems = itemProductNames
+    .map((name, i) => {
+      const qty     = parseInt(itemQuantities[i]   ?? "1",  10);
+      const price   = parseInt(itemUnitPrices[i]   ?? "0",  10);
+      const taxRate = parseInt(itemTaxRates[i]     ?? "10", 10);
+      const desc    = (itemDescriptions[i] as string)?.trim() || null;
+      return {
+        product_name: name.trim(),
+        description:  desc,
+        quantity:     isNaN(qty)     ? 1  : Math.max(1, qty),
+        unit_price:   isNaN(price)   ? 0  : Math.max(0, price),
+        tax_rate:     isNaN(taxRate) ? 10 : taxRate,
+      };
+    })
+    .filter((item) => item.product_name !== "");
 
   if (orderItems.length === 0) {
     redirect("/admin/orders/new?error=" + encodeURIComponent("商品名を入力してください"));
   }
 
-  // 合計数量・合計金額を計算
-  const totalQuantity = orderItems.reduce((sum, item) => sum + item.quantity, 0);
-  const totalAmount   = orderItems.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
+  // ── 合計計算（税込）──
+  const totalExcl   = orderItems.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
+  // 税率はすべて同じはずだが、最初のアイテムの税率を使用
+  const taxRate     = orderItems[0].tax_rate;
+  const taxAmount   = Math.round(totalExcl * taxRate / 100);
+  const totalAmount = totalExcl + taxAmount;
+
   // orders.product_name: 1商品のみなら商品名、複数なら null
+  const totalQuantity      = orderItems.reduce((sum, item) => sum + item.quantity, 0);
   const summaryProductName = orderItems.length === 1 ? orderItems[0].product_name : null;
 
   // ── 注文を挿入 ──
@@ -115,20 +128,24 @@ export async function createAdminOrder(formData: FormData) {
   }
 
   // ── 商品明細を挿入 ──
-  const itemsToInsert = orderItems.map((item) => ({
-    order_id:     order.id,
-    product_name: item.product_name,
-    quantity:     item.quantity,
-    unit_price:   item.unit_price,
-  }));
-
   const { error: itemsError } = await supabase
     .from("order_items")
-    .insert(itemsToInsert);
+    .insert(
+      orderItems.map((item) => ({
+        order_id:     order.id,
+        product_name: item.product_name,
+        description:  item.description,
+        quantity:     item.quantity,
+        unit_price:   item.unit_price,
+        tax_rate:     item.tax_rate,
+      }))
+    );
 
   if (itemsError) {
-    // 注文は作成済みなので詳細ページに遷移（明細エラーは画面で通知）
-    redirect(`/admin/orders/${order.id}?created=true&error=` + encodeURIComponent("商品明細の登録に失敗しました"));
+    redirect(
+      `/admin/orders/${order.id}?created=true&error=` +
+        encodeURIComponent("商品明細の登録に失敗しました")
+    );
   }
 
   revalidatePath("/admin/orders");

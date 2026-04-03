@@ -17,9 +17,10 @@ interface Customer {
 interface Props {
   customers: Customer[];
   today: string;
+  taxRate: number;
 }
 
-export function AdminOrderFormClient({ customers, today }: Props) {
+export function AdminOrderFormClient({ customers, today, taxRate }: Props) {
   // ── 顧客モード ──
   const [mode, setMode] = useState<"new" | "existing">("new");
 
@@ -362,7 +363,7 @@ export function AdminOrderFormClient({ customers, today }: Props) {
       ══════════════════════════════════════════ */}
       <section className="card p-5 space-y-4">
         <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">商品情報</h2>
-        <OrderItemsInput />
+        <OrderItemsInput taxRate={taxRate} />
         <div>
           <label htmlFor="purpose" className="label">用途</label>
           <select id="purpose" name="purpose" className="input" defaultValue="">
@@ -375,13 +376,13 @@ export function AdminOrderFormClient({ customers, today }: Props) {
       </section>
 
       {/* ══════════════════════════════════════════
-          メッセージ・備考
+          メッセージカード
       ══════════════════════════════════════════ */}
       <section className="card p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">メッセージ・備考</h2>
+        <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">メッセージカード</h2>
         <div>
           <label htmlFor="message_card" className="label">
-            メッセージカード内容
+            カード内容
             <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
           </label>
           <textarea
@@ -392,6 +393,13 @@ export function AdminOrderFormClient({ customers, today }: Props) {
             className="input resize-none"
           />
         </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          備考・ご要望
+      ══════════════════════════════════════════ */}
+      <section className="card p-5 space-y-4">
+        <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">備考・ご要望</h2>
         <div>
           <label htmlFor="remarks" className="label">
             備考・ご要望
