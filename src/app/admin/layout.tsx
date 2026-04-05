@@ -26,24 +26,44 @@ export default async function AdminLayout({
   return (
     <div className="min-h-screen flex flex-col">
       {/* トップナビゲーション */}
-      <header className="bg-brand-700 text-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">🌸</span>
-              <span className="font-bold text-base">花長注文管理システム</span>
-              <span className="ml-2 text-xs bg-brand-500 text-white px-2 py-0.5 rounded">
+      <header
+        className="text-white shadow-md flex-shrink-0"
+        style={{
+          background: "linear-gradient(135deg, #1f4e3b 0%, #255f47 60%, #2e7458 100%)",
+        }}
+      >
+        <div className="px-4 sm:px-6">
+          <div className="flex items-center justify-between h-15" style={{ height: "3.75rem" }}>
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🌸</span>
+              <div>
+                <span className="font-bold text-base tracking-wide">花長</span>
+                <span className="text-brand-300 text-xs ml-1.5 hidden sm:inline">注文管理システム</span>
+              </div>
+              <span
+                className="ml-1 text-xs font-medium px-2 py-0.5 rounded-full"
+                style={{ background: "rgb(255 255 255 / 0.15)", color: "#d4f4e2" }}
+              >
                 管理者
               </span>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-brand-100">
+            <div className="flex items-center gap-5">
+              <span className="text-sm" style={{ color: "#b8dccb" }}>
                 {profile?.display_name ?? user.email}
               </span>
               <form action={logout}>
                 <button
                   type="submit"
-                  className="text-sm text-brand-200 hover:text-white transition-colors"
+                  className="text-xs font-medium px-3 py-1.5 rounded-md transition-colors"
+                  style={{ color: "#b8dccb" }}
+                  onMouseOver={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.background = "rgb(255 255 255 / 0.12)";
+                    (e.currentTarget as HTMLButtonElement).style.color = "white";
+                  }}
+                  onMouseOut={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.background = "";
+                    (e.currentTarget as HTMLButtonElement).style.color = "#b8dccb";
+                  }}
                 >
                   ログアウト
                 </button>
@@ -53,22 +73,38 @@ export default async function AdminLayout({
         </div>
       </header>
 
-      <div className="flex flex-1">
-        {/* サイドバー（アクティブ表示はClient Component側で制御） */}
-        <nav className="w-48 bg-white border-r border-gray-200 flex-shrink-0">
-          <div className="py-4">
+      <div className="flex flex-1 overflow-hidden">
+        {/* サイドバー */}
+        <nav
+          className="w-52 flex-shrink-0 flex flex-col"
+          style={{
+            background: "#fafaf9",
+            borderRight: "1px solid #e5e7eb",
+          }}
+        >
+          <div className="py-3 flex-1">
+            <div className="px-3 mb-1">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 py-1">
+                メニュー
+              </p>
+            </div>
             <NavItem href="/admin" label="ダッシュボード" icon="📊" exact />
             <NavItem href="/admin/daily" label="日報" icon="📅" />
             <NavItem href="/admin/orders" label="注文一覧" icon="📋" />
             <NavItem href="/admin/customers" label="顧客一覧" icon="👥" />
-            <div className="mt-2 mx-3 border-t border-gray-100" />
+            <div className="mx-4 my-3 border-t border-gray-200" />
+            <div className="px-3 mb-1">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 py-1">
+                設定
+              </p>
+            </div>
             <NavItem href="/admin/users" label="管理者管理" icon="🔑" />
             <NavItem href="/admin/settings" label="設定" icon="⚙️" />
           </div>
         </nav>
 
         {/* メインコンテンツ */}
-        <main className="flex-1 overflow-auto bg-gray-50">
+        <main className="flex-1 overflow-auto" style={{ background: "#f5f4f2" }}>
           <div className="max-w-6xl mx-auto px-6 py-6">{children}</div>
         </main>
       </div>

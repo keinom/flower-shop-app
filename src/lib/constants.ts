@@ -19,16 +19,16 @@ export const ORDER_STATUSES: OrderStatus[] = [
  */
 export const ORDER_STATUS_COLORS: Record<
   OrderStatus,
-  { bg: string; text: string }
+  { bg: string; text: string; border?: string }
 > = {
-  受付:       { bg: "bg-blue-100",   text: "text-blue-800"   },
-  受付完了:   { bg: "bg-indigo-100", text: "text-indigo-800" },
-  作成中:     { bg: "bg-yellow-100", text: "text-yellow-800" },
-  ラッピング中: { bg: "bg-amber-100",  text: "text-amber-800"  },
-  配達準備完了: { bg: "bg-orange-100", text: "text-orange-800" },
-  配達中:     { bg: "bg-purple-100", text: "text-purple-800" },
-  配達完了:   { bg: "bg-green-100",  text: "text-green-800"  },
-  キャンセル: { bg: "bg-gray-100",   text: "text-gray-600"   },
+  受付:         { bg: "bg-sky-100",     text: "text-sky-800",    border: "border-sky-200"    },
+  受付完了:     { bg: "bg-blue-100",    text: "text-blue-800",   border: "border-blue-200"   },
+  作成中:       { bg: "bg-yellow-100",  text: "text-yellow-800", border: "border-yellow-200" },
+  ラッピング中: { bg: "bg-amber-100",   text: "text-amber-800",  border: "border-amber-200"  },
+  配達準備完了: { bg: "bg-orange-100",  text: "text-orange-800", border: "border-orange-200" },
+  配達中:       { bg: "bg-violet-100",  text: "text-violet-800", border: "border-violet-200" },
+  配達完了:     { bg: "bg-emerald-100", text: "text-emerald-800",border: "border-emerald-200"},
+  キャンセル:   { bg: "bg-gray-100",    text: "text-gray-500",   border: "border-gray-200"   },
 };
 
 /**

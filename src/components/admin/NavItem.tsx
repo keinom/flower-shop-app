@@ -17,14 +17,19 @@ export function NavItem({ href, label, icon, exact = false }: NavItemProps) {
   return (
     <Link
       href={href}
-      className={`flex items-center gap-2 px-4 py-2.5 text-sm transition-colors ${
+      className={`flex items-center gap-2.5 mx-2 px-3 py-2.5 rounded-lg text-sm transition-all ${
         isActive
-          ? "bg-brand-50 text-brand-700 font-medium border-r-2 border-brand-600"
-          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+          ? "bg-brand-100 text-brand-800 font-semibold shadow-sm"
+          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
       }`}
     >
-      <span>{icon}</span>
+      <span className="text-base leading-none">{icon}</span>
       <span>{label}</span>
+      {isActive && (
+        <span
+          className="ml-auto w-1.5 h-1.5 rounded-full bg-brand-600"
+        />
+      )}
     </Link>
   );
 }

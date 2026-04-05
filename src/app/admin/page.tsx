@@ -49,18 +49,18 @@ export default async function AdminDashboard() {
       {/* ステータス別件数 */}
       <div className="card p-5">
         <h2 className="text-sm font-semibold text-gray-700 mb-4">注文ステータス別件数</h2>
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+        <div className="grid grid-cols-4 gap-2.5 sm:grid-cols-8">
           {ORDER_STATUSES.map((status) => (
             <Link
               key={status}
               href={`/admin/orders?status=${encodeURIComponent(status)}`}
-              className="flex flex-col items-center p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+              className="flex flex-col items-center p-3 rounded-xl bg-gray-50 hover:bg-brand-50 border border-transparent hover:border-brand-200 transition-all"
             >
               <StatusBadge status={status} size="sm" />
               <span className="text-2xl font-bold text-gray-800 mt-2">
                 {statusCounts[status]}
               </span>
-              <span className="text-xs text-gray-500">件</span>
+              <span className="text-xs text-gray-400">件</span>
             </Link>
           ))}
         </div>
@@ -135,18 +135,20 @@ function SummaryCard({
   return (
     <Link href={href}>
       <div
-        className={`card p-5 hover:shadow-md transition-shadow ${
-          accent ? "border-brand-300 bg-brand-50" : ""
+        className={`card p-5 hover:shadow-md transition-all hover:-translate-y-0.5 ${
+          accent
+            ? "border-brand-300 bg-gradient-to-br from-brand-50 to-brand-100"
+            : "hover:border-gray-300"
         }`}
       >
-        <p className="text-sm text-gray-500">{label}</p>
-        <p className="mt-1">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
+        <p className="mt-2 flex items-end gap-1.5">
           <span
-            className={`text-3xl font-bold ${accent ? "text-brand-700" : "text-gray-900"}`}
+            className={`text-4xl font-bold leading-none ${accent ? "text-brand-700" : "text-gray-900"}`}
           >
             {value}
           </span>
-          <span className="text-sm text-gray-500 ml-1">{unit}</span>
+          <span className="text-sm text-gray-500 mb-0.5">{unit}</span>
         </p>
       </div>
     </Link>

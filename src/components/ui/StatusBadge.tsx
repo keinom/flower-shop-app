@@ -8,11 +8,14 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ status, size = "md" }: StatusBadgeProps) {
   const colors = ORDER_STATUS_COLORS[status];
-  const sizeClass = size === "sm" ? "text-xs px-2 py-0.5" : "text-sm px-2.5 py-1";
+  const sizeClass = size === "sm"
+    ? "text-xs px-2 py-0.5"
+    : "text-sm px-2.5 py-1";
+  const borderClass = colors.border ? `border ${colors.border}` : "";
 
   return (
     <span
-      className={`inline-flex items-center rounded-full font-medium ${sizeClass} ${colors.bg} ${colors.text}`}
+      className={`inline-flex items-center rounded-full font-semibold tracking-wide ${sizeClass} ${colors.bg} ${colors.text} ${borderClass}`}
     >
       {status}
     </span>
