@@ -226,10 +226,10 @@ function OrderCard({ order, index }: { order: OrderRow; index: number }) {
               </span>
             </div>
             {order.delivery_address && (
-              <p className="text-xs text-gray-500 pl-14">📍 {order.delivery_address}</p>
+              <p className="text-sm text-gray-500 pl-14">📍 {order.delivery_address}</p>
             )}
             {order.delivery_phone && (
-              <p className="text-xs text-gray-500 pl-14">📞 {order.delivery_phone}</p>
+              <p className="text-sm text-gray-500 pl-14">📞 {order.delivery_phone}</p>
             )}
           </div>
         ) : (
@@ -253,10 +253,10 @@ function OrderCard({ order, index }: { order: OrderRow; index: number }) {
                 </span>
               </div>
               {order.delivery_address && (
-                <p className="text-xs text-gray-500 pl-14">📍 {order.delivery_address}</p>
+                <p className="text-sm text-gray-500 pl-14">📍 {order.delivery_address}</p>
               )}
               {order.delivery_phone && (
-                <p className="text-xs text-gray-500 pl-14">📞 {order.delivery_phone}</p>
+                <p className="text-sm text-gray-500 pl-14">📞 {order.delivery_phone}</p>
               )}
             </div>
           </>
