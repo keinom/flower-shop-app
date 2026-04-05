@@ -54,16 +54,8 @@ export default async function AdminLayout({
               <form action={logout}>
                 <button
                   type="submit"
-                  className="text-xs font-medium px-3 py-1.5 rounded-md transition-colors"
+                  className="text-xs font-medium px-3 py-1.5 rounded-md transition-colors hover:bg-white/10 hover:text-white"
                   style={{ color: "#b8dccb" }}
-                  onMouseOver={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.background = "rgb(255 255 255 / 0.12)";
-                    (e.currentTarget as HTMLButtonElement).style.color = "white";
-                  }}
-                  onMouseOut={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.background = "";
-                    (e.currentTarget as HTMLButtonElement).style.color = "#b8dccb";
-                  }}
                 >
                   ログアウト
                 </button>
