@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import type { OrderStatus } from "@/types";
+import { OrderTypeBadge } from "@/components/ui/OrderTypeBadge";
+import type { OrderStatus, OrderType } from "@/types";
 
 interface CustomerOrderDetailPageProps {
   params: Promise<{ id: string }>;
@@ -93,7 +94,10 @@ export default async function CustomerOrderDetailPage({
       {/* 現在のステータス */}
       <div className="card p-5">
         <div className="flex items-center justify-between">
-          <div>
+          <div className="space-y-2">
+            {(order as { order_type?: string }).order_type && (
+              <OrderTypeBadge type={(order as { order_type: string }).order_type as OrderType} size="sm" />
+            )}
             <p className="text-xs text-gray-500 mb-1">現在のステータス</p>
             <StatusBadge status={order.status as OrderStatus} />
           </div>

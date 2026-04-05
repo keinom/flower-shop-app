@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ORDER_PURPOSES } from "@/lib/constants";
 import { DeliveryTimeInput } from "@/components/ui/DeliveryTimeInput";
+import { OrderTypeSelector } from "@/components/ui/OrderTypeSelector";
 import { createAdminOrder } from "@/app/admin/orders/new/actions";
 import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
 
@@ -103,6 +104,16 @@ export function AdminOrderFormClient({ customers, today, taxRate }: Props) {
   return (
     <form action={createAdminOrder} className="space-y-5">
       <input type="hidden" name="customer_type" value={mode} />
+
+      {/* ══════════════════════════════════════════
+          注文種別
+      ══════════════════════════════════════════ */}
+      <section className="card p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">
+          注文種別 <span className="text-red-500">*</span>
+        </h2>
+        <OrderTypeSelector />
+      </section>
 
       {/* ══════════════════════════════════════════
           顧客情報

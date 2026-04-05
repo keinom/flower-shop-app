@@ -4,8 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { ORDER_PURPOSES } from "@/lib/constants";
 import { DeliveryTimeInput } from "@/components/ui/DeliveryTimeInput";
+import { OrderTypeSelector } from "@/components/ui/OrderTypeSelector";
 import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
 import { updateAdminOrder } from "@/app/admin/orders/[id]/edit/actions";
+import type { OrderType } from "@/types";
 
 interface OrderItem {
   product_name: string;
@@ -19,6 +21,7 @@ interface Props {
   taxRate: number;
   today: string;
   defaultValues: {
+    order_type: OrderType;
     delivery_name: string;
     delivery_address: string | null;
     delivery_date: string | null;
@@ -48,6 +51,14 @@ export function AdminOrderEditClient({
   return (
     <form action={updateAdminOrder} className="space-y-5">
       <input type="hidden" name="order_id" value={orderId} />
+
+      {/* ══ 注文種別 ══ */}
+      <section className="card p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">
+          注文種別 <span className="text-red-500">*</span>
+        </h2>
+        <OrderTypeSelector defaultValue={dv.order_type} />
+      </section>
 
       {/* ══ お届け先情報 ══ */}
       <section className="card p-5 space-y-4">

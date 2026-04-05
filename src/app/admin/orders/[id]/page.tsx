@@ -2,9 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { OrderTypeBadge } from "@/components/ui/OrderTypeBadge";
 import { ORDER_STATUSES } from "@/lib/constants";
 import { updateOrderStatus } from "./actions";
-import type { OrderStatus } from "@/types";
+import type { OrderStatus, OrderType } from "@/types";
 
 interface OrderDetailPageProps {
   params: Promise<{ id: string }>;
@@ -54,6 +55,9 @@ export default async function OrderDetailPage({
           ← 注文一覧
         </Link>
         <h1 className="text-xl font-bold text-gray-900">注文詳細</h1>
+        {(order as { order_type?: string }).order_type && (
+          <OrderTypeBadge type={(order as { order_type: string }).order_type as OrderType} />
+        )}
         <StatusBadge status={order.status as OrderStatus} />
         <div className="ml-auto">
           <Link

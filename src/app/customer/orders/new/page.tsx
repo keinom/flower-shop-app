@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { ORDER_PURPOSES } from "@/lib/constants";
+import { ORDER_PURPOSES, ORDER_TYPES, ORDER_TYPE_ICONS } from "@/lib/constants";
 import { createOrder } from "../actions";
 
 interface NewOrderPageProps {
@@ -41,6 +41,30 @@ export default async function NewOrderPage({ searchParams }: NewOrderPageProps) 
       )}
 
       <form action={createOrder} className="space-y-6">
+        {/* ── 注文種別 ── */}
+        <section className="card p-5 space-y-3">
+          <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">
+            注文種別 <span className="text-red-500">*</span>
+          </h2>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {ORDER_TYPES.map((type, i) => (
+              <label key={type} className="cursor-pointer">
+                <input
+                  type="radio"
+                  name="order_type"
+                  value={type}
+                  defaultChecked={i === 1}
+                  className="sr-only peer"
+                />
+                <div className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border-2 border-gray-200 bg-white text-gray-500 text-sm font-medium transition-all peer-checked:border-brand-500 peer-checked:bg-brand-50 peer-checked:text-brand-700 hover:border-gray-300">
+                  <span className="text-xl">{ORDER_TYPE_ICONS[type]}</span>
+                  <span>{type}</span>
+                </div>
+              </label>
+            ))}
+          </div>
+        </section>
+
         {/* ── お届け先情報 ── */}
         <section className="card p-5 space-y-4">
           <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">

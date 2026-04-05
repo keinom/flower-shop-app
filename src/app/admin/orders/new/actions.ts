@@ -47,6 +47,7 @@ export async function createAdminOrder(formData: FormData) {
   }
 
   // ── お届け先データを取得 ──
+  const orderType       = (formData.get("order_type") as string)?.trim() || "配達";
   const deliveryName    = (formData.get("delivery_name") as string)?.trim();
   const deliveryAddress = (formData.get("delivery_address") as string)?.trim() || null;
   const deliveryDate      = (formData.get("delivery_date")       as string) || null;
@@ -110,6 +111,7 @@ export async function createAdminOrder(formData: FormData) {
     .insert({
       customer_id:      customerId,
       status:           "受付",
+      order_type:       orderType,
       delivery_name:    deliveryName,
       delivery_address: deliveryAddress,
       delivery_date:       deliveryDate,

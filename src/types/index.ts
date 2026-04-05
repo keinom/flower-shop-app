@@ -1,7 +1,7 @@
 /**
  * アプリ全体で使う型のエクスポート
  */
-export type { Database, UserRole, OrderStatus } from "./database";
+export type { Database, UserRole, OrderStatus, OrderType } from "./database";
 
 // テーブルの行型を使いやすいエイリアスとして再エクスポート
 import type { Database } from "./database";

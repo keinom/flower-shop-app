@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { OrderTypeBadge } from "@/components/ui/OrderTypeBadge";
 import { DailyDatePicker } from "@/components/admin/DailyDatePicker";
-import type { OrderStatus } from "@/types";
+import type { OrderStatus, OrderType } from "@/types";
 
 interface DailyPageProps {
   searchParams: Promise<{ date?: string }>;
@@ -36,6 +37,7 @@ type OrderRow = {
   delivery_name: string;
   delivery_address: string | null;
   delivery_phone: string | null;
+  order_type: string | null;
   delivery_time_start: string | null;
   delivery_time_end: string | null;
   total_amount: number | null;
@@ -54,7 +56,7 @@ export default async function DailyPage({ searchParams }: DailyPageProps) {
 
   const { data: allOrders } = await supabase
     .from("orders")
-    .select("id, status, product_name, quantity, delivery_name, delivery_address, delivery_phone, delivery_date, delivery_time_start, delivery_time_end, total_amount, customers(id, name)")
+    .select("id, status, order_type, product_name, quantity, delivery_name, delivery_address, delivery_phone, delivery_date, delivery_time_start, delivery_time_end, total_amount, customers(id, name)")
     .in("delivery_date", [baseDate, date2])
     .not("status", "eq", "キャンセル")
     .order("delivery_time_start", { ascending: true, nullsFirst: false })
@@ -186,6 +188,10 @@ function OrderCard({ order, index }: { order: OrderRow; index: number }) {
       {/* ── ①時間 + ステータス + 詳細リンク ── */}
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2 flex-wrap">
+          {/* 種別 */}
+          {order.order_type && (
+            <OrderTypeBadge type={order.order_type as OrderType} size="sm" />
+          )}
           {/* 時間帯 */}
           {timeRange ? (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-base font-bold bg-amber-100 text-amber-800">

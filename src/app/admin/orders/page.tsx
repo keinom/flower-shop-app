@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { OrderTypeBadge } from "@/components/ui/OrderTypeBadge";
 import { ORDER_STATUSES } from "@/lib/constants";
-import type { OrderStatus } from "@/types";
+import type { OrderStatus, OrderType } from "@/types";
 
 interface OrdersPageProps {
   searchParams: Promise<{ status?: string }>;
@@ -82,6 +83,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
               <th className="th">商品名</th>
               <th className="th">合計金額</th>
               <th className="th">お届け希望日</th>
+              <th className="th">種別</th>
               <th className="th">ステータス</th>
               <th className="th"></th>
             </tr>
@@ -127,6 +129,11 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                       {order.delivery_date
                         ? new Date(order.delivery_date).toLocaleDateString("ja-JP")
                         : "—"}
+                    </td>
+                    <td className="td">
+                      {(order as { order_type?: string }).order_type && (
+                        <OrderTypeBadge type={(order as { order_type: string }).order_type as OrderType} size="sm" />
+                      )}
                     </td>
                     <td className="td">
                       <StatusBadge status={order.status as OrderStatus} size="sm" />

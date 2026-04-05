@@ -1,4 +1,4 @@
-import type { OrderStatus } from "@/types";
+import type { OrderStatus, OrderType } from "@/types";
 
 /**
  * 注文ステータス定義
@@ -29,6 +29,25 @@ export const ORDER_STATUS_COLORS: Record<
   配達中:       { bg: "bg-violet-100",  text: "text-violet-800", border: "border-violet-200" },
   配達完了:     { bg: "bg-emerald-100", text: "text-emerald-800",border: "border-emerald-200"},
   キャンセル:   { bg: "bg-gray-100",    text: "text-gray-500",   border: "border-gray-200"   },
+};
+
+/**
+ * 注文種別定義
+ */
+export const ORDER_TYPES: OrderType[] = ["来店", "配達", "発送", "生け込み"];
+
+export const ORDER_TYPE_ICONS: Record<OrderType, string> = {
+  来店:    "🏪",
+  配達:    "🚚",
+  発送:    "📦",
+  生け込み: "🌸",
+};
+
+export const ORDER_TYPE_COLORS: Record<OrderType, { bg: string; text: string; border: string }> = {
+  来店:    { bg: "bg-sky-100",    text: "text-sky-800",    border: "border-sky-200"    },
+  配達:    { bg: "bg-emerald-100",text: "text-emerald-800",border: "border-emerald-200"},
+  発送:    { bg: "bg-violet-100", text: "text-violet-800", border: "border-violet-200" },
+  生け込み: { bg: "bg-amber-100",  text: "text-amber-800",  border: "border-amber-200"  },
 };
 
 /**

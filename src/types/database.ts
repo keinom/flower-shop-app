@@ -5,6 +5,8 @@
 
 export type UserRole = "admin" | "customer";
 
+export type OrderType = "来店" | "配達" | "発送" | "生け込み";
+
 export type OrderStatus =
   | "受付"
   | "受付完了"
@@ -92,6 +94,7 @@ export interface Database {
           purpose: string | null;
           message_card: string | null;
           remarks: string | null;
+          order_type: OrderType;
           total_amount: number | null;
           created_at: string;
           updated_at: string;
@@ -100,6 +103,7 @@ export interface Database {
           id?: string;
           customer_id: string;
           status?: OrderStatus;
+          order_type?: OrderType;
           delivery_name: string;
           delivery_address?: string | null;
           delivery_date?: string | null;
@@ -120,6 +124,7 @@ export interface Database {
           id?: string;
           customer_id?: string;
           status?: OrderStatus;
+          order_type?: OrderType;
           delivery_name?: string;
           delivery_address?: string | null;
           delivery_date?: string | null;
