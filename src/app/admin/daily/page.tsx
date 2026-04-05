@@ -35,6 +35,7 @@ type OrderRow = {
   quantity: number;
   delivery_name: string;
   delivery_address: string | null;
+  delivery_phone: string | null;
   delivery_time_start: string | null;
   delivery_time_end: string | null;
   total_amount: number | null;
@@ -53,7 +54,7 @@ export default async function DailyPage({ searchParams }: DailyPageProps) {
 
   const { data: allOrders } = await supabase
     .from("orders")
-    .select("id, status, product_name, quantity, delivery_name, delivery_address, delivery_date, delivery_time_start, delivery_time_end, total_amount, customers(id, name)")
+    .select("id, status, product_name, quantity, delivery_name, delivery_address, delivery_phone, delivery_date, delivery_time_start, delivery_time_end, total_amount, customers(id, name)")
     .in("delivery_date", [baseDate, date2])
     .not("status", "eq", "キャンセル")
     .order("delivery_time_start", { ascending: true, nullsFirst: false })
@@ -210,18 +211,26 @@ function OrderCard({ order, index }: { order: OrderRow; index: number }) {
       <div className="bg-gray-50 rounded-lg px-3 py-2.5 space-y-1.5">
         {isSelfDelivery ? (
           /* 同一：「自分への配達」表示 */
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-400 w-12 flex-shrink-0">注文・届け先</span>
-            <span className="text-base font-bold text-gray-900">
-              {customer ? (
-                <Link href={`/admin/customers/${customer.id}`} className="hover:text-brand-700 hover:underline">
-                  {customer.name}
-                </Link>
-              ) : order.delivery_name}
-            </span>
-            <span className="ml-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium">
-              自社宛
-            </span>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-400 w-12 flex-shrink-0">注文・届け先</span>
+              <span className="text-base font-bold text-gray-900">
+                {customer ? (
+                  <Link href={`/admin/customers/${customer.id}`} className="hover:text-brand-700 hover:underline">
+                    {customer.name}
+                  </Link>
+                ) : order.delivery_name}
+              </span>
+              <span className="ml-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium">
+                自社宛
+              </span>
+            </div>
+            {order.delivery_address && (
+              <p className="text-xs text-gray-500 pl-14">📍 {order.delivery_address}</p>
+            )}
+            {order.delivery_phone && (
+              <p className="text-xs text-gray-500 pl-14">📞 {order.delivery_phone}</p>
+            )}
           </div>
         ) : (
           /* 別：顧客 → 届け先 */
@@ -236,24 +245,32 @@ function OrderCard({ order, index }: { order: OrderRow; index: number }) {
                 ) : "—"}
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400 w-12 flex-shrink-0">届け先</span>
-              <span className="text-base font-semibold text-brand-800">
-                {order.delivery_name}
-              </span>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400 w-12 flex-shrink-0">届け先</span>
+                <span className="text-base font-semibold text-brand-800">
+                  {order.delivery_name}
+                </span>
+              </div>
+              {order.delivery_address && (
+                <p className="text-xs text-gray-500 pl-14">📍 {order.delivery_address}</p>
+              )}
+              {order.delivery_phone && (
+                <p className="text-xs text-gray-500 pl-14">📞 {order.delivery_phone}</p>
+              )}
             </div>
           </>
         )}
       </div>
 
-      {/* ── ③商品 + 住所 ── */}
-      <div className="mt-2.5 space-y-1">
+      {/* ── ③商品 + 金額 ── */}
+      <div className="mt-2.5 flex items-center justify-between gap-2">
         <p className="text-sm font-medium text-gray-700">
           {order.product_name ?? `${order.quantity}点`}
         </p>
-        {order.delivery_address && (
-          <p className="text-sm text-gray-500">
-            📍 {order.delivery_address}
+        {order.total_amount != null && (
+          <p className="text-sm font-bold text-brand-700 flex-shrink-0">
+            ¥{order.total_amount.toLocaleString("ja-JP")}
           </p>
         )}
       </div>
