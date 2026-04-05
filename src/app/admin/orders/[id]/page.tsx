@@ -59,6 +59,14 @@ export default async function OrderDetailPage({
           <OrderTypeBadge type={(order as { order_type: string }).order_type as OrderType} />
         )}
         <StatusBadge status={order.status as OrderStatus} />
+        {(order as { recurring_template_id?: string }).recurring_template_id && (
+          <Link
+            href={`/admin/recurring/${(order as { recurring_template_id: string }).recurring_template_id}`}
+            className="inline-flex items-center gap-1 text-xs bg-violet-100 text-violet-700 border border-violet-200 px-2 py-0.5 rounded-full font-medium hover:bg-violet-200 transition-colors"
+          >
+            🔄 定期注文
+          </Link>
+        )}
         <div className="ml-auto">
           <Link
             href={`/admin/orders/${id}/edit`}
