@@ -240,7 +240,7 @@ function ShippingSection({ orders }: { orders: OrderRow[] }) {
       <div className="px-6 py-4 bg-violet-50 border-b border-violet-100 flex items-center gap-3">
         <span className="text-2xl">📦</span>
         <p className="text-lg font-bold text-violet-900">
-          発送：未定
+          発送
           <span className="text-3xl font-black ml-3">{orders.length}</span>
           <span className="text-base font-normal ml-1 text-violet-500">件</span>
         </p>
