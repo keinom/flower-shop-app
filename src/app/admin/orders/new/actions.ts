@@ -94,6 +94,21 @@ export async function createAdminOrder(formData: FormData) {
     redirect("/admin/orders/new?error=" + encodeURIComponent("商品名を入力してください"));
   }
 
+  // ── 配送料明細を追加（任意）──
+  const shippingEnabled   = formData.get("shipping_enabled") === "true";
+  const shippingItemName  = (formData.get("shipping_item_name")  as string) || null;
+  const shippingUnitPrice = parseInt((formData.get("shipping_unit_price") as string) || "0", 10);
+
+  if (shippingEnabled && shippingItemName && shippingUnitPrice > 0) {
+    orderItems.push({
+      product_name: shippingItemName,
+      description:  null,
+      quantity:     1,
+      unit_price:   shippingUnitPrice,
+      tax_rate:     10,
+    });
+  }
+
   // ── 合計計算（税込）──
   const totalExcl   = orderItems.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
   // 税率はすべて同じはずだが、最初のアイテムの税率を使用

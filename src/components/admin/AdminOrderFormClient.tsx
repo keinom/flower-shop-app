@@ -7,6 +7,7 @@ import { DeliveryTimeInput } from "@/components/ui/DeliveryTimeInput";
 import { OrderTypeSelector } from "@/components/ui/OrderTypeSelector";
 import { createAdminOrder } from "@/app/admin/orders/new/actions";
 import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
+import { ShippingFeeSelector } from "@/components/admin/ShippingFeeSelector";
 
 interface Customer {
   id: string;
@@ -393,6 +394,11 @@ export function AdminOrderFormClient({ customers, today, taxRate }: Props) {
           </select>
         </div>
       </section>
+
+      {/* ══════════════════════════════════════════
+          配送料
+      ══════════════════════════════════════════ */}
+      <ShippingFeeSelector deliveryAddress={deliveryAddress} />
 
       {/* ══════════════════════════════════════════
           メッセージカード
