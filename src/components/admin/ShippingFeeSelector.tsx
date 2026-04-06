@@ -6,8 +6,10 @@ import {
   YAMATO_SIZES,
   SAGAWA_SIZES,
   SIZE_LABELS,
-  ZONE_NAMES,
-  PREFECTURE_ZONE,
+  YAMATO_ZONE_NAMES,
+  YAMATO_PREFECTURE_ZONE,
+  SAGAWA_ZONE_NAMES,
+  SAGAWA_PREFECTURE_ZONE,
   extractPrefecture,
   calcShippingFee,
   toTaxExclusive,
@@ -30,8 +32,12 @@ export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipp
 
   // 住所から都道府県を抽出
   const prefecture = extractPrefecture(deliveryAddress);
-  const zone       = prefecture !== null ? PREFECTURE_ZONE[prefecture] : undefined;
-  const zoneName   = zone !== undefined ? ZONE_NAMES[zone] : null;
+
+  // キャリアに応じたゾーンマップ・ゾーン名を使用
+  const prefZoneMap  = carrier === "yamato" ? YAMATO_PREFECTURE_ZONE : SAGAWA_PREFECTURE_ZONE;
+  const zoneNamesArr = carrier === "yamato" ? YAMATO_ZONE_NAMES      : SAGAWA_ZONE_NAMES;
+  const zone         = prefecture !== null ? prefZoneMap[prefecture] : undefined;
+  const zoneName     = zone !== undefined  ? zoneNamesArr[zone]      : null;
 
   // 自動計算料金
   const calcFee = (prefecture !== null)
@@ -44,10 +50,11 @@ export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipp
   // 税抜価格
   const unitPrice = Math.floor(effectiveFee / 1.1);
 
-  // キャリアを切り替えたときにサイズを調整
+  // キャリアを切り替えたときにサイズを調整（佐川は180/200未対応）
   useEffect(() => {
-    if (carrier === "sagawa" && size === 170) {
-      setSize(160);
+    const validSizes: readonly number[] = carrier === "yamato" ? YAMATO_SIZES : SAGAWA_SIZES;
+    if (!validSizes.includes(size as never)) {
+      setSize(validSizes[validSizes.length - 1] as number);
     }
   }, [carrier, size]);
 

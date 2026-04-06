@@ -233,8 +233,9 @@ export function calcShippingFee(
     if (!row) return null;
     const taxExcl = row[zone];
     if (taxExcl === undefined) return null;
-    // 税抜 → 税込（10%・1円単位切り上げ）
-    return Math.ceil(taxExcl * 1.1);
+    // 税抜 → 税込（消費税10%・端数切り捨て）
+    // ※ Math.ceil(taxExcl * 1.1) は浮動小数点誤差で1円ずれるため整数演算で計算
+    return taxExcl + Math.floor(taxExcl * 0.1);
   } else {
     const zone = SAGAWA_PREFECTURE_ZONE[prefecture];
     if (zone === undefined) return null;

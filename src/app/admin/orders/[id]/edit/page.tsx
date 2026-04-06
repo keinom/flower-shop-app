@@ -56,8 +56,9 @@ export default async function EditOrderPage({
       const size = parseInt(m[2], 10);
       const carrier = carrierName === "ヤマト運輸" ? "yamato" : carrierName === "佐川急便" ? "sagawa" : null;
       if (carrier && !isNaN(size)) {
-        // Reconstruct tax-inclusive price from unit_price
-        const feeTaxInc = Math.round(shippingItem.unit_price * 1.1);
+        // 税抜→税込の再構築（shipping.ts と同じ端数切り捨てロジック）
+        const u = shippingItem.unit_price;
+        const feeTaxInc = u + Math.floor(u * 0.1);
         defaultShipping = { carrier, size, feeTaxInc };
       }
     }
