@@ -7,7 +7,7 @@ import { DeliveryTimeInput } from "@/components/ui/DeliveryTimeInput";
 import { OrderTypeSelector } from "@/components/ui/OrderTypeSelector";
 import { createAdminOrder } from "@/app/admin/orders/new/actions";
 import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
-import { ShippingFeeSelector } from "@/components/admin/ShippingFeeSelector";
+import { OrderTotalBar } from "@/components/admin/OrderTotalBar";
 
 interface Customer {
   id: string;
@@ -40,10 +40,14 @@ export function AdminOrderFormClient({ customers, today, taxRate }: Props) {
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // ── お届け先フィールド（controlledで反映ボタンに対応）──
-  const [deliveryName, setDeliveryName]     = useState("");
+  const [deliveryName, setDeliveryName]       = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
-  const [deliveryPhone, setDeliveryPhone]   = useState("");
-  const [deliveryEmail, setDeliveryEmail]   = useState("");
+  const [deliveryPhone, setDeliveryPhone]     = useState("");
+  const [deliveryEmail, setDeliveryEmail]     = useState("");
+
+  // ── 合計金額 ──
+  const [itemsTotal, setItemsTotal] = useState(0);
+  const [shippingFee, setShippingFee] = useState(0);
 
   // サジェスト外クリックで閉じる
   useEffect(() => {
@@ -383,7 +387,7 @@ export function AdminOrderFormClient({ customers, today, taxRate }: Props) {
       ══════════════════════════════════════════ */}
       <section className="card p-5 space-y-4">
         <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">商品情報</h2>
-        <OrderItemsInput taxRate={taxRate} />
+        <OrderItemsInput taxRate={taxRate} onTotalChange={setItemsTotal} />
         <div>
           <label htmlFor="purpose" className="label">用途</label>
           <select id="purpose" name="purpose" className="input" defaultValue="">
@@ -394,11 +398,6 @@ export function AdminOrderFormClient({ customers, today, taxRate }: Props) {
           </select>
         </div>
       </section>
-
-      {/* ══════════════════════════════════════════
-          配送料
-      ══════════════════════════════════════════ */}
-      <ShippingFeeSelector deliveryAddress={deliveryAddress} />
 
       {/* ══════════════════════════════════════════
           メッセージカード
@@ -439,6 +438,9 @@ export function AdminOrderFormClient({ customers, today, taxRate }: Props) {
           />
         </div>
       </section>
+
+      {/* ── 合計バー ── */}
+      <OrderTotalBar itemsTotal={itemsTotal} shippingFee={shippingFee} />
 
       {/* ── 送信 ── */}
       <div className="flex gap-3">

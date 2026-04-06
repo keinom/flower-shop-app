@@ -6,6 +6,8 @@ import { ORDER_PURPOSES } from "@/lib/constants";
 import { DeliveryTimeInput } from "@/components/ui/DeliveryTimeInput";
 import { OrderTypeSelector } from "@/components/ui/OrderTypeSelector";
 import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
+import { ShippingFeeSelector } from "@/components/admin/ShippingFeeSelector";
+import { OrderTotalBar } from "@/components/admin/OrderTotalBar";
 import { updateAdminOrder } from "@/app/admin/orders/[id]/edit/actions";
 import type { OrderType } from "@/types";
 
@@ -34,6 +36,7 @@ interface Props {
     remarks: string | null;
   };
   defaultItems: OrderItem[];
+  defaultShipping?: { carrier: string; size: number; feeTaxInc: number };
 }
 
 export function AdminOrderEditClient({
@@ -42,11 +45,16 @@ export function AdminOrderEditClient({
   today,
   defaultValues: dv,
   defaultItems,
+  defaultShipping,
 }: Props) {
   const [deliveryName, setDeliveryName]       = useState(dv.delivery_name);
   const [deliveryAddress, setDeliveryAddress] = useState(dv.delivery_address ?? "");
   const [deliveryPhone, setDeliveryPhone]     = useState(dv.delivery_phone ?? "");
   const [deliveryEmail, setDeliveryEmail]     = useState(dv.delivery_email ?? "");
+
+  // ── 合計金額 ──
+  const [itemsTotal, setItemsTotal] = useState(0);
+  const [shippingFee, setShippingFee] = useState(0);
 
   return (
     <form action={updateAdminOrder} className="space-y-5">
@@ -141,7 +149,7 @@ export function AdminOrderEditClient({
       {/* ══ 商品情報 ══ */}
       <section className="card p-5 space-y-4">
         <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">商品情報</h2>
-        <OrderItemsInput taxRate={taxRate} defaultItems={defaultItems} />
+        <OrderItemsInput taxRate={taxRate} defaultItems={defaultItems} onTotalChange={setItemsTotal} />
         <div>
           <label htmlFor="purpose" className="label">用途</label>
           <select
@@ -157,6 +165,13 @@ export function AdminOrderEditClient({
           </select>
         </div>
       </section>
+
+      {/* ══ 配送料 ══ */}
+      <ShippingFeeSelector
+        deliveryAddress={deliveryAddress}
+        onFeeChange={setShippingFee}
+        defaultShipping={defaultShipping as any}
+      />
 
       {/* ══ メッセージカード ══ */}
       <section className="card p-5 space-y-4">
@@ -193,6 +208,9 @@ export function AdminOrderEditClient({
           />
         </div>
       </section>
+
+      {/* ── 合計バー ── */}
+      <OrderTotalBar itemsTotal={itemsTotal} shippingFee={shippingFee} />
 
       <div className="flex gap-3">
         <button type="submit" className="btn-primary px-8">変更を保存する</button>

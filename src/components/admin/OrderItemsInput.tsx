@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface OrderItem {
   product_name: string;
@@ -19,6 +19,7 @@ interface DefaultItem {
 interface Props {
   taxRate: number;
   defaultItems?: DefaultItem[];
+  onTotalChange?: (totalInclTax: number) => void;
 }
 
 const EMPTY_ITEM: OrderItem = {
@@ -37,7 +38,7 @@ function toFormItem(item: DefaultItem): OrderItem {
   };
 }
 
-export function OrderItemsInput({ taxRate, defaultItems }: Props) {
+export function OrderItemsInput({ taxRate, defaultItems, onTotalChange }: Props) {
   const [items, setItems] = useState<OrderItem[]>(
     defaultItems && defaultItems.length > 0
       ? defaultItems.map(toFormItem)
@@ -77,6 +78,11 @@ export function OrderItemsInput({ taxRate, defaultItems }: Props) {
   const grandExcl  = items.reduce((sum, item) => sum + subtotalExcl(item), 0);
   const grandTax   = Math.round(grandExcl * taxRate / 100);
   const grandIncl  = grandExcl + grandTax;
+
+  useEffect(() => {
+    if (onTotalChange) onTotalChange(grandIncl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [grandIncl]);
 
   return (
     <div className="space-y-3">

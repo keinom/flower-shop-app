@@ -42,6 +42,27 @@ export default async function EditOrderPage({
   const today   = new Date().toISOString().split("T")[0];
   const customer = order.customers as { id: string; name: string } | null;
 
+  // Detect shipping item
+  const SHIPPING_PREFIX = "配送料（";
+  const shippingItem = orderItems?.find((i) => i.product_name.startsWith(SHIPPING_PREFIX));
+  const regularItems = orderItems?.filter((i) => !i.product_name.startsWith(SHIPPING_PREFIX));
+
+  // Parse carrier/size from shipping item name
+  let defaultShipping: { carrier: string; size: number; feeTaxInc: number } | undefined;
+  if (shippingItem) {
+    const m = shippingItem.product_name.match(/配送料（(.+?)\s+(\d+)サイズ）/);
+    if (m) {
+      const carrierName = m[1];
+      const size = parseInt(m[2], 10);
+      const carrier = carrierName === "ヤマト運輸" ? "yamato" : carrierName === "佐川急便" ? "sagawa" : null;
+      if (carrier && !isNaN(size)) {
+        // Reconstruct tax-inclusive price from unit_price
+        const feeTaxInc = Math.round(shippingItem.unit_price * 1.1);
+        defaultShipping = { carrier, size, feeTaxInc };
+      }
+    }
+  }
+
   return (
     <div className="space-y-5 max-w-2xl">
       <div className="flex items-center gap-3">
@@ -81,13 +102,14 @@ export default async function EditOrderPage({
           remarks:          order.remarks          ?? null,
         }}
         defaultItems={
-          orderItems?.map((item) => ({
+          regularItems?.map((item) => ({
             product_name: item.product_name,
             description:  (item as { description?: string | null }).description ?? null,
             quantity:     item.quantity,
             unit_price:   item.unit_price,
           })) ?? []
         }
+        defaultShipping={defaultShipping}
       />
     </div>
   );

@@ -57,12 +57,30 @@ export async function updateAdminOrder(formData: FormData) {
     redirect(`/admin/orders/${orderId}/edit?error=` + encodeURIComponent("商品を1つ以上入力してください"));
   }
 
+  // ── 配送料明細を追加（任意）──
+  const shippingEnabled   = formData.get("shipping_enabled") === "true";
+  const shippingItemName  = (formData.get("shipping_item_name")  as string) || null;
+  const shippingUnitPrice = parseInt((formData.get("shipping_unit_price") as string) || "0", 10);
+
+  if (shippingEnabled && shippingItemName && shippingUnitPrice > 0) {
+    orderItems.push({
+      product_name: shippingItemName,
+      description:  null,
+      quantity:     1,
+      unit_price:   shippingUnitPrice,
+      tax_rate:     10,
+    });
+  }
+
   // ── 合計計算（税込）──
   const totalExcl   = orderItems.reduce((s, i) => s + i.quantity * i.unit_price, 0);
   const taxRate     = orderItems[0].tax_rate;
   const totalAmount = totalExcl + Math.round(totalExcl * taxRate / 100);
-  const totalQty    = orderItems.reduce((s, i) => s + i.quantity, 0);
-  const summaryName = orderItems.length === 1 ? orderItems[0].product_name : null;
+
+  // summaryNameはシッピング以外の商品から算出
+  const productItems = orderItems.filter(i => !i.product_name.startsWith("配送料（"));
+  const totalQty    = productItems.reduce((s, i) => s + i.quantity, 0);
+  const summaryName = productItems.length === 1 ? productItems[0].product_name : null;
 
   // ── orders を更新 ──
   const { error: updateError } = await supabase
