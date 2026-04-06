@@ -34,7 +34,8 @@ export default async function RecurringTemplateDetailPage({ params, searchParams
     .limit(10);
 
   const customer = template.customers as { id: string; name: string; phone: string | null; email: string | null; address: string | null } | null;
-  const items = (template.recurring_order_template_items ?? []) as Array<{
+  const rawItems = template.recurring_order_template_items;
+  const items = (Array.isArray(rawItems) ? rawItems : []) as Array<{
     id: string;
     product_name: string;
     description: string | null;
@@ -248,7 +249,7 @@ export default async function RecurringTemplateDetailPage({ params, searchParams
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {items.sort((a, b) => a.sort_order - b.sort_order).map((item) => {
+                  {[...items].sort((a, b) => a.sort_order - b.sort_order).map((item) => {
                     const excl = item.quantity * item.unit_price;
                     const tax = Math.round(excl * item.tax_rate / 100);
                     return (
