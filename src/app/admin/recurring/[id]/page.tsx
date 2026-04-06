@@ -6,7 +6,8 @@ import { OrderTypeBadge } from "@/components/ui/OrderTypeBadge";
 import { describeRecurrence, getNextOccurrences } from "@/lib/recurring";
 import type { RecurrenceRule } from "@/lib/recurring";
 import type { OrderStatus, OrderType } from "@/types";
-import { toggleTemplateActive, deleteTemplate, runManualGeneration } from "./actions";
+import { toggleTemplateActive, runManualGeneration } from "./actions";
+import { DeleteTemplateButton } from "@/components/admin/DeleteTemplateButton";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -126,15 +127,7 @@ export default async function RecurringTemplateDetailPage({ params, searchParams
               {template.is_active ? "⏸ 停止" : "▶ 再開"}
             </button>
           </form>
-          <form action={deleteTemplate} onSubmit={() => confirm("このテンプレートを削除しますか？")}>
-            <input type="hidden" name="template_id" value={template.id} />
-            <button
-              type="submit"
-              className="text-xs font-medium px-3 py-1.5 rounded-md border bg-red-50 text-red-600 border-red-200 hover:bg-red-100 transition-colors"
-            >
-              🗑 削除
-            </button>
-          </form>
+          <DeleteTemplateButton templateId={template.id} />
         </div>
       </div>
 
