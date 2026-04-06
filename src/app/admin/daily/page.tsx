@@ -139,13 +139,23 @@ function DaySingleFull({
     year: "numeric", month: "long", day: "numeric", weekday: "short",
   });
 
-  // 種別ごとの件数
+  // 発送 と それ以外（タイムライン）に分割
+  const timelineOrders  = orders.filter((o) => o.order_type !== "発送");
+  const shippingOrders  = orders.filter((o) => o.order_type === "発送");
+
+  // 種別ごとの件数（サマリーバー用）
   const typeCounts: Partial<Record<string, number>> = {};
   for (const order of orders) {
     const t = order.order_type ?? "配達";
     typeCounts[t] = (typeCounts[t] ?? 0) + 1;
   }
   const activeTypes = ORDER_TYPES.filter((t) => typeCounts[t]);
+
+  // 発送合計金額
+  const shippingTotal = shippingOrders.reduce(
+    (sum, o) => sum + (o.total_amount ?? 0),
+    0
+  );
 
   return (
     <div className="space-y-4">
@@ -200,19 +210,149 @@ function DaySingleFull({
         )}
       </div>
 
-      {/* ── 注文リスト ── */}
-      {orders.length === 0 ? (
+      {/* ── 注文ゼロ ── */}
+      {orders.length === 0 && (
         <div className="card px-6 py-20 text-center text-gray-400">
           <p className="text-5xl mb-4">🌸</p>
           <p className="text-base">この日の注文はありません</p>
         </div>
-      ) : (
+      )}
+
+      {/* ── タイムライン（来店・配達・生け込み）── */}
+      {timelineOrders.length > 0 && (
         <div className="card overflow-hidden divide-y divide-gray-100">
-          {orders.map((order, idx) => (
+          {timelineOrders.map((order, idx) => (
             <OrderCard1Day key={order.id} order={order} index={idx} />
           ))}
         </div>
       )}
+
+      {/* ── 発送セクション ── */}
+      {shippingOrders.length > 0 && (
+        <ShippingSection orders={shippingOrders} total={shippingTotal} />
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 発送まとめセクション
+// ─────────────────────────────────────────────────────────────
+function ShippingSection({
+  orders,
+  total,
+}: {
+  orders: OrderRow[];
+  total: number;
+}) {
+  return (
+    <div className="card overflow-hidden">
+      {/* セクションヘッダー */}
+      <div className="px-6 py-4 bg-violet-50 border-b border-violet-100 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">📦</span>
+          <div>
+            <p className="text-xs font-semibold text-violet-500 mb-0.5">まとめて発送</p>
+            <p className="text-lg font-bold text-violet-900">
+              発送
+              <span className="text-3xl font-black ml-2">{orders.length}</span>
+              <span className="text-base font-normal ml-1 text-violet-500">件</span>
+            </p>
+          </div>
+        </div>
+        {total > 0 && (
+          <div className="text-right">
+            <p className="text-xs text-violet-400 font-medium mb-0.5">合計金額</p>
+            <p className="text-xl font-black text-violet-800">
+              ¥{total.toLocaleString("ja-JP")}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* 発送カード一覧 */}
+      <div className="divide-y divide-violet-50">
+        {orders.map((order, idx) => (
+          <ShippingCard key={order.id} order={order} index={idx} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 発送カード（コンパクト）
+// ─────────────────────────────────────────────────────────────
+function ShippingCard({ order, index }: { order: OrderRow; index: number }) {
+  const customer = order.customers as { id: string; name: string } | null;
+  const isSelfDelivery =
+    customer && order.delivery_name.trim() === customer.name.trim();
+
+  return (
+    <div
+      className="px-5 py-4 hover:bg-violet-50/50 transition-colors"
+      style={{ borderLeft: "4px solid #a78bfa" }}
+    >
+      <div className="flex items-start justify-between gap-3">
+        {/* 左：届け先情報 */}
+        <div className="flex-1 min-w-0 space-y-1.5">
+          {/* 注文元 */}
+          {!isSelfDelivery && customer && (
+            <p className="text-sm text-gray-400">
+              注文元：
+              <Link
+                href={`/admin/customers/${customer.id}`}
+                className="text-gray-600 hover:text-brand-700 hover:underline font-medium"
+              >
+                {customer.name}
+              </Link>
+            </p>
+          )}
+
+          {/* 届け先名 */}
+          <p className="text-lg font-bold text-violet-900">
+            {isSelfDelivery && customer ? (
+              <Link
+                href={`/admin/customers/${customer.id}`}
+                className="hover:text-brand-700 hover:underline"
+              >
+                {customer.name}
+              </Link>
+            ) : (
+              order.delivery_name
+            )}
+          </p>
+
+          {/* 住所 / 電話 */}
+          {order.delivery_address && (
+            <p className="text-sm text-gray-500 truncate">📍 {order.delivery_address}</p>
+          )}
+          {order.delivery_phone && (
+            <p className="text-sm text-gray-500">📞 {order.delivery_phone}</p>
+          )}
+
+          {/* 商品 */}
+          <p className="text-sm font-medium text-gray-600">
+            {order.product_name ?? `${order.quantity}点`}
+          </p>
+        </div>
+
+        {/* 右：金額・ステータス・詳細 */}
+        <div className="flex flex-col items-end gap-2 flex-shrink-0">
+          {order.total_amount != null && (
+            <p className="text-lg font-bold text-violet-800">
+              ¥{order.total_amount.toLocaleString("ja-JP")}
+            </p>
+          )}
+          <StatusBadge status={order.status as OrderStatus} size="md" />
+          <Link
+            href={`/admin/orders/${order.id}`}
+            className="text-sm text-brand-600 hover:underline font-semibold"
+          >
+            詳細 →
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
