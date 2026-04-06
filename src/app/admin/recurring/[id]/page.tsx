@@ -18,23 +18,42 @@ export default async function RecurringTemplateDetailPage({ params, searchParams
   const sp = await searchParams;
   const supabase = await createClient();
 
-  const { data: template } = await supabase
+  // ── テンプレート本体（customers join のみ） ──
+  const { data: template, error: templateError } = await supabase
     .from("recurring_order_templates")
-    .select("*, customers(id, name, phone, email, address), recurring_order_template_items(*)")
+    .select("*, customers(id, name, phone, email, address)")
     .eq("id", id)
     .single();
 
+  if (templateError) {
+    console.error("[recurring/[id]] template query error:", JSON.stringify(templateError));
+  }
   if (!template) notFound();
 
-  const { data: recentOrders } = await supabase
+  // ── テンプレート商品明細（別クエリ）──
+  const { data: rawItems, error: itemsError } = await supabase
+    .from("recurring_order_template_items")
+    .select("*")
+    .eq("template_id", id)
+    .order("sort_order", { ascending: true });
+
+  if (itemsError) {
+    console.error("[recurring/[id]] items query error:", JSON.stringify(itemsError));
+  }
+
+  // ── 最近の注文 ──
+  const { data: recentOrders, error: ordersError } = await supabase
     .from("orders")
     .select("id, status, delivery_date, product_name, quantity, total_amount, created_at")
     .eq("recurring_template_id", id)
     .order("delivery_date", { ascending: false })
     .limit(10);
 
+  if (ordersError) {
+    console.error("[recurring/[id]] orders query error:", JSON.stringify(ordersError));
+  }
+
   const customer = template.customers as { id: string; name: string; phone: string | null; email: string | null; address: string | null } | null;
-  const rawItems = template.recurring_order_template_items;
   const items = (Array.isArray(rawItems) ? rawItems : []) as Array<{
     id: string;
     product_name: string;
