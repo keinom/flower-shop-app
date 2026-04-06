@@ -151,11 +151,6 @@ function DaySingleFull({
   }
   const activeTypes = ORDER_TYPES.filter((t) => typeCounts[t]);
 
-  // 発送合計金額
-  const shippingTotal = shippingOrders.reduce(
-    (sum, o) => sum + (o.total_amount ?? 0),
-    0
-  );
 
   return (
     <div className="space-y-4">
@@ -229,7 +224,7 @@ function DaySingleFull({
 
       {/* ── 発送セクション ── */}
       {shippingOrders.length > 0 && (
-        <ShippingSection orders={shippingOrders} total={shippingTotal} />
+        <ShippingSection orders={shippingOrders} />
       )}
     </div>
   );
@@ -238,36 +233,20 @@ function DaySingleFull({
 // ─────────────────────────────────────────────────────────────
 // 発送まとめセクション
 // ─────────────────────────────────────────────────────────────
-function ShippingSection({
-  orders,
-  total,
-}: {
-  orders: OrderRow[];
-  total: number;
-}) {
+function ShippingSection({ orders }: { orders: OrderRow[] }) {
   return (
     <div className="card overflow-hidden">
       {/* セクションヘッダー */}
-      <div className="px-6 py-4 bg-violet-50 border-b border-violet-100 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">📦</span>
-          <div>
-            <p className="text-xs font-semibold text-violet-500 mb-0.5">まとめて発送</p>
-            <p className="text-lg font-bold text-violet-900">
-              発送
-              <span className="text-3xl font-black ml-2">{orders.length}</span>
-              <span className="text-base font-normal ml-1 text-violet-500">件</span>
-            </p>
-          </div>
+      <div className="px-6 py-4 bg-violet-50 border-b border-violet-100 flex items-center gap-3">
+        <span className="text-2xl">📦</span>
+        <div>
+          <p className="text-xs font-semibold text-violet-500 mb-0.5">まとめて発送</p>
+          <p className="text-lg font-bold text-violet-900">
+            発送
+            <span className="text-3xl font-black ml-2">{orders.length}</span>
+            <span className="text-base font-normal ml-1 text-violet-500">件</span>
+          </p>
         </div>
-        {total > 0 && (
-          <div className="text-right">
-            <p className="text-xs text-violet-400 font-medium mb-0.5">合計金額</p>
-            <p className="text-xl font-black text-violet-800">
-              ¥{total.toLocaleString("ja-JP")}
-            </p>
-          </div>
-        )}
       </div>
 
       {/* 発送カード一覧 */}
@@ -337,13 +316,8 @@ function ShippingCard({ order, index }: { order: OrderRow; index: number }) {
           </p>
         </div>
 
-        {/* 右：金額・ステータス・詳細 */}
+        {/* 右：ステータス・詳細 */}
         <div className="flex flex-col items-end gap-2 flex-shrink-0">
-          {order.total_amount != null && (
-            <p className="text-lg font-bold text-violet-800">
-              ¥{order.total_amount.toLocaleString("ja-JP")}
-            </p>
-          )}
           <StatusBadge status={order.status as OrderStatus} size="md" />
           <Link
             href={`/admin/orders/${order.id}`}
