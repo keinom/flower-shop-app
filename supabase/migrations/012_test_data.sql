@@ -1,4 +1,4 @@
--- ============================================================
+﻿-- ============================================================
 -- テストデータ（開発・動作確認用）
 -- Supabase SQL Editor で実行してください
 -- ※ 実行するたびに新しいUUIDで追加されます（冪等ではありません）
@@ -98,9 +98,9 @@ BEGIN
   ) RETURNING id INTO tid_weekly;
 
   INSERT INTO public.recurring_order_template_items
-    (template_id, product_name, description, quantity, unit_price, tax_rate, sort_order)
+    (template_id, product_name, description, quantity, unit_price, tax_rate)
   VALUES
-    (tid_weekly, 'テーブルフラワー（Mサイズ）', '季節の花を使ったアレンジメント', 4, 3000, 10, 0);
+    (tid_weekly, 'テーブルフラワー（Mサイズ）', '季節の花を使ったアレンジメント', 4, 3000, 10);
 
 
   -- 毎月第2火曜日 ロビー生け込み（京都ホテル）
@@ -122,10 +122,10 @@ BEGIN
   ) RETURNING id INTO tid_monthly_wd;
 
   INSERT INTO public.recurring_order_template_items
-    (template_id, product_name, description, quantity, unit_price, tax_rate, sort_order)
+    (template_id, product_name, description, quantity, unit_price, tax_rate)
   VALUES
-    (tid_monthly_wd, '生け込み（ロビー用）', '高さ80cm以上のダイナミックな構成', 1, 20000, 10, 0),
-    (tid_monthly_wd, '生け込み（会議室用）', '卓上サイズ×3か所', 3, 5000, 10, 1);
+    (tid_monthly_wd, '生け込み（ロビー用）', '高さ80cm以上のダイナミックな構成', 1, 20000, 10),
+    (tid_monthly_wd, '生け込み（会議室用）', '卓上サイズ×3か所', 3, 5000, 10);
 
 
   -- 毎月15日 定期発送（函館の風）
@@ -145,10 +145,10 @@ BEGIN
   ) RETURNING id INTO tid_monthly_d;
 
   INSERT INTO public.recurring_order_template_items
-    (template_id, product_name, description, quantity, unit_price, tax_rate, sort_order)
+    (template_id, product_name, description, quantity, unit_price, tax_rate)
   VALUES
-    (tid_monthly_d, '胡蝶蘭（白・2本立て）', NULL, 1, 25000, 10, 0),
-    (tid_monthly_d, '配送料（ヤマト運輸 100サイズ）', NULL, 1, 2300, 10, 1);
+    (tid_monthly_d, '胡蝶蘭（白・2本立て）', NULL, 1, 25000, 10),
+    (tid_monthly_d, '配送料（ヤマト運輸 100サイズ）', NULL, 1, 2300, 10);
 
 
   -- ════════════════════════════════════════════════════
@@ -172,9 +172,9 @@ BEGIN
     9020  -- (7000+1200)*1.1
   ) RETURNING id INTO oid_01;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_01, 'バラ花束（赤・15本）', 'リボン付き・ラッピング込み', 1, 7000, 10, 0),
-    (oid_01, '配送料（ヤマト運輸 60サイズ）', NULL, 1, 1200, 10, 1);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_01, 'バラ花束（赤・15本）', 'リボン付き・ラッピング込み', 1, 7000, 10),
+    (oid_01, '配送料（ヤマト運輸 60サイズ）', NULL, 1, 1200, 10);
 
 
   -- ② 配達 13:00〜15:00 作成中 → 丸の内（東京・定期リンク）
@@ -190,8 +190,8 @@ BEGIN
     NULL, 4, '季節のお飾り', 13200, tid_weekly
   ) RETURNING id INTO oid_02;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_02, 'テーブルフラワー（Mサイズ）', '季節の花を使ったアレンジメント', 4, 3000, 10, 0);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_02, 'テーブルフラワー（Mサイズ）', '季節の花を使ったアレンジメント', 4, 3000, 10);
 
 
   -- ③ 来店 11:00〜11:30 ラッピング中 → 川口さくら
@@ -207,8 +207,8 @@ BEGIN
     '季節のブーケ', 1, '記念日', 4950  -- 4500*1.1
   ) RETURNING id INTO oid_03;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_03, '季節のブーケ', 'ピンク・白系でまとめて', 1, 4500, 10, 0);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_03, '季節のブーケ', 'ピンク・白系でまとめて', 1, 4500, 10);
 
 
   -- ④ 来店 15:00〜15:30 受付 → 渡辺美穂
@@ -224,8 +224,8 @@ BEGIN
     'バラ花束（白・10本）', 1, '誕生日', 5500  -- 5000*1.1
   ) RETURNING id INTO oid_04;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_04, 'バラ花束（白・10本）', NULL, 1, 5000, 10, 0);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_04, 'バラ花束（白・10本）', NULL, 1, 5000, 10);
 
 
   -- ⑤ 配達 14:00〜16:00 配達準備完了 → 大阪花壇（大阪）
@@ -243,8 +243,8 @@ BEGIN
     27500  -- 25000*1.1
   ) RETURNING id INTO oid_05;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_05, 'スタンド花（2段）', '白・グリーン系。高さ160cm以上', 1, 25000, 10, 0);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_05, 'スタンド花（2段）', '白・グリーン系。高さ160cm以上', 1, 25000, 10);
 
 
   -- ⑥ 生け込み 09:00〜10:00 配達中 → 京都ホテル（定期リンク）
@@ -261,9 +261,9 @@ BEGIN
     tid_monthly_wd
   ) RETURNING id INTO oid_06;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_06, '生け込み（ロビー用）', '高さ80cm以上のダイナミックな構成', 1, 20000, 10, 0),
-    (oid_06, '生け込み（会議室用）', '卓上サイズ×3か所', 3, 5000, 10, 1);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_06, '生け込み（ロビー用）', '高さ80cm以上のダイナミックな構成', 1, 20000, 10),
+    (oid_06, '生け込み（会議室用）', '卓上サイズ×3か所', 3, 5000, 10);
 
 
   -- ⑦ 発送 受付 → 函館の風（北海道・定期リンク・配送料あり）
@@ -281,9 +281,9 @@ BEGIN
     tid_monthly_d
   ) RETURNING id INTO oid_07;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_07, '胡蝶蘭（白・2本立て）', NULL, 1, 25000, 10, 0),
-    (oid_07, '配送料（ヤマト運輸 100サイズ）', NULL, 1, 2300, 10, 1);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_07, '胡蝶蘭（白・2本立て）', NULL, 1, 25000, 10),
+    (oid_07, '配送料（ヤマト運輸 100サイズ）', NULL, 1, 2300, 10);
 
 
   -- ⑧ 発送 受付完了 → 九州商事（福岡・配送料あり）
@@ -300,9 +300,9 @@ BEGIN
     10670  -- (8000+1700)*1.1
   ) RETURNING id INTO oid_08;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_08, '季節のアレンジ', '明るい色調で', 1, 8000, 10, 0),
-    (oid_08, '配送料（佐川急便 60サイズ）', NULL, 1, 1700, 10, 1);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_08, '季節のアレンジ', '明るい色調で', 1, 8000, 10),
+    (oid_08, '配送料（佐川急便 60サイズ）', NULL, 1, 1700, 10);
 
 
   -- ⑨ 発送 受付 → 北山工業（愛知・配送料あり）
@@ -320,9 +320,9 @@ BEGIN
     15070  -- (12000+1700)*1.1
   ) RETURNING id INTO oid_09;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_09, 'バスケットアレンジ', '春らしいカラフルな構成', 1, 12000, 10, 0),
-    (oid_09, '配送料（ヤマト運輸 80サイズ）', NULL, 1, 1700, 10, 1);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_09, 'バスケットアレンジ', '春らしいカラフルな構成', 1, 12000, 10),
+    (oid_09, '配送料（ヤマト運輸 80サイズ）', NULL, 1, 1700, 10);
 
 
   -- ════════════════════════════════════════════════════
@@ -344,8 +344,8 @@ BEGIN
     13200  -- 12000*1.1
   ) RETURNING id INTO oid_10;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_10, 'アレンジメント（Mサイズ）', '洗練されたシンプルなデザイン', 1, 12000, 10, 0);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_10, 'アレンジメント（Mサイズ）', '洗練されたシンプルなデザイン', 1, 12000, 10);
 
 
   -- ⑪ 配達 14:00〜16:00 受付完了 → 丸の内（定期リンク）
@@ -361,8 +361,8 @@ BEGIN
     NULL, 4, '季節のお飾り', 13200, tid_weekly
   ) RETURNING id INTO oid_11;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_11, 'テーブルフラワー（Mサイズ）', '季節の花を使ったアレンジメント', 4, 3000, 10, 0);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_11, 'テーブルフラワー（Mサイズ）', '季節の花を使ったアレンジメント', 4, 3000, 10);
 
 
   -- ⑫ 来店 11:00〜 受付 → 川口さくら（誕生日）
@@ -380,8 +380,8 @@ BEGIN
     6600  -- 6000*1.1
   ) RETURNING id INTO oid_12;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_12, '誕生日花束', 'カラフルな春の花を束ねて', 1, 6000, 10, 0);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_12, '誕生日花束', 'カラフルな春の花を束ねて', 1, 6000, 10);
 
 
   -- ⑬ 発送 受付 → 函館の風（北海道・定期リンク・配送料あり）
@@ -399,9 +399,9 @@ BEGIN
     tid_monthly_d
   ) RETURNING id INTO oid_13;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_13, 'ボックスフラワー', '春のミックスフラワー', 2, 8000, 10, 0),
-    (oid_13, '配送料（ヤマト運輸 80サイズ）', NULL, 1, 2100, 10, 1);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_13, 'ボックスフラワー', '春のミックスフラワー', 2, 8000, 10),
+    (oid_13, '配送料（ヤマト運輸 80サイズ）', NULL, 1, 2100, 10);
 
 
   -- ════════════════════════════════════════════════════
@@ -424,8 +424,8 @@ BEGIN
     22000  -- 20000*1.1
   ) RETURNING id INTO oid_14;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_14, '結婚祝い花束', 'ホワイト・クリーム系 高さ60cm', 1, 20000, 10, 0);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_14, '結婚祝い花束', 'ホワイト・クリーム系 高さ60cm', 1, 20000, 10);
 
 
   -- ⑮ 生け込み 2026-04-15 09:00〜10:00 受付 → 京都ホテル（定期リンク）
@@ -441,9 +441,9 @@ BEGIN
     NULL, 4, '季節のお飾り', 35200, tid_monthly_wd
   ) RETURNING id INTO oid_15;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_15, '生け込み（ロビー用）', '春の花材をメインに', 1, 20000, 10, 0),
-    (oid_15, '生け込み（会議室用）', '卓上サイズ×3か所', 3, 5000, 10, 1);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_15, '生け込み（ロビー用）', '春の花材をメインに', 1, 20000, 10),
+    (oid_15, '生け込み（会議室用）', '卓上サイズ×3か所', 3, 5000, 10);
 
 
   -- ⑯ 配達 2026-04-20 受付完了 → 北山工業（愛知・大口開業祝い）
@@ -462,9 +462,9 @@ BEGIN
     93500  -- (25000*2+35000)*1.1 = 85000*1.1
   ) RETURNING id INTO oid_16;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_16, 'スタンド花（2段）', 'エントランス用・白グリーン系', 2, 25000, 10, 0),
-    (oid_16, 'スタンド花（3段）', '役員室用・豪華仕様', 1, 35000, 10, 1);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_16, 'スタンド花（2段）', 'エントランス用・白グリーン系', 2, 25000, 10),
+    (oid_16, 'スタンド花（3段）', '役員室用・豪華仕様', 1, 35000, 10);
 
 
   -- ════════════════════════════════════════════════════
@@ -485,9 +485,9 @@ BEGIN
     10670  -- (8000+1700)*1.1
   ) RETURNING id INTO oid_17;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_17, 'お祝い花束', '明るい黄・オレンジ系', 1, 8000, 10, 0),
-    (oid_17, '配送料（ヤマト運輸 80サイズ）', NULL, 1, 1700, 10, 1);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_17, 'お祝い花束', '明るい黄・オレンジ系', 1, 8000, 10),
+    (oid_17, '配送料（ヤマト運輸 80サイズ）', NULL, 1, 1700, 10);
 
 
   -- ⑱ 配達完了 2026-04-02 → 渡辺美穂（神奈川）
@@ -503,8 +503,8 @@ BEGIN
     'アレンジメント（Sサイズ）', 1, 'お礼', 6600  -- 6000*1.1
   ) RETURNING id INTO oid_18;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_18, 'アレンジメント（Sサイズ）', 'パステルカラーで可愛らしく', 1, 6000, 10, 0);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_18, 'アレンジメント（Sサイズ）', 'パステルカラーで可愛らしく', 1, 6000, 10);
 
 
   -- ⑲ 配達完了 2026-04-03 → 丸の内（東京・定期リンク・配送料あり）
@@ -522,9 +522,9 @@ BEGIN
     tid_weekly
   ) RETURNING id INTO oid_19;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_19, 'テーブルフラワー（Mサイズ）', '春の花を使ったアレンジメント', 4, 3000, 10, 0),
-    (oid_19, '配送料（ヤマト運輸 60サイズ）', NULL, 1, 1100, 10, 1);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_19, 'テーブルフラワー（Mサイズ）', '春の花を使ったアレンジメント', 4, 3000, 10),
+    (oid_19, '配送料（ヤマト運輸 60サイズ）', NULL, 1, 1100, 10);
 
 
   -- ⑳ キャンセル 2026-04-04 → 大阪花壇（発送）
@@ -542,8 +542,8 @@ BEGIN
     5500  -- 5000*1.1
   ) RETURNING id INTO oid_20;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_20, 'バラ花束（赤・10本）', NULL, 1, 5000, 10, 0);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_20, 'バラ花束（赤・10本）', NULL, 1, 5000, 10);
 
 
   -- ㉑ 受付完了 2026-04-08 → 北山工業（愛知・発送・配送料あり）
@@ -561,9 +561,9 @@ BEGIN
     29150  -- (25000+1500)*1.1 = 26500*1.1
   ) RETURNING id INTO oid_21;
 
-  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate, sort_order) VALUES
-    (oid_21, '胡蝶蘭（白・3本立て）', NULL, 1, 25000, 10, 0),
-    (oid_21, '配送料（ヤマト運輸 60サイズ）', NULL, 1, 1500, 10, 1);
+  INSERT INTO public.order_items (order_id, product_name, description, quantity, unit_price, tax_rate) VALUES
+    (oid_21, '胡蝶蘭（白・3本立て）', NULL, 1, 25000, 10),
+    (oid_21, '配送料（ヤマト運輸 60サイズ）', NULL, 1, 1500, 10);
 
 
   RAISE NOTICE '✅ テストデータの挿入が完了しました';
