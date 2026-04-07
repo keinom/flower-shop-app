@@ -19,7 +19,7 @@ export default async function NewOrderPage({ searchParams }: NewOrderPageProps) 
   // 顧客情報を取得（クイック入力用）
   const { data: customer } = await supabase
     .from("customers")
-    .select("name, address")
+    .select("name, address, phone, email")
     .eq("profile_id", user.id)
     .single();
 

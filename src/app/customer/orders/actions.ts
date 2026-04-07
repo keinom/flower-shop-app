@@ -25,6 +25,8 @@ export async function createOrder(formData: FormData) {
   const orderType       = (formData.get("order_type") as string)?.trim() || "配達";
   const deliveryName    = (formData.get("delivery_name") as string).trim();
   const deliveryAddress = (formData.get("delivery_address") as string).trim();
+  const deliveryPhone   = (formData.get("delivery_phone") as string)?.trim() || null;
+  const deliveryEmail   = (formData.get("delivery_email") as string)?.trim() || null;
   const deliveryDate    = formData.get("delivery_date") as string;
   const productName     = (formData.get("product_name") as string).trim();
   const quantityRaw     = formData.get("quantity") as string;
@@ -63,6 +65,8 @@ export async function createOrder(formData: FormData) {
       order_type:       orderType,
       delivery_name:    deliveryName,
       delivery_address: deliveryAddress,
+      delivery_phone:   deliveryPhone,
+      delivery_email:   deliveryEmail,
       delivery_date:    deliveryDate,
       product_name:     productName,
       quantity,

@@ -5,6 +5,8 @@ import { useState } from "react";
 interface CustomerInfo {
   name: string;
   address: string | null;
+  phone: string | null;
+  email: string | null;
 }
 
 interface Props {
@@ -14,27 +16,34 @@ interface Props {
 export function DeliveryInfoInput({ customer }: Props) {
   const [deliveryName, setDeliveryName] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [deliveryPhone, setDeliveryPhone] = useState("");
+  const [deliveryEmail, setDeliveryEmail] = useState("");
 
   const isSelf =
     customer !== null &&
     deliveryName === customer.name &&
-    deliveryAddress === (customer.address ?? "");
+    deliveryAddress === (customer.address ?? "") &&
+    deliveryPhone === (customer.phone ?? "") &&
+    deliveryEmail === (customer.email ?? "");
 
   function applySelf() {
     if (!customer) return;
     if (isSelf) {
-      // 再クリックでリセット
       setDeliveryName("");
       setDeliveryAddress("");
+      setDeliveryPhone("");
+      setDeliveryEmail("");
     } else {
       setDeliveryName(customer.name);
       setDeliveryAddress(customer.address ?? "");
+      setDeliveryPhone(customer.phone ?? "");
+      setDeliveryEmail(customer.email ?? "");
     }
   }
 
   return (
     <div className="space-y-4">
-      {/* プリセットボタン */}
+      {/* クイック入力ボタン */}
       {customer && (
         <div>
           <p className="text-xs text-gray-500 mb-2">クイック入力</p>
@@ -85,6 +94,40 @@ export function DeliveryInfoInput({ customer }: Props) {
           placeholder="例: 東京都千代田区1-1-1 ○○ビル1F"
           className="input"
         />
+      </div>
+
+      {/* 電話番号・メールアドレス（任意） */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="delivery_phone" className="label">
+            電話番号
+            <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
+          </label>
+          <input
+            id="delivery_phone"
+            name="delivery_phone"
+            type="tel"
+            value={deliveryPhone}
+            onChange={(e) => setDeliveryPhone(e.target.value)}
+            placeholder="03-0000-0000"
+            className="input"
+          />
+        </div>
+        <div>
+          <label htmlFor="delivery_email" className="label">
+            メールアドレス
+            <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
+          </label>
+          <input
+            id="delivery_email"
+            name="delivery_email"
+            type="email"
+            value={deliveryEmail}
+            onChange={(e) => setDeliveryEmail(e.target.value)}
+            placeholder="example@example.com"
+            className="input"
+          />
+        </div>
       </div>
     </div>
   );
