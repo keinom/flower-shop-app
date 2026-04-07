@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ORDER_PURPOSES, ORDER_TYPES, ORDER_TYPE_ICONS } from "@/lib/constants";
 import { createOrder } from "../actions";
+import { DeliveryInfoInput } from "./DeliveryInfoInput";
 
 interface NewOrderPageProps {
   searchParams: Promise<{ error?: string }>;
@@ -15,7 +16,7 @@ export default async function NewOrderPage({ searchParams }: NewOrderPageProps) 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // 顧客情報を取得（住所をデフォルト値に使う）
+  // 顧客情報を取得（クイック入力用）
   const { data: customer } = await supabase
     .from("customers")
     .select("name, address")
@@ -71,34 +72,8 @@ export default async function NewOrderPage({ searchParams }: NewOrderPageProps) 
             お届け先情報
           </h2>
 
-          <div>
-            <label htmlFor="delivery_name" className="label">
-              お届け先名 <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="delivery_name"
-              name="delivery_name"
-              type="text"
-              required
-              placeholder="例: 株式会社○○ 総務部"
-              className="input"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="delivery_address" className="label">
-              お届け先住所 <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="delivery_address"
-              name="delivery_address"
-              type="text"
-              required
-              placeholder="例: 東京都千代田区1-1-1 ○○ビル1F"
-              defaultValue={customer?.address ?? ""}
-              className="input"
-            />
-          </div>
+          {/* お届け先名・住所（クイック入力付き） */}
+          <DeliveryInfoInput customer={customer} />
 
           <div>
             <label htmlFor="delivery_date" className="label">
