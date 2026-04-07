@@ -45,19 +45,37 @@ function shouldOccurOn(
   }
 }
 
-interface Props { defaultStartDate?: string; }
+interface Props {
+  defaultStartDate?: string;
+  defaultType?: RecurrenceType;
+  defaultWeeklyDays?: number[];
+  defaultMonthlyDay?: number;
+  defaultMonthlyWeek?: number;
+  defaultMonthlyWeekday?: number;
+  defaultIntervalDays?: number;
+  defaultEndDate?: string | null;
+}
 
-export function RecurrenceRuleInput({ defaultStartDate }: Props) {
+export function RecurrenceRuleInput({
+  defaultStartDate,
+  defaultType,
+  defaultWeeklyDays,
+  defaultMonthlyDay,
+  defaultMonthlyWeek,
+  defaultMonthlyWeekday,
+  defaultIntervalDays,
+  defaultEndDate,
+}: Props) {
   const today = new Date().toISOString().split('T')[0];
-  const [type, setType] = useState<RecurrenceType>('weekly');
-  const [weeklyDays, setWeeklyDays] = useState<number[]>([1]); // Monday default
-  const [monthlyDay, setMonthlyDay] = useState(1);
-  const [monthlyWeek, setMonthlyWeek] = useState(1);
-  const [monthlyWeekday, setMonthlyWeekday] = useState(1);
-  const [intervalDays, setIntervalDays] = useState(7);
+  const [type, setType] = useState<RecurrenceType>(defaultType ?? 'weekly');
+  const [weeklyDays, setWeeklyDays] = useState<number[]>(defaultWeeklyDays ?? [1]);
+  const [monthlyDay, setMonthlyDay] = useState(defaultMonthlyDay ?? 1);
+  const [monthlyWeek, setMonthlyWeek] = useState(defaultMonthlyWeek ?? 1);
+  const [monthlyWeekday, setMonthlyWeekday] = useState(defaultMonthlyWeekday ?? 1);
+  const [intervalDays, setIntervalDays] = useState(defaultIntervalDays ?? 7);
   const [startDate, setStartDate] = useState(defaultStartDate ?? today);
-  const [hasEndDate, setHasEndDate] = useState(false);
-  const [endDate, setEndDate] = useState('');
+  const [hasEndDate, setHasEndDate] = useState(!!defaultEndDate);
+  const [endDate, setEndDate] = useState(defaultEndDate ?? '');
 
   function toggleWeekday(d: number) {
     setWeeklyDays(prev =>

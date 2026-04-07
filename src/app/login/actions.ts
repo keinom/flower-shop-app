@@ -4,14 +4,21 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export async function login(formData: FormData) {
+export type LoginState = {
+  error?: string;
+};
+
+export async function login(
+  _prevState: LoginState,
+  formData: FormData
+): Promise<LoginState> {
   const supabase = await createClient();
 
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
+  const email = (formData.get("email") as string | null) ?? "";
+  const password = (formData.get("password") as string | null) ?? "";
 
   if (!email || !password) {
-    redirect("/login?error=メールアドレスとパスワードを入力してください");
+    return { error: "メールアドレスとパスワードを入力してください" };
   }
 
   const { error } = await supabase.auth.signInWithPassword({
@@ -20,7 +27,7 @@ export async function login(formData: FormData) {
   });
 
   if (error) {
-    redirect("/login?error=メールアドレスまたはパスワードが正しくありません");
+    return { error: "メールアドレスまたはパスワードが正しくありません" };
   }
 
   // ロールを取得してリダイレクト先を決定
@@ -29,7 +36,7 @@ export async function login(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login?error=ログインに失敗しました");
+    return { error: "ログインに失敗しました。もう一度お試しください" };
   }
 
   const { data: profile } = await supabase

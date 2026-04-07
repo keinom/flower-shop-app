@@ -113,6 +113,12 @@ export default async function RecurringTemplateDetailPage({ params, searchParams
               🔄 今すぐ生成（30日分）
             </button>
           </form>
+          <Link
+            href={`/admin/recurring/${template.id}/edit`}
+            className="text-xs font-medium px-3 py-1.5 rounded-md border bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 transition-colors"
+          >
+            ✏️ 編集
+          </Link>
           <form action={toggleTemplateActive}>
             <input type="hidden" name="template_id" value={template.id} />
             <input type="hidden" name="is_active" value={String(template.is_active)} />
