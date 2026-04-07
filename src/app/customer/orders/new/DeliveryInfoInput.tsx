@@ -101,7 +101,6 @@ export function DeliveryInfoInput({ customer }: Props) {
         <div>
           <label htmlFor="delivery_phone" className="label">
             電話番号
-            <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
           </label>
           <input
             id="delivery_phone"
@@ -116,7 +115,6 @@ export function DeliveryInfoInput({ customer }: Props) {
         <div>
           <label htmlFor="delivery_email" className="label">
             メールアドレス
-            <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
           </label>
           <input
             id="delivery_email"
