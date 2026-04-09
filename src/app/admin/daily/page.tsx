@@ -85,25 +85,39 @@ export default async function DailyPage({ searchParams }: DailyPageProps) {
 
   return (
     <div className="space-y-5">
-      {/* ── ヘッダー ── */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold text-gray-900">日報</h1>
-          <DailyViewToggle currentView={view} currentDate={baseDate} />
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Link href={`/admin/daily?date=${prevDate}&view=${view}`} className={linkClass}>← 前日</Link>
-          <DailyDatePicker currentDate={baseDate} view={view} />
-          <Link href={`/admin/daily?date=${nextDate}&view=${view}`} className={linkClass}>翌日 →</Link>
+      {/* ── 行1: タイトル ＋ 表示切替 ── */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">日報</h1>
+        <DailyViewToggle currentView={view} currentDate={baseDate} />
+      </div>
+
+      {/* ── 行2: 日付ナビ（前日 ← 日付 → 翌日） ── */}
+      <div className="card px-4 py-3 flex items-center gap-3">
+        <Link
+          href={`/admin/daily?date=${prevDate}&view=${view}`}
+          className="px-4 py-2 text-sm font-medium border border-gray-300 rounded-md bg-white hover:bg-gray-50 text-gray-600 transition-colors flex-shrink-0"
+        >
+          ← 前日
+        </Link>
+
+        <div className="flex-1 flex items-center justify-center gap-3">
+          <DailyDatePicker currentDate={baseDate} view={view} todayDate={today} />
           {baseDate !== today && (
             <Link
               href={`/admin/daily?view=${view}`}
-              className="px-3 py-1.5 text-sm bg-brand-600 text-white rounded-md hover:bg-brand-700 transition-colors"
+              className="px-3 py-1.5 text-sm bg-brand-600 text-white rounded-md hover:bg-brand-700 transition-colors font-medium"
             >
               今日に戻る
             </Link>
           )}
         </div>
+
+        <Link
+          href={`/admin/daily?date=${nextDate}&view=${view}`}
+          className="px-4 py-2 text-sm font-medium border border-gray-300 rounded-md bg-white hover:bg-gray-50 text-gray-600 transition-colors flex-shrink-0"
+        >
+          翌日 →
+        </Link>
       </div>
 
       {/* ── ビュー切替 ── */}

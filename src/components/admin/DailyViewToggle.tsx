@@ -13,8 +13,8 @@ export function DailyViewToggle({ currentView, currentDate }: Props) {
   return (
     <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg p-1">
       {[
-        { value: "1", label: "1日" },
-        { value: "2", label: "2日" },
+        { value: "1", label: "1日分表示" },
+        { value: "2", label: "2日分表示" },
       ].map(({ value, label }) => (
         <button
           key={value}
