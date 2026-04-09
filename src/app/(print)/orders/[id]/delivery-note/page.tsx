@@ -430,28 +430,27 @@ function GiftNote({
         border: `1px solid #ddd8ce`,
         borderRadius: "3pt",
         padding: "8pt 14pt",
-        backgroundColor: "#fdfcfa",
+        backgroundColor: "white",
         marginBottom: "6pt",
       }}>
-        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", marginBottom: "5pt" }}>贈り主</div>
+        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>贈り主</div>
         <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>{senderName} 様</div>
         {senderAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{senderAddress}</div>}
-        {senderPhone  && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>TEL {senderPhone}</div>}
-        {senderEmail  && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{senderEmail}</div>}
+        {senderPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>TEL {senderPhone}</div>}
       </div>
 
       {/* ② お届け先 */}
       <div style={{
-        border: `1px solid ${RULE}`,
+        border: `1px solid #ddd8ce`,
         borderRadius: "3pt",
         padding: "8pt 14pt",
-        backgroundColor: GOLD_L,
+        backgroundColor: "white",
         marginBottom: "6pt",
       }}>
-        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", marginBottom: "5pt" }}>お届け先</div>
+        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>お届け先</div>
         <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>{deliveryName} 様</div>
         {deliveryAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryAddress}</div>}
-        {deliveryPhone  && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>TEL {deliveryPhone}</div>}
+        {deliveryPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>TEL {deliveryPhone}</div>}
       </div>
 
       {/* ③ ご用途 */}
@@ -460,13 +459,13 @@ function GiftNote({
           border: `1px solid #ddd8ce`,
           borderRadius: "3pt",
           padding: "5pt 14pt",
-          backgroundColor: "#fdfcfa",
+          backgroundColor: "white",
           marginBottom: "6pt",
           display: "flex",
           alignItems: "center",
           gap: "14pt",
         }}>
-          <span style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", whiteSpace: "nowrap" }}>ご用途</span>
+          <span style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", whiteSpace: "nowrap" }}>ご用途</span>
           <span style={{ fontSize: "11pt", fontWeight: "700", color: GRAY1 }}>{purpose}</span>
         </div>
       )}
