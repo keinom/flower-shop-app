@@ -50,34 +50,11 @@ export default async function AdminDashboard({ searchParams }: Props) {
     {} as Record<OrderStatus, number>
   );
 
-  // 顧客数・全体件数（ヘッダー用）
-  const { count: customerCount } = await supabase
-    .from("customers")
-    .select("id", { count: "exact", head: true });
-
-  const { count: totalOrderCount } = await supabase
-    .from("orders")
-    .select("id", { count: "exact", head: true });
 
   return (
     <div className="space-y-6">
       {/* ─── ヘッダー ─── */}
-      <div className="flex items-start justify-between flex-wrap gap-3">
-        <h1 className="text-xl font-bold text-gray-900">ダッシュボード</h1>
-        {/* 顧客数・総注文数サマリー */}
-        <div className="flex gap-3">
-          <Link href="/admin/customers" className="text-xs text-gray-500 bg-white border border-gray-200 rounded-lg px-3 py-2 hover:border-gray-300 transition-colors">
-            <span className="block text-gray-400 mb-0.5">顧客数</span>
-            <span className="font-bold text-gray-800 text-base">{customerCount ?? 0}</span>
-            <span className="ml-1 text-gray-500">社/名</span>
-          </Link>
-          <Link href="/admin/orders" className="text-xs text-gray-500 bg-white border border-gray-200 rounded-lg px-3 py-2 hover:border-gray-300 transition-colors">
-            <span className="block text-gray-400 mb-0.5">総注文数</span>
-            <span className="font-bold text-gray-800 text-base">{totalOrderCount ?? 0}</span>
-            <span className="ml-1 text-gray-500">件</span>
-          </Link>
-        </div>
-      </div>
+      <h1 className="text-xl font-bold text-gray-900">ダッシュボード</h1>
 
       {/* ─── 日付ナビゲーション ─── */}
       <div className="card p-4">
