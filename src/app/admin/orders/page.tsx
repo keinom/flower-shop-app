@@ -165,16 +165,16 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
             <table className="table">
               <thead>
                 <tr>
-                  <th className="th"></th>
                   <th className="th">注文日</th>
                   <th className="th">顧客名</th>
-                  <th className="th">商品名</th>
-                  <th className="th text-right">合計金額</th>
-                  <th className="th">お届け日</th>
-                  <th className="th">配達先名</th>
-                  <th className="th">用途</th>
                   <th className="th">種別</th>
                   <th className="th">ステータス</th>
+                  <th className="th">配送先名</th>
+                  <th className="th">お届け日</th>
+                  <th className="th text-right">合計金額</th>
+                  <th className="th">商品名</th>
+                  <th className="th">用途</th>
+                  <th className="th"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -182,7 +182,6 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                   <tr>
                     <td
                       colSpan={10}
-
                       className="td text-center text-gray-400 py-14"
                     >
                       条件に一致する注文が見つかりませんでした
@@ -195,15 +194,6 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                       | null;
                     return (
                       <tr key={order.id} className="tr-hover">
-                        {/* 詳細ボタンを先頭に */}
-                        <td className="td">
-                          <Link
-                            href={`/admin/orders/${order.id}`}
-                            className="text-sm text-brand-600 hover:underline whitespace-nowrap font-medium"
-                          >
-                            詳細
-                          </Link>
-                        </td>
                         <td className="td text-gray-500 text-xs whitespace-nowrap">
                           {new Date(order.created_at).toLocaleDateString("ja-JP")}
                         </td>
@@ -219,25 +209,6 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                             "—"
                           )}
                         </td>
-                        <td className="td font-medium text-sm">
-                          {order.product_name ?? `${order.quantity}点`}
-                        </td>
-                        <td className="td text-right text-sm whitespace-nowrap">
-                          {(order as { total_amount?: number | null }).total_amount != null
-                            ? `¥${(order as { total_amount: number }).total_amount.toLocaleString("ja-JP")}`
-                            : "—"}
-                        </td>
-                        <td className="td text-sm whitespace-nowrap">
-                          {order.delivery_date
-                            ? new Date(order.delivery_date).toLocaleDateString("ja-JP")
-                            : "—"}
-                        </td>
-                        <td className="td text-sm text-gray-600">
-                          {(order as { delivery_name?: string }).delivery_name ?? "—"}
-                        </td>
-                        <td className="td text-sm text-gray-500">
-                          {(order as { purpose?: string }).purpose ?? "—"}
-                        </td>
                         <td className="td">
                           {(order as { order_type?: string }).order_type && (
                             <OrderTypeBadge
@@ -248,6 +219,33 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                         </td>
                         <td className="td">
                           <StatusBadge status={order.status as OrderStatus} size="sm" />
+                        </td>
+                        <td className="td text-sm text-gray-600">
+                          {(order as { delivery_name?: string }).delivery_name ?? "—"}
+                        </td>
+                        <td className="td text-sm whitespace-nowrap">
+                          {order.delivery_date
+                            ? new Date(order.delivery_date).toLocaleDateString("ja-JP")
+                            : "—"}
+                        </td>
+                        <td className="td text-right text-sm whitespace-nowrap">
+                          {(order as { total_amount?: number | null }).total_amount != null
+                            ? `¥${(order as { total_amount: number }).total_amount.toLocaleString("ja-JP")}`
+                            : "—"}
+                        </td>
+                        <td className="td font-medium text-sm">
+                          {order.product_name ?? `${order.quantity}点`}
+                        </td>
+                        <td className="td text-sm text-gray-500">
+                          {(order as { purpose?: string }).purpose ?? "—"}
+                        </td>
+                        <td className="td">
+                          <Link
+                            href={`/admin/orders/${order.id}`}
+                            className="text-sm text-brand-600 hover:underline whitespace-nowrap font-medium"
+                          >
+                            詳細
+                          </Link>
                         </td>
                       </tr>
                     );
