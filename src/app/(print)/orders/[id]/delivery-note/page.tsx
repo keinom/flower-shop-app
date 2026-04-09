@@ -9,6 +9,11 @@ const SHOP_TEL     = "03-3407-0211";
 const SHOP_EMAIL   = "aoyamahanacho@nifty.com";
 // ────────────────────────────────────────────────────
 
+// 品名から括弧内の補足説明を除去（例: "配送料（ヤマト運輸 100サイズ）" → "配送料"）
+function trimProductName(name: string): string {
+  return name.replace(/[\(（][^)）]*[\)）]/g, "").trim();
+}
+
 // デザイントークン
 const GOLD   = "#8B6914";
 const GOLD_L = "#f5edda";
@@ -347,7 +352,7 @@ function StandardNote({
               return (
                 <tr key={item.id} style={{ backgroundColor: idx % 2 === 1 ? BG_ROW : "white" }}>
                   <td style={{ padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3` }}>
-                    <span style={{ fontWeight: "600" }}>{item.product_name}</span>
+                    <span style={{ fontWeight: "600" }}>{trimProductName(item.product_name)}</span>
                   </td>
                   <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>{item.quantity}</td>
                   <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>¥{item.unit_price.toLocaleString("ja-JP")}</td>
