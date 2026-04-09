@@ -283,7 +283,7 @@ function StandardNote({
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <NoteHeader title="納　品　書" orderNo={orderNo} issuedAt={issuedAt} />
 
-      {/* お客様（統合） */}
+      {/* お届け先 */}
       <div style={{
         border: `1px solid #ddd8ce`,
         borderRadius: "3pt",
@@ -291,19 +291,11 @@ function StandardNote({
         backgroundColor: "white",
         marginBottom: "10pt",
       }}>
-        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>お客様</div>
-        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>{customerName} 御中</div>
-        {customerAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{customerAddress}</div>}
-        {customerPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>TEL {customerPhone}</div>}
-        {customerEmail   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{customerEmail}</div>}
-        {/* お届け先 */}
-        <div style={{ marginTop: "6pt", paddingTop: "6pt", borderTop: `0.5px solid #e5dfd3` }}>
-          <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "4pt" }}>お届け先</div>
-          <div style={{ fontSize: "11pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "3pt" }}>{deliveryName} 様</div>
-          {deliveryAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryAddress}</div>}
-          {deliveryPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>TEL {deliveryPhone}</div>}
-          {deliveryEmail   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryEmail}</div>}
-        </div>
+        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>お届け先</div>
+        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>{deliveryName} 様</div>
+        {deliveryAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryAddress}</div>}
+        {deliveryPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>TEL {deliveryPhone}</div>}
+        {deliveryEmail   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryEmail}</div>}
         {/* お届け日・用途 */}
         <div style={{ marginTop: "6pt", paddingTop: "6pt", borderTop: `0.5px solid #e5dfd3`, display: "flex", gap: "20pt", flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8pt" }}>
