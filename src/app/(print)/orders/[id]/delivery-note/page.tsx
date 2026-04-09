@@ -9,9 +9,10 @@ const SHOP_TEL     = "03-3407-0211";
 const SHOP_EMAIL   = "aoyamahanacho@nifty.com";
 // ────────────────────────────────────────────────────
 
-// 品名から括弧内の補足説明を除去（例: "配送料（ヤマト運輸 100サイズ）" → "配送料"）
+// 配送料の品名は「配送料」とだけ表示する
 function trimProductName(name: string): string {
-  return name.replace(/[\(（][^)）]*[\)）]/g, "").trim();
+  if (name.startsWith("配送料")) return "配送料";
+  return name;
 }
 
 // デザイントークン
