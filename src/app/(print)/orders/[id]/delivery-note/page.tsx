@@ -425,7 +425,7 @@ function GiftNote({
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <NoteHeader title="ギフト納品書" orderNo={orderNo} issuedAt={issuedAt} />
 
-      {/* ① 贈り主 — 横長フルwidth */}
+      {/* ① 贈り主 */}
       <div style={{
         border: `1px solid #ddd8ce`,
         borderRadius: "3pt",
@@ -434,22 +434,13 @@ function GiftNote({
         marginBottom: "6pt",
       }}>
         <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", marginBottom: "5pt" }}>贈り主</div>
-        <div style={{ display: "flex", alignItems: "baseline", gap: "16pt", flexWrap: "wrap" }}>
-          <span style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3 }}>{senderName} 様</span>
-          <span style={{ fontSize: "8pt", color: GRAY2 }}>{senderAddress ?? ""}</span>
-        </div>
-        {(senderPhone || senderEmail) && (
-          <div style={{ display: "flex", gap: "16pt", marginTop: "3pt" }}>
-            {senderPhone && <span style={{ fontSize: "8pt", color: GRAY3 }}>TEL {senderPhone}</span>}
-            {senderEmail && <span style={{ fontSize: "8pt", color: GRAY3 }}>{senderEmail}</span>}
-          </div>
-        )}
+        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>{senderName} 様</div>
+        {senderAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{senderAddress}</div>}
+        {senderPhone  && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>TEL {senderPhone}</div>}
+        {senderEmail  && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{senderEmail}</div>}
       </div>
 
-      {/* 矢印 */}
-      <div style={{ textAlign: "center", color: RULE, fontSize: "11pt", lineHeight: 1, marginBottom: "6pt" }}>↓</div>
-
-      {/* ② お届け先 — フルwidth */}
+      {/* ② お届け先 */}
       <div style={{
         border: `1px solid ${RULE}`,
         borderRadius: "3pt",
@@ -458,23 +449,17 @@ function GiftNote({
         marginBottom: "6pt",
       }}>
         <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", marginBottom: "5pt" }}>お届け先</div>
-        <div style={{ display: "flex", alignItems: "baseline", gap: "16pt", flexWrap: "wrap" }}>
-          <span style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3 }}>{deliveryName} 様</span>
-          {deliveryAddress && <span style={{ fontSize: "8pt", color: GRAY2 }}>{deliveryAddress}</span>}
-        </div>
-        {deliveryPhone && (
-          <div style={{ marginTop: "3pt" }}>
-            <span style={{ fontSize: "8pt", color: GRAY3 }}>TEL {deliveryPhone}</span>
-          </div>
-        )}
+        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>{deliveryName} 様</div>
+        {deliveryAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryAddress}</div>}
+        {deliveryPhone  && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>TEL {deliveryPhone}</div>}
       </div>
 
-      {/* ③ ご用途 — フルwidth */}
+      {/* ③ ご用途 */}
       {purpose && (
         <div style={{
           border: `1px solid #ddd8ce`,
           borderRadius: "3pt",
-          padding: "7pt 14pt",
+          padding: "5pt 14pt",
           backgroundColor: "#fdfcfa",
           marginBottom: "6pt",
           display: "flex",
@@ -486,16 +471,17 @@ function GiftNote({
         </div>
       )}
 
-      {/* ④ お届け日 — フルwidth */}
+      {/* ④ お届け日 — コンパクト */}
       <div style={{
         border: `1px solid #ddd8ce`,
         borderRadius: "3pt",
-        padding: "7pt 14pt",
+        padding: "5pt 14pt",
         backgroundColor: "#fdfcfa",
         marginBottom: "6pt",
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
         gap: "14pt",
+        alignSelf: "flex-start",
       }}>
         <span style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", whiteSpace: "nowrap" }}>お届け日</span>
         <span style={{ fontSize: "10pt", fontWeight: "600", color: GRAY1 }}>
