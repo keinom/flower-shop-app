@@ -84,7 +84,7 @@ export default async function AdminLayout({
             <NavItem href="/admin/daily" label="日報" icon="📅" />
             <NavItem href="/admin/orders" label="注文検索" icon="📋" />
             <NavItem href="/admin/recurring" label="定期注文" icon="🔄" />
-            <NavItem href="/admin/customers" label="顧客一覧" icon="👥" />
+            <NavItem href="/admin/customers" label="顧客検索" icon="👥" />
             <div className="mx-4 my-3 border-t border-gray-200" />
             <div className="px-3 mb-1">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 py-1">
