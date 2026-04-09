@@ -27,40 +27,79 @@ export default async function AdminLayout({
     <div className="min-h-screen flex flex-col">
       {/* トップナビゲーション */}
       <header
-        className="text-white shadow-md flex-shrink-0"
+        className="flex-shrink-0 text-white"
         style={{
-          background: "linear-gradient(135deg, #1f4e3b 0%, #255f47 60%, #2e7458 100%)",
+          background: "linear-gradient(135deg, #1a3d2e 0%, #1f4e3b 50%, #255f47 100%)",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.25)",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        <div className="px-4 sm:px-6">
-          <div className="flex items-center justify-between h-15" style={{ height: "3.75rem" }}>
-            <div className="flex items-center gap-3">
-              <span className="text-xl">🌸</span>
+        <div className="px-5 sm:px-8">
+          <div className="flex items-center justify-between" style={{ height: "4.5rem" }}>
+
+            {/* 左: ロゴ + システム名 */}
+            <div className="flex items-center gap-4">
+              {/* ロゴ画像（白抜き） */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo.png"
+                alt="花長"
+                style={{
+                  height: "36px",
+                  width: "auto",
+                  filter: "brightness(0) invert(1)",
+                  opacity: 0.95,
+                }}
+              />
+              {/* 縦区切り線 */}
+              <div style={{ width: "1px", height: "28px", background: "rgba(255,255,255,0.25)" }} />
+              {/* システム名 */}
               <div>
-                <span className="font-bold text-base tracking-wide">花長</span>
-                <span className="text-brand-300 text-xs ml-1.5 hidden sm:inline">注文管理システム</span>
+                <p className="text-xs font-medium tracking-widest hidden sm:block"
+                   style={{ color: "rgba(255,255,255,0.55)", letterSpacing: "0.18em" }}>
+                  ORDER MANAGEMENT
+                </p>
+                <p className="text-sm font-semibold tracking-wide"
+                   style={{ color: "rgba(255,255,255,0.9)", letterSpacing: "0.05em" }}>
+                  注文管理システム
+                </p>
               </div>
-              <span
-                className="ml-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                style={{ background: "rgb(255 255 255 / 0.15)", color: "#d4f4e2" }}
-              >
-                管理者
-              </span>
             </div>
-            <div className="flex items-center gap-5">
-              <span className="text-sm" style={{ color: "#b8dccb" }}>
-                {profile?.display_name ?? user.email}
-              </span>
+
+            {/* 右: ユーザー情報 + ログアウト */}
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex flex-col items-end">
+                <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.9)" }}>
+                  {profile?.display_name ?? user.email}
+                </span>
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.45)", letterSpacing: "0.04em" }}>
+                  管理者
+                </span>
+              </div>
+              <div style={{ width: "1px", height: "24px", background: "rgba(255,255,255,0.2)" }} className="hidden sm:block" />
               <form action={logout}>
                 <button
                   type="submit"
-                  className="text-xs font-medium px-3 py-1.5 rounded-md transition-colors hover:bg-white/10 hover:text-white"
-                  style={{ color: "#b8dccb" }}
+                  className="text-xs font-medium px-4 py-2 rounded-md transition-all"
+                  style={{
+                    color: "rgba(255,255,255,0.7)",
+                    border: "1px solid rgba(255,255,255,0.2)",
+                    background: "rgba(255,255,255,0.05)",
+                  }}
+                  onMouseOver={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.12)";
+                    (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.95)";
+                  }}
+                  onMouseOut={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+                    (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.7)";
+                  }}
                 >
                   ログアウト
                 </button>
               </form>
             </div>
+
           </div>
         </div>
       </header>
