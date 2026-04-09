@@ -14,21 +14,18 @@ export function PrintActions({ orderId, currentType }: Props) {
       const page = document.querySelector(".dn-page") as HTMLElement | null;
       if (!page) return;
 
-      // zoom をいったんリセットして実寸を取得
+      // まず zoom をリセットして素の高さを取得
       page.style.zoom = "1";
 
-      // 96dpi基準: 1mm ≈ 3.7795px
-      const PX_PER_MM = 96 / 25.4;
-      const targetH = 148 * PX_PER_MM; // A5高さ (px)
-      const targetW = 210 * PX_PER_MM; // A5幅   (px)
-
       const contentH = page.scrollHeight;
-      const contentW = page.scrollWidth;
 
-      const scale = Math.min(targetH / contentH, targetW / contentW, 1);
+      // A5横の高さ148mm → CSS px換算 (1mm = 3.7795px @ 96dpi)
+      const A5_H_PX = 148 * (96 / 25.4); // ≈ 559px
 
-      // zoom はレイアウト自体を縮小するため印刷に確実に反映される
-      page.style.zoom = String(scale);
+      if (contentH > A5_H_PX) {
+        const scale = A5_H_PX / contentH;
+        page.style.zoom = String(scale);
+      }
     };
 
     // 印刷後: ズームをリセット

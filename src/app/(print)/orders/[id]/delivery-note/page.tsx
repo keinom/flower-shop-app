@@ -105,8 +105,6 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
             padding: 12mm 14mm !important;
             box-shadow: none !important;
             width: 210mm !important;
-            max-height: 148mm !important;
-            overflow: hidden !important;
           }
         }
         @media screen {
