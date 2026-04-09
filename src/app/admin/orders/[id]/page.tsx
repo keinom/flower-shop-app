@@ -67,7 +67,21 @@ export default async function OrderDetailPage({
             🔄 定期注文
           </Link>
         )}
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <Link
+            href={`/orders/${id}/delivery-note?type=standard`}
+            target="_blank"
+            className="text-xs font-medium px-3 py-1.5 rounded-md border bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 transition-colors"
+          >
+            🖨 自社宛
+          </Link>
+          <Link
+            href={`/orders/${id}/delivery-note?type=gift`}
+            target="_blank"
+            className="text-xs font-medium px-3 py-1.5 rounded-md border bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 transition-colors"
+          >
+            🖨 ギフト用
+          </Link>
           <Link
             href={`/admin/orders/${id}/edit`}
             className="btn-secondary text-sm"
