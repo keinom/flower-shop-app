@@ -18,16 +18,13 @@ interface SearchParams {
   created_to?: string;
   amount_min?: string;
   amount_max?: string;
+  searched?: string;
 }
 
 interface OrdersPageProps {
   searchParams: Promise<SearchParams>;
 }
 
-// 検索条件が1つ以上入力されているか
-function hasFilter(p: SearchParams): boolean {
-  return Object.values(p).some((v) => v && String(v).trim() !== "");
-}
 
 export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const p = await searchParams;
@@ -112,7 +109,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   }
 
   const { data: orders, error } = await query;
-  const searched = hasFilter(p);
+  const searched = p.searched === "1";
 
   return (
     <div className="space-y-5">

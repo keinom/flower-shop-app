@@ -15,6 +15,7 @@ export function OrderSearchForm() {
       e.preventDefault();
       const fd = new FormData(e.currentTarget);
       const sp = new URLSearchParams();
+      sp.set("searched", "1"); // 検索実行済みフラグ
       for (const [key, value] of fd.entries()) {
         const v = String(value).trim();
         if (v) sp.set(key, v);

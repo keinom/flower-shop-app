@@ -8,14 +8,11 @@ interface SearchParams {
   has_account?: string;
   created_from?: string;
   created_to?: string;
+  searched?: string;
 }
 
 interface CustomersPageProps {
   searchParams: Promise<SearchParams>;
-}
-
-function hasFilter(p: SearchParams): boolean {
-  return Object.values(p).some((v) => v && String(v).trim() !== "");
 }
 
 export default async function CustomersPage({ searchParams }: CustomersPageProps) {
@@ -75,7 +72,7 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
     {} as Record<string, number>
   );
 
-  const searched = hasFilter(p);
+  const searched = p.searched === "1";
 
   return (
     <div className="space-y-5">
