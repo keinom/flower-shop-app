@@ -178,24 +178,12 @@ function NoteHeader({ title, orderNo, issuedAt }: { title: string; orderNo: stri
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
         {/* 左: ロゴ + 店舗情報 */}
         <div style={{ display: "flex", flexDirection: "column", gap: "3pt" }}>
-          {/* ロゴ画像（public/logo.png を配置してください） */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo.png"
             alt={SHOP_NAME}
             style={{ height: "32pt", width: "auto", objectFit: "contain", objectPosition: "left center" }}
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
-              const el = document.getElementById("logo-fallback");
-              if (el) el.style.display = "block";
-            }}
           />
-          <span
-            id="logo-fallback"
-            style={{ display: "none", fontSize: "18pt", fontWeight: "700", letterSpacing: "0.15em", lineHeight: 1 }}
-          >
-            {SHOP_NAME}
-          </span>
           <div style={{ fontSize: "7pt", color: GRAY3, lineHeight: 1.6, marginTop: "1pt" }}>
             <div>{SHOP_ADDRESS}</div>
             <div>TEL {SHOP_TEL}　{SHOP_EMAIL}</div>
