@@ -138,7 +138,21 @@ export default async function OrderDetailPage({
           <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">お届け情報</h2>
           <dl className="space-y-3 text-sm">
             <InfoRow label="お届け先名">{order.delivery_name}</InfoRow>
-            <InfoRow label="お届け先住所">{order.delivery_address ?? "—"}</InfoRow>
+            <InfoRow label="お届け先住所">
+              {order.delivery_address
+                ? (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.delivery_address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand-600 hover:underline inline-flex items-center gap-1"
+                  >
+                    {order.delivery_address}
+                    <span className="text-xs">🗺</span>
+                  </a>
+                )
+                : "—"}
+            </InfoRow>
             <InfoRow label="電話番号">{(order as { delivery_phone?: string | null }).delivery_phone ?? "—"}</InfoRow>
             <InfoRow label="メールアドレス">{(order as { delivery_email?: string | null }).delivery_email ?? "—"}</InfoRow>
             <InfoRow label="お届け希望日">
