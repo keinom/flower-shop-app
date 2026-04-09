@@ -80,19 +80,11 @@ export default async function AdminLayout({
               <form action={logout}>
                 <button
                   type="submit"
-                  className="text-xs font-medium px-4 py-2 rounded-md transition-all"
+                  className="text-xs font-medium px-4 py-2 rounded-md transition-all hover:bg-white/10 hover:text-white/95"
                   style={{
                     color: "rgba(255,255,255,0.7)",
                     border: "1px solid rgba(255,255,255,0.2)",
                     background: "rgba(255,255,255,0.05)",
-                  }}
-                  onMouseOver={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.12)";
-                    (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.95)";
-                  }}
-                  onMouseOut={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
-                    (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.7)";
                   }}
                 >
                   ログアウト
