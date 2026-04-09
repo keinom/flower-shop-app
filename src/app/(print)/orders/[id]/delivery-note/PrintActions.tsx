@@ -1,11 +1,55 @@
 "use client";
 
+import { useEffect } from "react";
+
 interface Props {
   orderId: string;
   currentType: "standard" | "gift";
 }
 
 export function PrintActions({ orderId, currentType }: Props) {
+  useEffect(() => {
+    // 印刷直前: A5横(210×148mm)に収まるよう自動縮小
+    const handleBeforePrint = () => {
+      const page = document.querySelector(".dn-page") as HTMLElement | null;
+      if (!page) return;
+
+      // 96dpi基準: 1mm ≈ 3.7795px
+      const PX_PER_MM = 96 / 25.4;
+      const targetH = 148 * PX_PER_MM; // A5縦幅
+      const targetW = 210 * PX_PER_MM; // A5横幅
+
+      const contentH = page.scrollHeight;
+      const contentW = page.scrollWidth;
+
+      const scale = Math.min(targetH / contentH, targetW / contentW, 1);
+
+      if (scale < 1) {
+        page.style.transformOrigin = "0 0";
+        page.style.transform = `scale(${scale})`;
+        // 縮小後の見た目のサイズを確保
+        page.style.marginBottom = `-${contentH * (1 - scale)}px`;
+      }
+    };
+
+    // 印刷後: スタイルをリセット
+    const handleAfterPrint = () => {
+      const page = document.querySelector(".dn-page") as HTMLElement | null;
+      if (!page) return;
+      page.style.transform = "";
+      page.style.transformOrigin = "";
+      page.style.marginBottom = "";
+    };
+
+    window.addEventListener("beforeprint", handleBeforePrint);
+    window.addEventListener("afterprint", handleAfterPrint);
+
+    return () => {
+      window.removeEventListener("beforeprint", handleBeforePrint);
+      window.removeEventListener("afterprint", handleAfterPrint);
+    };
+  }, []);
+
   return (
     <div className="print:hidden fixed top-0 left-0 right-0 z-50 bg-gray-800 text-white px-5 py-2.5 flex items-center gap-3 text-sm shadow-lg">
       <span className="font-semibold">
