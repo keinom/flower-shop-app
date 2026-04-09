@@ -145,10 +145,9 @@ export default async function OrderDetailPage({
                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.delivery_address)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-brand-600 hover:underline inline-flex items-center gap-1"
+                    className="text-brand-600 hover:underline"
                   >
                     {order.delivery_address}
-                    <span className="text-xs">🗺</span>
                   </a>
                 )
                 : "—"}
