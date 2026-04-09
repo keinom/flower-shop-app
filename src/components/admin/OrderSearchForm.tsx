@@ -172,8 +172,8 @@ export function OrderSearchForm() {
         <div className="space-y-1.5">
           <label className="label">合計金額（From〜To）</label>
           <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">¥</span>
+            <div className="flex items-center flex-1 border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-brand-500 focus-within:border-brand-500">
+              <span className="px-2.5 text-gray-400 text-sm bg-gray-50 border-r border-gray-300 self-stretch flex items-center select-none">¥</span>
               <input
                 name="amount_min"
                 type="number"
@@ -181,12 +181,12 @@ export function OrderSearchForm() {
                 step={100}
                 defaultValue={get("amount_min")}
                 placeholder="下限なし"
-                className="input pl-7"
+                className="flex-1 px-3 py-2 text-sm outline-none bg-white"
               />
             </div>
             <span className="text-gray-400 text-sm flex-shrink-0">〜</span>
-            <div className="relative flex-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">¥</span>
+            <div className="flex items-center flex-1 border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-brand-500 focus-within:border-brand-500">
+              <span className="px-2.5 text-gray-400 text-sm bg-gray-50 border-r border-gray-300 self-stretch flex items-center select-none">¥</span>
               <input
                 name="amount_max"
                 type="number"
@@ -194,7 +194,7 @@ export function OrderSearchForm() {
                 step={100}
                 defaultValue={get("amount_max")}
                 placeholder="上限なし"
-                className="input pl-7"
+                className="flex-1 px-3 py-2 text-sm outline-none bg-white"
               />
             </div>
           </div>
