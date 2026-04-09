@@ -132,6 +132,9 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
             ? <StandardNote
                 orderNo={orderNo} issuedAt={issuedAt}
                 customerName={customer?.name ?? "—"}
+                customerAddress={customer?.address ?? null}
+                customerPhone={customer?.phone ?? null}
+                customerEmail={customer?.email ?? null}
                 deliveryName={order.delivery_name}
                 deliveryAddress={order.delivery_address ?? ""}
                 deliveryPhone={deliveryPhone ?? null}
@@ -259,7 +262,7 @@ function InfoBox({
 // ────────────────────────────────────────────────────
 function StandardNote({
   orderNo, issuedAt,
-  customerName,
+  customerName, customerAddress, customerPhone, customerEmail,
   deliveryName, deliveryAddress, deliveryPhone, deliveryEmail,
   deliveryDate, deliveryTime,
   items, productName, quantity,
@@ -267,7 +270,7 @@ function StandardNote({
   hasItems, purpose, remarks,
 }: {
   orderNo: string; issuedAt: string;
-  customerName: string;
+  customerName: string; customerAddress: string | null; customerPhone: string | null; customerEmail: string | null;
   deliveryName: string; deliveryAddress: string;
   deliveryPhone: string | null; deliveryEmail: string | null;
   deliveryDate: string; deliveryTime: string | null;
@@ -276,30 +279,46 @@ function StandardNote({
   totalExcl: number; taxRate: number; taxAmt: number; totalIncl: number;
   hasItems: boolean; purpose: string | null; remarks: string | null;
 }) {
-  const deliveryLines = [
-    deliveryAddress,
-    deliveryPhone ? `TEL ${deliveryPhone}` : "",
-    deliveryEmail ? `Email ${deliveryEmail}` : "",
-    `お届け日：${deliveryDate}${deliveryTime ? `　${deliveryTime}` : ""}`,
-  ].filter(Boolean);
-
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <NoteHeader title="納　品　書" orderNo={orderNo} issuedAt={issuedAt} />
 
-      {/* 宛先エリア */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8pt", marginBottom: "10pt" }}>
-        <InfoBox
-          label="お客様"
-          name={`${customerName} 御中`}
-          lines={purpose ? [`用途：${purpose}`] : []}
-        />
-        <InfoBox
-          label="お届け先"
-          name={`${deliveryName} 様`}
-          lines={deliveryLines}
-          accent
-        />
+      {/* お客様（統合） */}
+      <div style={{
+        border: `1px solid #ddd8ce`,
+        borderRadius: "3pt",
+        padding: "8pt 14pt",
+        backgroundColor: "white",
+        marginBottom: "10pt",
+      }}>
+        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>お客様</div>
+        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>{customerName} 御中</div>
+        {customerAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{customerAddress}</div>}
+        {customerPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>TEL {customerPhone}</div>}
+        {customerEmail   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{customerEmail}</div>}
+        {/* お届け先 */}
+        <div style={{ marginTop: "6pt", paddingTop: "6pt", borderTop: `0.5px solid #e5dfd3` }}>
+          <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "4pt" }}>お届け先</div>
+          <div style={{ fontSize: "11pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "3pt" }}>{deliveryName} 様</div>
+          {deliveryAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryAddress}</div>}
+          {deliveryPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>TEL {deliveryPhone}</div>}
+          {deliveryEmail   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryEmail}</div>}
+        </div>
+        {/* お届け日・用途 */}
+        <div style={{ marginTop: "6pt", paddingTop: "6pt", borderTop: `0.5px solid #e5dfd3`, display: "flex", gap: "20pt", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8pt" }}>
+            <span style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.08em" }}>お届け日</span>
+            <span style={{ fontSize: "10pt", fontWeight: "600", color: GRAY1 }}>
+              {deliveryDate}{deliveryTime ? `　${deliveryTime}` : ""}
+            </span>
+          </div>
+          {purpose && (
+            <div style={{ display: "flex", alignItems: "center", gap: "8pt" }}>
+              <span style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.08em" }}>用途</span>
+              <span style={{ fontSize: "10pt", color: GRAY1 }}>{purpose}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 明細テーブル */}
@@ -319,7 +338,8 @@ function StandardNote({
                   borderTop: `1.5px solid ${RULE}`,
                   borderBottom: `1px solid ${RULE}`,
                   backgroundColor: BG_ROW,
-                  width: i === 0 ? "auto" : i === 1 ? "30pt" : "68pt",
+                  width: i === 0 ? "auto" : i === 1 ? "42pt" : "68pt",
+                  whiteSpace: "nowrap",
                 }}
               >
                 {h}
@@ -340,8 +360,8 @@ function StandardNote({
                       <span style={{ fontSize: "7.5pt", color: GRAY3, marginLeft: "8pt" }}>{item.description}</span>
                     )}
                   </td>
-                  <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3` }}>{item.quantity}</td>
-                  <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3` }}>¥{item.unit_price.toLocaleString("ja-JP")}</td>
+                  <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>{item.quantity}</td>
+                  <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>¥{item.unit_price.toLocaleString("ja-JP")}</td>
                   <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3`, fontWeight: "600" }}>¥{(excl + tax).toLocaleString("ja-JP")}</td>
                 </tr>
               );
