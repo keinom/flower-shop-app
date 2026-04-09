@@ -4,7 +4,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { OrderTypeBadge } from "@/components/ui/OrderTypeBadge";
 import { DailyDatePicker } from "@/components/admin/DailyDatePicker";
 import { DailyViewToggle } from "@/components/admin/DailyViewToggle";
-import { ORDER_TYPE_ICONS, ORDER_TYPE_COLORS, ORDER_TYPES } from "@/lib/constants";
+import { ORDER_STATUSES } from "@/lib/constants";
 import type { OrderStatus, OrderType } from "@/types";
 
 interface DailyPageProps {
@@ -145,78 +145,46 @@ function DaySingleFull({
   today: string;
   orders: OrderRow[];
 }) {
-  const isToday    = dateStr === today;
-  const isTomorrow = dateStr === shiftDate(today, 1);
-  const dayLabel   = isToday ? "今日" : isTomorrow ? "明日" : "";
-
-  const dateLabel = new Date(dateStr + "T00:00:00").toLocaleDateString("ja-JP", {
-    year: "numeric", month: "long", day: "numeric", weekday: "short",
-  });
-
   // 発送 と それ以外（タイムライン）に分割
-  const timelineOrders  = orders.filter((o) => o.order_type !== "発送");
-  const shippingOrders  = orders.filter((o) => o.order_type === "発送");
+  const timelineOrders = orders.filter((o) => o.order_type !== "発送");
+  const shippingOrders = orders.filter((o) => o.order_type === "発送");
 
-  // 種別ごとの件数（サマリーバー用）
-  const typeCounts: Partial<Record<string, number>> = {};
-  for (const order of orders) {
-    const t = order.order_type ?? "配達";
-    typeCounts[t] = (typeCounts[t] ?? 0) + 1;
-  }
-  const activeTypes = ORDER_TYPES.filter((t) => typeCounts[t]);
-
+  // ステータス別件数
+  const statusCounts = ORDER_STATUSES.reduce(
+    (acc, s) => { acc[s] = orders.filter((o) => o.status === s).length; return acc; },
+    {} as Record<OrderStatus, number>
+  );
 
   return (
     <div className="space-y-4">
-      {/* ── 日付ヘッダーカード ── */}
-      <div className="card overflow-hidden">
-        {/* タイトル行 */}
-        <div
-          className={`px-6 py-5 ${
-            isToday
-              ? "bg-brand-600 text-white"
-              : isTomorrow
-              ? "bg-brand-50"
-              : "bg-gray-50"
-          }`}
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              {dayLabel && (
-                <p className={`text-xs font-semibold mb-1 ${isToday ? "text-brand-200" : "text-brand-600"}`}>
-                  {dayLabel}
-                </p>
-              )}
-              <p className={`text-2xl font-bold ${isToday ? "text-white" : "text-gray-900"}`}>
-                {dateLabel}
-              </p>
-            </div>
-            <div className={`text-5xl font-black leading-none ${isToday ? "text-white" : "text-brand-700"}`}>
-              {orders.length}
-              <span className={`text-base font-normal ml-1 ${isToday ? "text-brand-200" : "text-gray-500"}`}>
-                件
-              </span>
-            </div>
-          </div>
+      {/* ── ステータスサマリーカード ── */}
+      <div className="card p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-gray-700">この日のお届け予定</h2>
+          <span className="text-2xl font-bold text-brand-700">
+            {orders.length}
+            <span className="text-sm font-normal text-gray-500 ml-1">件</span>
+          </span>
         </div>
-
-        {/* 種別サマリーバー */}
-        {orders.length > 0 && (
-          <div className="px-6 py-3 bg-white border-t border-gray-100 flex items-center gap-2.5 flex-wrap">
-            <span className="text-xs text-gray-400 font-medium mr-1">種別内訳</span>
-            {activeTypes.map((type) => {
-              const colors = ORDER_TYPE_COLORS[type];
-              return (
-                <span
-                  key={type}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold ${colors.bg} ${colors.text} border ${colors.border}`}
-                >
-                  {ORDER_TYPE_ICONS[type]} {type}&nbsp;{typeCounts[type]}件
-                </span>
-              );
-            })}
-          </div>
-        )}
+        <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+          {ORDER_STATUSES.map((status) => (
+            <Link
+              key={status}
+              href={`/admin/orders?status=${encodeURIComponent(status)}&delivery_from=${dateStr}&delivery_to=${dateStr}&searched=1`}
+              className={`flex flex-col items-center p-2.5 rounded-xl border transition-all ${
+                statusCounts[status] > 0
+                  ? "bg-white border-gray-200 hover:bg-brand-50 hover:border-brand-200"
+                  : "bg-gray-50 border-transparent opacity-50"
+              }`}
+            >
+              <StatusBadge status={status} size="sm" />
+              <span className={`text-xl font-bold mt-1.5 ${statusCounts[status] > 0 ? "text-gray-800" : "text-gray-400"}`}>
+                {statusCounts[status]}
+              </span>
+              <span className="text-xs text-gray-400">件</span>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* ── 注文ゼロ ── */}
