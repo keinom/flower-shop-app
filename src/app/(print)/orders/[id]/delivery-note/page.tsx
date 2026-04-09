@@ -188,7 +188,7 @@ function NoteHeader({ title, orderNo, issuedAt }: { title: string; orderNo: stri
           />
           <div style={{ fontSize: "7pt", color: GRAY3, lineHeight: 1.6, marginTop: "1pt" }}>
             <div>{SHOP_ADDRESS}</div>
-            <div>TEL {SHOP_TEL}　{SHOP_EMAIL}</div>
+            <div>電話番号 {SHOP_TEL}　{SHOP_EMAIL}</div>
           </div>
         </div>
 
@@ -294,7 +294,7 @@ function StandardNote({
         <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>お届け先</div>
         <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>{deliveryName} 様</div>
         {deliveryAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryAddress}</div>}
-        {deliveryPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>TEL {deliveryPhone}</div>}
+        {deliveryPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {deliveryPhone}</div>}
         {deliveryEmail   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryEmail}</div>}
         {/* お届け日・用途 */}
         <div style={{ marginTop: "6pt", paddingTop: "6pt", borderTop: `0.5px solid #e5dfd3`, display: "flex", gap: "20pt", flexWrap: "wrap" }}>
@@ -317,7 +317,7 @@ function StandardNote({
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "8.5pt" }}>
         <thead>
           <tr>
-            {(["品名・説明", "数量", "単価（税抜）", "金額（税込）"] as const).map((h, i) => (
+            {(["品名", "数量", "単価（税抜）", "金額（税込）"] as const).map((h, i) => (
               <th
                 key={h}
                 style={{
@@ -348,9 +348,6 @@ function StandardNote({
                 <tr key={item.id} style={{ backgroundColor: idx % 2 === 1 ? BG_ROW : "white" }}>
                   <td style={{ padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3` }}>
                     <span style={{ fontWeight: "600" }}>{item.product_name}</span>
-                    {item.description && (
-                      <span style={{ fontSize: "7.5pt", color: GRAY3, marginLeft: "8pt" }}>{item.description}</span>
-                    )}
                   </td>
                   <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>{item.quantity}</td>
                   <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>¥{item.unit_price.toLocaleString("ja-JP")}</td>
@@ -448,7 +445,7 @@ function GiftNote({
         <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>贈り主</div>
         <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>{senderName} 様</div>
         {senderAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{senderAddress}</div>}
-        {senderPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>TEL {senderPhone}</div>}
+        {senderPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {senderPhone}</div>}
       </div>
 
       {/* ② お届け先 */}
@@ -462,7 +459,7 @@ function GiftNote({
         <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>お届け先</div>
         <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>{deliveryName} 様</div>
         {deliveryAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryAddress}</div>}
-        {deliveryPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>TEL {deliveryPhone}</div>}
+        {deliveryPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {deliveryPhone}</div>}
       </div>
 
       {/* ③ ご用途 */}
