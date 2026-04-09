@@ -165,6 +165,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
             <table className="table">
               <thead>
                 <tr>
+                  <th className="th"></th>
                   <th className="th">注文日</th>
                   <th className="th">顧客名</th>
                   <th className="th">種別</th>
@@ -174,7 +175,6 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                   <th className="th text-right">合計金額</th>
                   <th className="th">商品名</th>
                   <th className="th">用途</th>
-                  <th className="th"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -194,6 +194,14 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                       | null;
                     return (
                       <tr key={order.id} className="tr-hover">
+                        <td className="td">
+                          <Link
+                            href={`/admin/orders/${order.id}`}
+                            className="text-sm text-brand-600 hover:underline whitespace-nowrap font-medium"
+                          >
+                            詳細
+                          </Link>
+                        </td>
                         <td className="td text-gray-500 text-xs whitespace-nowrap">
                           {new Date(order.created_at).toLocaleDateString("ja-JP")}
                         </td>
@@ -238,14 +246,6 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                         </td>
                         <td className="td text-sm text-gray-500">
                           {(order as { purpose?: string }).purpose ?? "—"}
-                        </td>
-                        <td className="td">
-                          <Link
-                            href={`/admin/orders/${order.id}`}
-                            className="text-sm text-brand-600 hover:underline whitespace-nowrap font-medium"
-                          >
-                            詳細
-                          </Link>
                         </td>
                       </tr>
                     );
