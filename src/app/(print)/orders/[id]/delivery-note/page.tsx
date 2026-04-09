@@ -400,10 +400,7 @@ function StandardNote({
             {remarks}
           </div>
         )}
-        <div style={{ borderTop: `0.5px solid ${RULE}`, paddingTop: "4pt", display: "flex", justifyContent: "space-between", fontSize: "7pt", color: GRAY4 }}>
-          <span>青山花町商店 / {SHOP_NAME}</span>
-          <span>{SHOP_TEL}</span>
-        </div>
+        <div style={{ borderTop: `0.5px solid ${RULE}`, paddingTop: "3pt" }} />
       </div>
     </div>
   );
@@ -430,129 +427,123 @@ function GiftNote({
   hasItems: boolean; purpose: string | null;
   messageCard: string | null; remarks: string | null;
 }) {
-  const deliveryLines = [
-    deliveryAddress,
-    deliveryPhone ? `TEL ${deliveryPhone}` : "",
-    `お届け日：${deliveryDate}${deliveryTime ? `　${deliveryTime}` : ""}`,
-  ].filter(Boolean);
+  const itemList = hasItems
+    ? items.map(i => ({ name: i.product_name, desc: i.description, qty: i.quantity }))
+    : [{ name: productName, desc: null, qty: quantity }];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <NoteHeader title="ギフト納品書" orderNo={orderNo} issuedAt={issuedAt} />
 
-      {/* 贈り主 / お届け先 */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8pt", marginBottom: "10pt" }}>
-        <InfoBox
-          label="贈り主"
-          name={`${senderName} 様`}
-          lines={purpose ? [`用途：${purpose}`] : []}
-        />
-        <InfoBox
-          label="お届け先"
-          name={`${deliveryName} 様`}
-          lines={deliveryLines}
-          accent
-        />
-      </div>
-
-      {/* 商品 + メッセージカード を横並び */}
-      <div style={{ display: "grid", gridTemplateColumns: messageCard ? "1fr 1fr" : "1fr", gap: "8pt", flex: 1 }}>
-        {/* 商品テーブル */}
-        <div>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "8.5pt" }}>
-            <thead>
-              <tr>
-                {(["品名・説明", "数量"] as const).map((h, i) => (
-                  <th
-                    key={h}
-                    style={{
-                      textAlign: i === 0 ? "left" : "right",
-                      padding: "4.5pt 8pt",
-                      fontWeight: "700",
-                      fontSize: "7.5pt",
-                      letterSpacing: "0.04em",
-                      color: GOLD,
-                      borderTop: `1.5px solid ${RULE}`,
-                      borderBottom: `1px solid ${RULE}`,
-                      backgroundColor: BG_ROW,
-                      width: i === 0 ? "auto" : "36pt",
-                    }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {hasItems ? (
-                items.map((item, idx) => (
-                  <tr key={item.id} style={{ backgroundColor: idx % 2 === 1 ? BG_ROW : "white" }}>
-                    <td style={{ padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3` }}>
-                      <span style={{ fontWeight: "600" }}>{item.product_name}</span>
-                      {item.description && (
-                        <span style={{ fontSize: "7.5pt", color: GRAY3, marginLeft: "8pt" }}>{item.description}</span>
-                      )}
-                    </td>
-                    <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3` }}>{item.quantity}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td style={{ padding: "4pt 8pt", fontWeight: "600", borderBottom: `0.5px solid #e5dfd3` }}>{productName}</td>
-                  <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3` }}>{quantity}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {/* 用途バナー */}
+      {purpose && (
+        <div style={{
+          backgroundColor: GOLD_L,
+          border: `1px solid ${RULE}`,
+          borderRadius: "3pt",
+          padding: "5pt 12pt",
+          marginBottom: "8pt",
+          display: "flex",
+          alignItems: "center",
+          gap: "10pt",
+        }}>
+          <span style={{ fontSize: "7pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", whiteSpace: "nowrap" }}>ご用途</span>
+          <span style={{ fontSize: "11pt", fontWeight: "700", color: GRAY1, letterSpacing: "0.05em" }}>{purpose}</span>
         </div>
+      )}
 
-        {/* メッセージカード */}
-        {messageCard && (
+      {/* 2カラム: 左=贈り主・お届け先縦積み / 右=お品物・メッセージ */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10pt", flex: 1 }}>
+
+        {/* 左列: 贈り主 → お届け先 (縦積み) */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "6pt" }}>
+          {/* 贈り主 */}
+          <div style={{
+            border: `1px solid #ddd8ce`,
+            borderRadius: "3pt",
+            padding: "7pt 10pt",
+            backgroundColor: "#fdfcfa",
+          }}>
+            <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", marginBottom: "4pt" }}>贈り主</div>
+            <div style={{ fontSize: "12pt", fontWeight: "700", lineHeight: 1.3 }}>{senderName} 様</div>
+          </div>
+
+          {/* 矢印 */}
+          <div style={{ textAlign: "center", color: RULE, fontSize: "10pt", lineHeight: 1 }}>↓</div>
+
+          {/* お届け先 */}
           <div style={{
             border: `1px solid ${RULE}`,
             borderRadius: "3pt",
-            padding: "8pt 10pt",
+            padding: "7pt 10pt",
             backgroundColor: GOLD_L,
+            flex: 1,
           }}>
-            <div style={{
-              fontSize: "6.5pt", fontWeight: "700", color: GOLD,
-              letterSpacing: "0.12em", textTransform: "uppercase",
-              marginBottom: "5pt",
-            }}>
-              Message Card
-            </div>
-            <div style={{
-              fontSize: "9pt",
-              lineHeight: 1.7,
-              color: GRAY2,
-              whiteSpace: "pre-wrap",
-            }}>
-              {messageCard}
+            <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", marginBottom: "4pt" }}>お届け先</div>
+            <div style={{ fontSize: "12pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>{deliveryName} 様</div>
+            {deliveryAddress && <div style={{ fontSize: "8pt", color: GRAY2, lineHeight: 1.7 }}>{deliveryAddress}</div>}
+            {deliveryPhone && <div style={{ fontSize: "8pt", color: GRAY2, lineHeight: 1.7 }}>TEL {deliveryPhone}</div>}
+            <div style={{ fontSize: "8pt", color: GRAY2, lineHeight: 1.7, marginTop: "2pt", fontWeight: "600" }}>
+              お届け日：{deliveryDate}{deliveryTime ? `　${deliveryTime}` : ""}
             </div>
           </div>
-        )}
+        </div>
+
+        {/* 右列: お品物 + メッセージカード */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "6pt" }}>
+          {/* お品物リスト */}
+          <div style={{
+            border: `1px solid #ddd8ce`,
+            borderRadius: "3pt",
+            padding: "7pt 10pt",
+            backgroundColor: "#fdfcfa",
+          }}>
+            <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", marginBottom: "6pt" }}>お品物</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4pt" }}>
+              {itemList.map((item, idx) => (
+                <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: idx < itemList.length - 1 ? `0.5px solid #e5dfd3` : "none", paddingBottom: "3pt" }}>
+                  <div>
+                    <span style={{ fontSize: "9pt", fontWeight: "600" }}>{item.name}</span>
+                    {item.desc && <span style={{ fontSize: "7.5pt", color: GRAY3, marginLeft: "6pt" }}>{item.desc}</span>}
+                  </div>
+                  <span style={{ fontSize: "8.5pt", color: GRAY2, marginLeft: "8pt", whiteSpace: "nowrap" }}>{item.qty} 点</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* メッセージカード */}
+          {messageCard && (
+            <div style={{
+              border: `1px solid ${RULE}`,
+              borderRadius: "3pt",
+              padding: "7pt 10pt",
+              backgroundColor: GOLD_L,
+              flex: 1,
+            }}>
+              <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", marginBottom: "5pt" }}>MESSAGE CARD</div>
+              <div style={{ fontSize: "9pt", lineHeight: 1.7, color: GRAY2, whiteSpace: "pre-wrap" }}>{messageCard}</div>
+            </div>
+          )}
+
+          {/* 備考 */}
+          {remarks && (
+            <div style={{
+              fontSize: "7.5pt", color: GRAY3,
+              border: `0.5px solid #ddd8ce`,
+              borderRadius: "3pt",
+              padding: "5pt 8pt",
+              backgroundColor: "#fdfcfa",
+            }}>
+              <span style={{ fontWeight: "700", marginRight: "6pt" }}>備考</span>
+              {remarks}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* フッター */}
-      <div style={{ marginTop: "auto", paddingTop: "8pt" }}>
-        {remarks && (
-          <div style={{
-            fontSize: "7.5pt", color: GRAY3,
-            border: `0.5px solid #ddd8ce`,
-            borderRadius: "3pt",
-            padding: "5pt 8pt",
-            backgroundColor: "#fdfcfa",
-            marginBottom: "6pt",
-          }}>
-            <span style={{ fontWeight: "700", marginRight: "6pt" }}>備考</span>
-            {remarks}
-          </div>
-        )}
-        <div style={{ borderTop: `0.5px solid ${RULE}`, paddingTop: "4pt", display: "flex", justifyContent: "space-between", fontSize: "7pt", color: GRAY4 }}>
-          <span style={{ fontStyle: "italic" }}>※ 金額の記載のない納品書です</span>
-          <span>青山花町商店 / {SHOP_NAME}　{SHOP_TEL}</span>
-        </div>
-      </div>
+      <div style={{ marginTop: "6pt", borderTop: `0.5px solid ${RULE}`, paddingTop: "3pt" }} />
     </div>
   );
 }
