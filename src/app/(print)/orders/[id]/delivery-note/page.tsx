@@ -100,7 +100,14 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
         @media print {
           @page { size: A5 landscape; margin: 0; }
           html, body { margin: 0; padding: 0; background: white !important; }
-          .dn-page { margin: 0 !important; padding: 12mm 14mm !important; box-shadow: none !important; }
+          .dn-page {
+            margin: 0 !important;
+            padding: 12mm 14mm !important;
+            box-shadow: none !important;
+            width: 210mm !important;
+            max-height: 148mm !important;
+            overflow: hidden !important;
+          }
         }
         @media screen {
           body { background: #e8e3dc; }

@@ -14,31 +14,28 @@ export function PrintActions({ orderId, currentType }: Props) {
       const page = document.querySelector(".dn-page") as HTMLElement | null;
       if (!page) return;
 
+      // zoom をいったんリセットして実寸を取得
+      page.style.zoom = "1";
+
       // 96dpi基準: 1mm ≈ 3.7795px
       const PX_PER_MM = 96 / 25.4;
-      const targetH = 148 * PX_PER_MM; // A5縦幅
-      const targetW = 210 * PX_PER_MM; // A5横幅
+      const targetH = 148 * PX_PER_MM; // A5高さ (px)
+      const targetW = 210 * PX_PER_MM; // A5幅   (px)
 
       const contentH = page.scrollHeight;
       const contentW = page.scrollWidth;
 
       const scale = Math.min(targetH / contentH, targetW / contentW, 1);
 
-      if (scale < 1) {
-        page.style.transformOrigin = "0 0";
-        page.style.transform = `scale(${scale})`;
-        // 縮小後の見た目のサイズを確保
-        page.style.marginBottom = `-${contentH * (1 - scale)}px`;
-      }
+      // zoom はレイアウト自体を縮小するため印刷に確実に反映される
+      page.style.zoom = String(scale);
     };
 
-    // 印刷後: スタイルをリセット
+    // 印刷後: ズームをリセット
     const handleAfterPrint = () => {
       const page = document.querySelector(".dn-page") as HTMLElement | null;
       if (!page) return;
-      page.style.transform = "";
-      page.style.transformOrigin = "";
-      page.style.marginBottom = "";
+      page.style.zoom = "1";
     };
 
     window.addEventListener("beforeprint", handleBeforePrint);
