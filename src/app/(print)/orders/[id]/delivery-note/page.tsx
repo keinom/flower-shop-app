@@ -157,7 +157,6 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
                 quantity={order.quantity}
                 totalExcl={totalExcl} taxRate={taxRate} taxAmt={taxAmt} totalIncl={totalIncl}
                 hasItems={hasItems}
-                purpose={order.purpose ?? null}
                 remarks={order.remarks ?? null}
               />
             : <GiftNote
@@ -273,7 +272,7 @@ function StandardNote({
   deliveryDate, deliveryTime,
   items, productName, quantity,
   totalExcl, taxRate, taxAmt, totalIncl,
-  hasItems, purpose, remarks,
+  hasItems, remarks,
 }: {
   orderNo: string; issuedAt: string;
   customerName: string; customerAddress: string | null; customerPhone: string | null; customerEmail: string | null;
@@ -283,7 +282,7 @@ function StandardNote({
   items: { id: string; product_name: string; description: string | null; quantity: number; unit_price: number; tax_rate: number }[];
   productName: string; quantity: number;
   totalExcl: number; taxRate: number; taxAmt: number; totalIncl: number;
-  hasItems: boolean; purpose: string | null; remarks: string | null;
+  hasItems: boolean; remarks: string | null;
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
@@ -302,20 +301,14 @@ function StandardNote({
         {deliveryAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryAddress}</div>}
         {deliveryPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {deliveryPhone}</div>}
         {deliveryEmail   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryEmail}</div>}
-        {/* お届け日・用途 */}
-        <div style={{ marginTop: "6pt", paddingTop: "6pt", borderTop: `0.5px solid #e5dfd3`, display: "flex", gap: "20pt", flexWrap: "wrap" }}>
+        {/* お届け日 */}
+        <div style={{ marginTop: "6pt", paddingTop: "6pt", borderTop: `0.5px solid #e5dfd3` }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8pt" }}>
             <span style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.08em" }}>お届け日</span>
             <span style={{ fontSize: "10pt", fontWeight: "600", color: GRAY1 }}>
               {deliveryDate}{deliveryTime ? `　${deliveryTime}` : ""}
             </span>
           </div>
-          {purpose && (
-            <div style={{ display: "flex", alignItems: "center", gap: "8pt" }}>
-              <span style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.08em" }}>用途</span>
-              <span style={{ fontSize: "10pt", color: GRAY1 }}>{purpose}</span>
-            </div>
-          )}
         </div>
       </div>
 
