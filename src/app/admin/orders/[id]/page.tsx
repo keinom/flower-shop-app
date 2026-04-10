@@ -54,7 +54,6 @@ export default async function OrderDetailPage({
 
   const customer = order.customers as { id: string; name: string } | null;
   const selectableStatuses = ORDER_STATUSES.filter((s) => s !== order.status);
-  const isActive = order.status !== "配達完了" && order.status !== "キャンセル";
 
   return (
     <div className="space-y-5">
@@ -324,39 +323,33 @@ export default async function OrderDetailPage({
               <StatusBadge status={order.status as OrderStatus} />
             </div>
 
-            {isActive ? (
-              <form action={updateOrderStatus} className="space-y-3">
-                <input type="hidden" name="order_id" value={order.id} />
-                <div>
-                  <label className="label text-xs">新しいステータス</label>
-                  <select name="new_status" required className="input text-sm">
-                    <option value="">選択してください</option>
-                    {selectableStatuses.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="label text-xs">
-                    メモ
-                    <span className="text-gray-400 font-normal ml-1">（任意）</span>
-                  </label>
-                  <input
-                    name="note"
-                    type="text"
-                    placeholder="例: 午前中に配達予定"
-                    className="input text-sm"
-                  />
-                </div>
-                <button type="submit" className="btn-primary w-full text-sm">
-                  更新する
-                </button>
-              </form>
-            ) : (
-              <p className="text-xs text-center text-gray-400">
-                このステータスは変更できません
-              </p>
-            )}
+            <form action={updateOrderStatus} className="space-y-3">
+              <input type="hidden" name="order_id" value={order.id} />
+              <div>
+                <label className="label text-xs">新しいステータス</label>
+                <select name="new_status" required className="input text-sm">
+                  <option value="">選択してください</option>
+                  {selectableStatuses.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="label text-xs">
+                  メモ
+                  <span className="text-gray-400 font-normal ml-1">（任意）</span>
+                </label>
+                <input
+                  name="note"
+                  type="text"
+                  placeholder="例: 午前中に配達予定"
+                  className="input text-sm"
+                />
+              </div>
+              <button type="submit" className="btn-primary w-full text-sm">
+                更新する
+              </button>
+            </form>
           </div>
 
 
