@@ -4,6 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { CustomerSearchForm } from "@/components/admin/CustomerSearchForm";
 
 interface SearchParams {
+  name?: string;
+  phone?: string;
+  email?: string;
   q?: string;
   has_account?: string;
   created_from?: string;
@@ -26,12 +29,24 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
     .order("created_at", { ascending: false })
     .limit(200);
 
-  // キーワード: 顧客名 / メール / 電話 / 住所
+  // 顧客名
+  if (p.name?.trim()) {
+    query = query.ilike("name", `%${p.name.trim()}%`);
+  }
+
+  // 電話番号
+  if (p.phone?.trim()) {
+    query = query.ilike("phone", `%${p.phone.trim()}%`);
+  }
+
+  // メールアドレス
+  if (p.email?.trim()) {
+    query = query.ilike("email", `%${p.email.trim()}%`);
+  }
+
+  // キーワード（住所など）
   if (p.q?.trim()) {
-    const kw = p.q.trim();
-    query = query.or(
-      `name.ilike.%${kw}%,email.ilike.%${kw}%,phone.ilike.%${kw}%,address.ilike.%${kw}%`
-    );
+    query = query.ilike("address", `%${p.q.trim()}%`);
   }
 
   // 登録日 From〜To

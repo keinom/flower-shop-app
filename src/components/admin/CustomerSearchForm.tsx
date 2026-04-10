@@ -13,7 +13,7 @@ export function CustomerSearchForm() {
       e.preventDefault();
       const fd = new FormData(e.currentTarget);
       const sp = new URLSearchParams();
-      sp.set("searched", "1"); // 検索実行済みフラグ
+      sp.set("searched", "1");
       for (const [key, value] of fd.entries()) {
         const v = String(value).trim();
         if (v) sp.set(key, v);
@@ -34,27 +34,67 @@ export function CustomerSearchForm() {
     <form
       ref={formRef}
       onSubmit={handleSubmit}
-      className="card px-5 py-5 space-y-5"
+      className="card px-5 py-5 space-y-4"
     >
-      {/* ─── 行1: キーワード ─── */}
+      {/* ─── 行1: 顧客名・電話番号 ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <label className="label" htmlFor="name">顧客名</label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            defaultValue={get("name")}
+            placeholder="例: 田中"
+            className="input"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label className="label" htmlFor="phone">電話番号</label>
+          <input
+            id="phone"
+            name="phone"
+            type="text"
+            defaultValue={get("phone")}
+            placeholder="例: 090-1234"
+            className="input"
+          />
+        </div>
+      </div>
+
+      {/* ─── 行2: メール・キーワード ─── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <label className="label" htmlFor="email">メールアドレス</label>
+          <input
+            id="email"
+            name="email"
+            type="text"
+            defaultValue={get("email")}
+            placeholder="例: tanaka@example.com"
+            className="input"
+          />
+        </div>
         <div className="space-y-1.5">
           <label className="label" htmlFor="q">
             キーワード
+            <span className="text-gray-400 text-xs font-normal ml-1">（住所など）</span>
           </label>
           <input
             id="q"
             name="q"
             type="text"
             defaultValue={get("q")}
-            placeholder="顧客名・メール・電話番号・住所で検索"
+            placeholder="住所・その他で検索"
             className="input"
           />
         </div>
+      </div>
+
+      {/* ─── 行3: アカウント・登録日 ─── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <label className="label" htmlFor="has_account">
-            ログインアカウント
-          </label>
+          <label className="label" htmlFor="has_account">ログインアカウント</label>
           <select
             id="has_account"
             name="has_account"
@@ -66,10 +106,6 @@ export function CustomerSearchForm() {
             <option value="none">未発行</option>
           </select>
         </div>
-      </div>
-
-      {/* ─── 行2: 登録日 ─── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className="label">登録日（From〜To）</label>
           <div className="flex items-center gap-2">
