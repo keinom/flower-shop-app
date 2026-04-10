@@ -5,6 +5,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { OrderTypeBadge } from "@/components/ui/OrderTypeBadge";
 import { ORDER_STATUSES } from "@/lib/constants";
 import { updateOrderStatus } from "./actions";
+import { OrderPhotoPanel } from "@/components/admin/OrderPhotoPanel";
 import type { OrderStatus, OrderType } from "@/types";
 
 interface OrderDetailPageProps {
@@ -39,6 +40,17 @@ export default async function OrderDetailPage({
     .select("id, product_name, description, quantity, unit_price, tax_rate")
     .eq("order_id", id)
     .order("created_at", { ascending: true });
+
+  const { data: rawPhotos } = await supabase
+    .from("order_photos" as never)
+    .select("id, storage_path, file_name, created_at")
+    .eq("order_id", id)
+    .order("created_at", { ascending: true });
+
+  const photos = ((rawPhotos ?? []) as Array<{ id: string; storage_path: string; file_name: string; created_at: string }>).map((p) => ({
+    ...p,
+    public_url: supabase.storage.from("order-photos").getPublicUrl(p.storage_path).data.publicUrl,
+  }));
 
   const customer = order.customers as { id: string; name: string } | null;
 
@@ -270,6 +282,9 @@ export default async function OrderDetailPage({
           )}
         </div>
       )}
+
+      {/* 写真 */}
+      <OrderPhotoPanel orderId={id} photos={photos} />
 
       {/* ステータス更新 */}
       {order.status !== "配達完了" && order.status !== "キャンセル" && (
