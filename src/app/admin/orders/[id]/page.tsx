@@ -6,6 +6,7 @@ import { OrderTypeBadge } from "@/components/ui/OrderTypeBadge";
 import { ORDER_STATUSES } from "@/lib/constants";
 import { updateOrderStatus } from "./actions";
 import { OrderPhotoPanel } from "@/components/admin/OrderPhotoPanel";
+import { PaymentPanel } from "@/components/admin/PaymentPanel";
 import type { OrderStatus, OrderType } from "@/types";
 
 interface OrderDetailPageProps {
@@ -54,6 +55,9 @@ export default async function OrderDetailPage({
 
   const customer = order.customers as { id: string; name: string } | null;
   const selectableStatuses = ORDER_STATUSES.filter((s) => s !== order.status);
+  const paymentStatus = (order as { payment_status?: string | null }).payment_status ?? null;
+  const paymentMethod = (order as { payment_method?: string | null }).payment_method ?? null;
+  const paymentPlan   = (order as { payment_plan?:   string | null }).payment_plan   ?? null;
 
   return (
     <div className="space-y-5">
@@ -313,6 +317,14 @@ export default async function OrderDetailPage({
 
         {/* ── 右: スティッキーサイドバー ── */}
         <div className="sticky top-4 space-y-4">
+
+          {/* 支払い */}
+          <PaymentPanel
+            orderId={id}
+            currentPaymentStatus={paymentStatus}
+            currentPaymentMethod={paymentMethod}
+            currentPaymentPlan={paymentPlan}
+          />
 
           {/* ステータス更新 */}
           <div className="card p-4">

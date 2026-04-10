@@ -69,6 +69,35 @@ export async function deleteOrderPhoto(
   return null;
 }
 
+export async function updatePaymentStatus(
+  formData: FormData
+): Promise<{ error: string } | null> {
+  const orderId       = formData.get("order_id") as string;
+  const paymentStatus = (formData.get("payment_status") as string) || null;
+  const paymentMethod = (formData.get("payment_method") as string) || null;
+  const paymentPlan   = (formData.get("payment_plan")   as string) || null;
+
+  if (!orderId) return { error: "注文IDが不正です" };
+
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("orders")
+    .update({
+      payment_status: paymentStatus,
+      payment_method: paymentStatus === "代済み" ? paymentMethod : null,
+      payment_plan:   paymentStatus === "代未"   ? paymentPlan   : null,
+    } as never)
+    .eq("id", orderId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/admin/orders/${orderId}`);
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin");
+  return null;
+}
+
 export async function updateOrderStatus(formData: FormData) {
   const orderId = formData.get("order_id") as string;
   const newStatus = formData.get("new_status") as OrderStatus;
@@ -95,6 +124,20 @@ export async function updateOrderStatus(formData: FormData) {
     redirect(
       `/admin/orders/${orderId}?error=${encodeURIComponent("同じステータスには変更できません")}`
     );
+  }
+
+  // 受付完了へ変更するときは支払い状況が必須
+  if (newStatus === "受付完了") {
+    const { data: orderData } = await supabase
+      .from("orders")
+      .select("payment_status")
+      .eq("id", orderId)
+      .single();
+    if (!(orderData as { payment_status?: string | null } | null)?.payment_status) {
+      redirect(
+        `/admin/orders/${orderId}?error=${encodeURIComponent("「受付完了」にする前に、支払い状況を設定してください")}`
+      );
+    }
   }
 
   // ログインユーザーを取得
