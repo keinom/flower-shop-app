@@ -5,11 +5,13 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { OrderStatus } from "@/types";
 
-export async function uploadOrderPhoto(formData: FormData) {
+export async function uploadOrderPhoto(
+  formData: FormData
+): Promise<{ error: string } | null> {
   const orderId = formData.get("order_id") as string;
   const file = formData.get("file") as File;
 
-  if (!orderId || !file || file.size === 0) return;
+  if (!orderId || !file || file.size === 0) return { error: "ファイルが見つかりません" };
 
   const supabase = await createClient();
   const ext = file.name.split(".").pop() ?? "jpg";
@@ -21,31 +23,50 @@ export async function uploadOrderPhoto(formData: FormData) {
 
   if (uploadError) {
     console.error("Storage upload error:", uploadError);
-    return;
+    return { error: `ストレージへのアップロードに失敗しました: ${uploadError.message}` };
   }
 
-  await supabase.from("order_photos" as never).insert({
+  const { error: dbError } = await supabase.from("order_photos" as never).insert({
     order_id: orderId,
     storage_path: path,
     file_name: file.name,
   } as never);
 
+  if (dbError) {
+    console.error("DB insert error:", dbError);
+    // ストレージは成功しているので削除してロールバック
+    await supabase.storage.from("order-photos").remove([path]);
+    return { error: `データベースへの保存に失敗しました: ${(dbError as { message: string }).message}` };
+  }
+
   revalidatePath(`/admin/orders/${orderId}`);
+  return null;
 }
 
-export async function deleteOrderPhoto(formData: FormData) {
+export async function deleteOrderPhoto(
+  formData: FormData
+): Promise<{ error: string } | null> {
   const orderId = formData.get("order_id") as string;
   const photoId = formData.get("photo_id") as string;
   const storagePath = formData.get("storage_path") as string;
 
-  if (!orderId || !photoId || !storagePath) return;
+  if (!orderId || !photoId || !storagePath) return { error: "パラメータが不足しています" };
 
   const supabase = await createClient();
 
-  await supabase.storage.from("order-photos").remove([storagePath]);
+  const { error: storageError } = await supabase.storage
+    .from("order-photos")
+    .remove([storagePath]);
+
+  if (storageError) {
+    console.error("Storage delete error:", storageError);
+    return { error: `ストレージの削除に失敗しました: ${storageError.message}` };
+  }
+
   await supabase.from("order_photos" as never).delete().eq("id", photoId);
 
   revalidatePath(`/admin/orders/${orderId}`);
+  return null;
 }
 
 export async function updateOrderStatus(formData: FormData) {

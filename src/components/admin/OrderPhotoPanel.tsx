@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { uploadOrderPhoto, deleteOrderPhoto } from "@/app/admin/orders/[id]/actions";
 
 interface Photo {
@@ -17,23 +18,33 @@ interface Props {
 }
 
 export function OrderPhotoPanel({ orderId, photos }: Props) {
+  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [lightbox, setLightbox] = useState<Photo | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     setUploading(true);
+    setErrorMsg(null);
     try {
       for (const file of Array.from(files)) {
         const fd = new FormData();
         fd.set("order_id", orderId);
         fd.set("file", file);
-        await uploadOrderPhoto(fd);
+        const result = await uploadOrderPhoto(fd);
+        if (result?.error) {
+          setErrorMsg(result.error);
+          break;
+        }
       }
+      router.refresh();
+    } catch (err) {
+      setErrorMsg(`予期しないエラーが発生しました: ${String(err)}`);
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -42,11 +53,19 @@ export function OrderPhotoPanel({ orderId, photos }: Props) {
 
   const handleDelete = (photo: Photo) => {
     if (!confirm(`「${photo.file_name}」を削除しますか？`)) return;
+    setErrorMsg(null);
     const fd = new FormData();
     fd.set("order_id", orderId);
     fd.set("photo_id", photo.id);
     fd.set("storage_path", photo.storage_path);
-    startTransition(() => deleteOrderPhoto(fd));
+    startTransition(async () => {
+      const result = await deleteOrderPhoto(fd);
+      if (result?.error) {
+        setErrorMsg(result.error);
+      } else {
+        router.refresh();
+      }
+    });
     if (lightbox?.id === photo.id) setLightbox(null);
   };
 
@@ -88,6 +107,13 @@ export function OrderPhotoPanel({ orderId, photos }: Props) {
           />
         </div>
 
+        {/* エラーメッセージ */}
+        {errorMsg && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
+            {errorMsg}
+          </div>
+        )}
+
         {photos.length === 0 ? (
           <button
             type="button"
@@ -116,7 +142,6 @@ export function OrderPhotoPanel({ orderId, photos }: Props) {
                     className="w-full h-full object-cover"
                   />
                 </button>
-                {/* 削除ボタン */}
                 <button
                   type="button"
                   onClick={() => handleDelete(photo)}
