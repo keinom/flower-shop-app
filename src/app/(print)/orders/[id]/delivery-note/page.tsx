@@ -282,7 +282,9 @@ function StandardNote({
         marginBottom: "10pt",
       }}>
         <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>お届け先</div>
-        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3 }}>{deliveryName} 様</div>
+        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3 }}>
+          {deliveryName}<span style={{ fontSize: "9pt", fontWeight: "500", marginLeft: "3pt" }}>様</span>
+        </div>
       </div>
 
       {/* 明細テーブル */}
