@@ -165,15 +165,10 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
                 senderName={customer?.name ?? "—"}
                 senderAddress={customer?.address ?? null}
                 senderPhone={customer?.phone ?? null}
-                senderEmail={customer?.email ?? null}
                 deliveryName={order.delivery_name}
                 deliveryAddress={order.delivery_address ?? ""}
                 deliveryPhone={deliveryPhone ?? null}
                 deliveryDate={deliveryDateFmt}
-                deliveryTime={deliveryTime}
-                purpose={order.purpose ?? null}
-                messageCard={order.message_card ?? null}
-                remarks={order.remarks ?? null}
               />
           }
         </div>
@@ -430,16 +425,14 @@ function StandardNote({
 // ────────────────────────────────────────────────────
 function GiftNote({
   orderNo, issuedAt,
-  senderName, senderAddress, senderPhone, senderEmail,
+  senderName, senderAddress, senderPhone,
   deliveryName, deliveryAddress, deliveryPhone,
-  deliveryDate, deliveryTime,
-  purpose, messageCard, remarks,
+  deliveryDate,
 }: {
   orderNo: string; issuedAt: string;
-  senderName: string; senderAddress: string | null; senderPhone: string | null; senderEmail: string | null;
+  senderName: string; senderAddress: string | null; senderPhone: string | null;
   deliveryName: string; deliveryAddress: string; deliveryPhone: string | null;
-  deliveryDate: string; deliveryTime: string | null;
-  purpose: string | null; messageCard: string | null; remarks: string | null;
+  deliveryDate: string;
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
@@ -473,24 +466,7 @@ function GiftNote({
         {deliveryPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {deliveryPhone}</div>}
       </div>
 
-      {/* ③ ご用途 */}
-      {purpose && (
-        <div style={{
-          border: `1px solid #ddd8ce`,
-          borderRadius: "3pt",
-          padding: "5pt 14pt",
-          backgroundColor: "white",
-          marginBottom: "6pt",
-          display: "flex",
-          alignItems: "center",
-          gap: "14pt",
-        }}>
-          <span style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", whiteSpace: "nowrap" }}>ご用途</span>
-          <span style={{ fontSize: "11pt", fontWeight: "700", color: GRAY1 }}>{purpose}</span>
-        </div>
-      )}
-
-      {/* ④ お届け日 — コンパクト */}
+      {/* ③ お届け日 */}
       <div style={{
         border: `1px solid #ddd8ce`,
         borderRadius: "3pt",
@@ -503,39 +479,8 @@ function GiftNote({
         alignSelf: "flex-start",
       }}>
         <span style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", whiteSpace: "nowrap" }}>お届け日</span>
-        <span style={{ fontSize: "10pt", fontWeight: "600", color: GRAY1 }}>
-          {deliveryDate}{deliveryTime ? `　${deliveryTime}` : ""}
-        </span>
+        <span style={{ fontSize: "10pt", fontWeight: "600", color: GRAY1 }}>{deliveryDate}</span>
       </div>
-
-      {/* ⑤ メッセージカード */}
-      {messageCard && (
-        <div style={{
-          border: `1px solid ${RULE}`,
-          borderRadius: "3pt",
-          padding: "8pt 14pt",
-          backgroundColor: GOLD_L,
-          marginBottom: "6pt",
-        }}>
-          <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", marginBottom: "5pt" }}>MESSAGE CARD</div>
-          <div style={{ fontSize: "9pt", lineHeight: 1.8, color: GRAY2, whiteSpace: "pre-wrap" }}>{messageCard}</div>
-        </div>
-      )}
-
-      {/* ⑥ 備考 */}
-      {remarks && (
-        <div style={{
-          fontSize: "7.5pt", color: GRAY3,
-          border: `0.5px solid #ddd8ce`,
-          borderRadius: "3pt",
-          padding: "5pt 14pt",
-          backgroundColor: "#fdfcfa",
-          marginBottom: "6pt",
-        }}>
-          <span style={{ fontWeight: "700", marginRight: "8pt" }}>備考</span>
-          {remarks}
-        </div>
-      )}
 
       {/* フッター */}
       <div style={{ marginTop: "auto", borderTop: `0.5px solid ${RULE}`, paddingTop: "3pt" }} />
