@@ -429,7 +429,7 @@ function GiftNote({
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <NoteHeader title="ギフト納品書" orderNo={orderNo} issuedAt={issuedAt} />
+      <NoteHeader title="納　品　書" orderNo={orderNo} issuedAt={issuedAt} />
 
       {/* ① 贈り主 */}
       <div style={{
