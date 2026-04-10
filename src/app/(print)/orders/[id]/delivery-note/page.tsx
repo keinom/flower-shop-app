@@ -447,7 +447,9 @@ function GiftNote({
         marginBottom: "6pt",
       }}>
         <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>贈り主</div>
-        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>{senderName} 様</div>
+        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>
+          {senderName}<span style={{ fontSize: "9pt", fontWeight: "500", marginLeft: "3pt" }}>様</span>
+        </div>
         {senderAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{senderAddress}</div>}
         {senderPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {senderPhone}</div>}
       </div>
@@ -461,7 +463,9 @@ function GiftNote({
         marginBottom: "6pt",
       }}>
         <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>お届け先</div>
-        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>{deliveryName} 様</div>
+        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>
+          {deliveryName}<span style={{ fontSize: "9pt", fontWeight: "500", marginLeft: "3pt" }}>様</span>
+        </div>
         {deliveryAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryAddress}</div>}
         {deliveryPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {deliveryPhone}</div>}
       </div>
@@ -482,8 +486,48 @@ function GiftNote({
         <span style={{ fontSize: "10pt", fontWeight: "600", color: GRAY1 }}>{deliveryDate}</span>
       </div>
 
-      {/* フッター */}
-      <div style={{ marginTop: "auto", borderTop: `0.5px solid ${RULE}`, paddingTop: "3pt" }} />
+      {/* フッター: メッセージ + 店舗情報 */}
+      <div style={{ marginTop: "auto" }}>
+        <div style={{
+          borderTop: `1px solid ${RULE}`,
+          marginBottom: "8pt",
+        }} />
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          gap: "16pt",
+        }}>
+          {/* 左: メッセージ */}
+          <div style={{
+            fontSize: "7.5pt",
+            color: GRAY3,
+            lineHeight: 2,
+            letterSpacing: "0.06em",
+            fontStyle: "italic",
+          }}>
+            このたびは花長をご利用いただき、誠にありがとうございます。<br />
+            またお花のご注文やご相談がございましたら、<br />
+            いつでもお気軽にお問い合わせくださいませ。
+          </div>
+
+          {/* 右: 店舗情報 */}
+          <div style={{
+            textAlign: "right",
+            flexShrink: 0,
+          }}>
+            <div style={{ fontSize: "9pt", fontWeight: "700", color: GOLD, letterSpacing: "0.1em", marginBottom: "3pt" }}>
+              {SHOP_NAME}
+            </div>
+            <div style={{ fontSize: "6.5pt", color: GRAY3, lineHeight: 1.8 }}>
+              <div>{SHOP_ADDRESS}</div>
+              <div>Tel. {SHOP_TEL}</div>
+              <div>{SHOP_EMAIL}</div>
+            </div>
+          </div>
+        </div>
+        <div style={{ borderTop: `0.5px solid ${RULE}`, marginTop: "6pt" }} />
+      </div>
     </div>
   );
 }
