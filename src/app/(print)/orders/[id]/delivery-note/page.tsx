@@ -486,47 +486,20 @@ function GiftNote({
         <span style={{ fontSize: "10pt", fontWeight: "600", color: GRAY1 }}>{deliveryDate}</span>
       </div>
 
-      {/* フッター: メッセージ + 店舗情報 */}
+      {/* フッター: メッセージ */}
       <div style={{ marginTop: "auto" }}>
+        <div style={{ borderTop: `1px solid ${RULE}`, marginBottom: "8pt" }} />
         <div style={{
-          borderTop: `1px solid ${RULE}`,
-          marginBottom: "8pt",
-        }} />
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
-          gap: "16pt",
+          fontSize: "8pt",
+          color: GRAY3,
+          lineHeight: 2,
+          letterSpacing: "0.08em",
+          textAlign: "center",
+          fontStyle: "italic",
         }}>
-          {/* 左: メッセージ */}
-          <div style={{
-            fontSize: "7.5pt",
-            color: GRAY3,
-            lineHeight: 2,
-            letterSpacing: "0.06em",
-            fontStyle: "italic",
-          }}>
-            このたびは花長をご利用いただき、誠にありがとうございます。<br />
-            またお花のご注文やご相談がございましたら、<br />
-            いつでもお気軽にお問い合わせくださいませ。
-          </div>
-
-          {/* 右: 店舗情報 */}
-          <div style={{
-            textAlign: "right",
-            flexShrink: 0,
-          }}>
-            <div style={{ fontSize: "9pt", fontWeight: "700", color: GOLD, letterSpacing: "0.1em", marginBottom: "3pt" }}>
-              {SHOP_NAME}
-            </div>
-            <div style={{ fontSize: "6.5pt", color: GRAY3, lineHeight: 1.8 }}>
-              <div>{SHOP_ADDRESS}</div>
-              <div>Tel. {SHOP_TEL}</div>
-              <div>{SHOP_EMAIL}</div>
-            </div>
-          </div>
+          お花のご注文やご相談など、どうぞいつでもお気軽にお問い合わせくださいませ。
         </div>
-        <div style={{ borderTop: `0.5px solid ${RULE}`, marginTop: "6pt" }} />
+        <div style={{ borderTop: `0.5px solid ${RULE}`, marginTop: "8pt" }} />
       </div>
     </div>
   );
