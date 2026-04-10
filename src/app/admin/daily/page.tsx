@@ -4,6 +4,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { OrderTypeBadge } from "@/components/ui/OrderTypeBadge";
 import { DailyDatePicker } from "@/components/admin/DailyDatePicker";
 import { DailyViewToggle } from "@/components/admin/DailyViewToggle";
+import { InlineStatusSelect } from "@/components/admin/InlineStatusSelect";
 import { ORDER_STATUSES } from "@/lib/constants";
 import type { OrderStatus, OrderType } from "@/types";
 
@@ -297,7 +298,7 @@ function ShippingCard({ order, index }: { order: OrderRow; index: number }) {
 
         {/* 右：ステータス・詳細 */}
         <div className="flex flex-col items-end gap-2 flex-shrink-0">
-          <StatusBadge status={order.status as OrderStatus} size="md" />
+          <InlineStatusSelect orderId={order.id} currentStatus={order.status as OrderStatus} />
           <Link
             href={`/admin/orders/${order.id}`}
             className="text-sm text-brand-600 hover:underline font-semibold"
@@ -342,7 +343,7 @@ function OrderCard1Day({ order, index }: { order: OrderRow; index: number }) {
               時間未定
             </span>
           )}
-          <StatusBadge status={order.status as OrderStatus} size="md" />
+          <InlineStatusSelect orderId={order.id} currentStatus={order.status as OrderStatus} />
         </div>
         <Link
           href={`/admin/orders/${order.id}`}
@@ -510,7 +511,7 @@ function OrderCard2Day({ order, index }: { order: OrderRow; index: number }) {
               時間未定
             </span>
           )}
-          <StatusBadge status={order.status as OrderStatus} size="md" />
+          <InlineStatusSelect orderId={order.id} currentStatus={order.status as OrderStatus} />
         </div>
         <Link
           href={`/admin/orders/${order.id}`}
