@@ -359,38 +359,8 @@ export default async function OrderDetailPage({
             )}
           </div>
 
-          {/* 注文サマリー */}
-          <div className="card p-4 space-y-2.5 text-sm">
-            <h2 className="text-sm font-semibold text-gray-700">サマリー</h2>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between text-gray-500">
-                <span>注文日</span>
-                <span className="text-gray-800 font-medium">
-                  {new Date(order.created_at).toLocaleDateString("ja-JP")}
-                </span>
-              </div>
-              {order.delivery_date && (
-                <div className="flex justify-between text-gray-500">
-                  <span>お届け日</span>
-                  <span className="text-gray-800 font-medium">
-                    {new Date(order.delivery_date).toLocaleDateString("ja-JP", {
-                      month: "numeric", day: "numeric", weekday: "short",
-                    })}
-                  </span>
-                </div>
-              )}
-              {(order as { total_amount?: number | null }).total_amount != null && (
-                <div className="flex justify-between text-gray-500 pt-2 border-t">
-                  <span>合計金額</span>
-                  <span className="text-brand-700 font-bold text-sm">
-                    ¥{(order as { total_amount: number }).total_amount.toLocaleString("ja-JP")}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
 
-        </div>
+</div>
       </div>
     </div>
   );
