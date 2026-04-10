@@ -142,22 +142,12 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
           {type === "standard"
             ? <StandardNote
                 orderNo={orderNo} issuedAt={issuedAt}
-                customerName={customer?.name ?? "—"}
-                customerAddress={customer?.address ?? null}
-                customerPhone={customer?.phone ?? null}
-                customerEmail={customer?.email ?? null}
                 deliveryName={order.delivery_name}
-                deliveryAddress={order.delivery_address ?? ""}
-                deliveryPhone={deliveryPhone ?? null}
-                deliveryEmail={deliveryEmail ?? null}
-                deliveryDate={deliveryDateFmt}
-                deliveryTime={deliveryTime}
                 items={items ?? []}
                 productName={order.product_name ?? ""}
                 quantity={order.quantity}
                 totalExcl={totalExcl} taxRate={taxRate} taxAmt={taxAmt} totalIncl={totalIncl}
                 hasItems={hasItems}
-                remarks={order.remarks ?? null}
               />
             : <GiftNote
                 orderNo={orderNo} issuedAt={issuedAt}
@@ -267,22 +257,17 @@ function InfoBox({
 // ────────────────────────────────────────────────────
 function StandardNote({
   orderNo, issuedAt,
-  customerName, customerAddress, customerPhone, customerEmail,
-  deliveryName, deliveryAddress, deliveryPhone, deliveryEmail,
-  deliveryDate, deliveryTime,
+  deliveryName,
   items, productName, quantity,
   totalExcl, taxRate, taxAmt, totalIncl,
-  hasItems, remarks,
+  hasItems,
 }: {
   orderNo: string; issuedAt: string;
-  customerName: string; customerAddress: string | null; customerPhone: string | null; customerEmail: string | null;
-  deliveryName: string; deliveryAddress: string;
-  deliveryPhone: string | null; deliveryEmail: string | null;
-  deliveryDate: string; deliveryTime: string | null;
+  deliveryName: string;
   items: { id: string; product_name: string; description: string | null; quantity: number; unit_price: number; tax_rate: number }[];
   productName: string; quantity: number;
   totalExcl: number; taxRate: number; taxAmt: number; totalIncl: number;
-  hasItems: boolean; remarks: string | null;
+  hasItems: boolean;
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
@@ -297,19 +282,7 @@ function StandardNote({
         marginBottom: "10pt",
       }}>
         <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>お届け先</div>
-        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>{deliveryName} 様</div>
-        {deliveryAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryAddress}</div>}
-        {deliveryPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {deliveryPhone}</div>}
-        {deliveryEmail   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryEmail}</div>}
-        {/* お届け日 */}
-        <div style={{ marginTop: "6pt", paddingTop: "6pt", borderTop: `0.5px solid #e5dfd3` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8pt" }}>
-            <span style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.08em" }}>お届け日</span>
-            <span style={{ fontSize: "10pt", fontWeight: "600", color: GRAY1 }}>
-              {deliveryDate}{deliveryTime ? `　${deliveryTime}` : ""}
-            </span>
-          </div>
-        </div>
+        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3 }}>{deliveryName} 様</div>
       </div>
 
       {/* 明細テーブル */}
@@ -394,19 +367,6 @@ function StandardNote({
 
       {/* フッター */}
       <div style={{ marginTop: "auto", paddingTop: "8pt" }}>
-        {remarks && (
-          <div style={{
-            fontSize: "7.5pt", color: GRAY3,
-            border: `0.5px solid #ddd8ce`,
-            borderRadius: "3pt",
-            padding: "5pt 8pt",
-            backgroundColor: "#fdfcfa",
-            marginBottom: "6pt",
-          }}>
-            <span style={{ fontWeight: "700", marginRight: "6pt" }}>備考</span>
-            {remarks}
-          </div>
-        )}
         <div style={{ borderTop: `0.5px solid ${RULE}`, paddingTop: "3pt" }} />
       </div>
     </div>
