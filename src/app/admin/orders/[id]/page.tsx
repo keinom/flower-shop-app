@@ -53,16 +53,13 @@ export default async function OrderDetailPage({
   }));
 
   const customer = order.customers as { id: string; name: string } | null;
-
-  // 次に選べるステータス（同じステータスは除外）
-  const selectableStatuses = ORDER_STATUSES.filter(
-    (s) => s !== order.status
-  );
+  const selectableStatuses = ORDER_STATUSES.filter((s) => s !== order.status);
+  const isActive = order.status !== "配達完了" && order.status !== "キャンセル";
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      {/* ヘッダー */}
-      <div className="flex items-center gap-3">
+    <div className="space-y-5">
+      {/* ─── ヘッダー ─── */}
+      <div className="flex items-center gap-3 flex-wrap">
         <Link href="/admin/orders" className="text-sm text-gray-500 hover:text-gray-700">
           ← 注文一覧
         </Link>
@@ -94,15 +91,13 @@ export default async function OrderDetailPage({
           >
             🖨 ギフト用
           </Link>
-          <Link
-            href={`/admin/orders/${id}/edit`}
-            className="btn-secondary text-sm"
-          >
+          <Link href={`/admin/orders/${id}/edit`} className="btn-secondary text-sm">
             ✏️ 編集
           </Link>
         </div>
       </div>
 
+      {/* ─── アラート ─── */}
       {sp.created && (
         <div className="p-3 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
           注文を作成しました
@@ -119,260 +114,283 @@ export default async function OrderDetailPage({
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        {/* 注文内容 */}
-        <div className="card p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">注文内容</h2>
-          <dl className="space-y-3 text-sm">
-            <InfoRow label="顧客名">
-              {customer ? (
-                <Link
-                  href={`/admin/customers/${customer.id}`}
-                  className="text-brand-700 hover:underline"
-                >
-                  {customer.name}
-                </Link>
-              ) : (
-                "—"
-              )}
-            </InfoRow>
-            <InfoRow label="注文日">
-              {new Date(order.created_at).toLocaleDateString("ja-JP")}
-            </InfoRow>
-            <InfoRow label="商品名">{order.product_name ?? "—"}</InfoRow>
-            <InfoRow label="数量">{order.quantity} 点</InfoRow>
-            <InfoRow label="用途">{order.purpose}</InfoRow>
-          </dl>
-        </div>
+      {/* ─── 2カラムレイアウト ─── */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_272px] gap-5 items-start">
 
-        {/* お届け情報 */}
-        <div className="card p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">お届け情報</h2>
-          <dl className="space-y-3 text-sm">
-            <InfoRow label="お届け先名">{order.delivery_name}</InfoRow>
-            <InfoRow label="お届け先住所">
-              {order.delivery_address
-                ? (
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.delivery_address)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-brand-600 hover:underline"
-                  >
-                    {order.delivery_address}
-                  </a>
-                )
-                : "—"}
-            </InfoRow>
-            <InfoRow label="電話番号">{(order as { delivery_phone?: string | null }).delivery_phone ?? "—"}</InfoRow>
-            <InfoRow label="メールアドレス">{(order as { delivery_email?: string | null }).delivery_email ?? "—"}</InfoRow>
-            <InfoRow label="お届け希望日">
-              {order.delivery_date
-                ? <>
-                    {new Date(order.delivery_date).toLocaleDateString("ja-JP", {
-                      year: "numeric", month: "long", day: "numeric", weekday: "short",
-                    })}
-                    {formatDeliveryTime(
-                      (order as { delivery_time_start?: string | null }).delivery_time_start ?? null,
-                      (order as { delivery_time_end?: string | null }).delivery_time_end ?? null
-                    ) && (
-                      <span className="ml-2 text-sm text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
-                        {formatDeliveryTime(
-                          (order as { delivery_time_start?: string | null }).delivery_time_start ?? null,
-                          (order as { delivery_time_end?: string | null }).delivery_time_end ?? null
-                        )}
-                      </span>
-                    )}
-                  </>
-                : "—"}
-            </InfoRow>
-          </dl>
-        </div>
-      </div>
+        {/* ── 左: メインコンテンツ ── */}
+        <div className="space-y-5">
 
-      {/* 商品明細 */}
-      <div className="card p-5">
-        <h2 className="text-sm font-semibold text-gray-700 border-b pb-2 mb-4">商品明細</h2>
-        {orderItems && orderItems.length > 0 ? (
-          <>
-            <div className="table-container">
-              <table className="table text-sm">
-                <thead>
-                  <tr>
-                    <th className="th">商品名 / 説明</th>
-                    <th className="th text-right">数量</th>
-                    <th className="th text-right">単価（税抜）</th>
-                    <th className="th text-right">小計（税込）</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {orderItems.map((item) => {
-                    const excl = item.quantity * item.unit_price;
-                    const tax  = Math.round(excl * item.tax_rate / 100);
-                    return (
-                      <tr key={item.id}>
-                        <td className="td">
-                          <p className="font-medium">{item.product_name}</p>
-                          {(item as { description?: string | null }).description && (
-                            <p className="text-xs text-gray-500 mt-0.5">
-                              {(item as { description: string }).description}
-                            </p>
+          {/* 注文内容 + お届け情報 */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="card p-5 space-y-4">
+              <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">注文内容</h2>
+              <dl className="space-y-3 text-sm">
+                <InfoRow label="顧客名">
+                  {customer ? (
+                    <Link href={`/admin/customers/${customer.id}`} className="text-brand-700 hover:underline">
+                      {customer.name}
+                    </Link>
+                  ) : "—"}
+                </InfoRow>
+                <InfoRow label="注文日">
+                  {new Date(order.created_at).toLocaleDateString("ja-JP")}
+                </InfoRow>
+                <InfoRow label="商品名">{order.product_name ?? "—"}</InfoRow>
+                <InfoRow label="数量">{order.quantity} 点</InfoRow>
+                <InfoRow label="用途">{order.purpose}</InfoRow>
+              </dl>
+            </div>
+
+            <div className="card p-5 space-y-4">
+              <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">お届け情報</h2>
+              <dl className="space-y-3 text-sm">
+                <InfoRow label="お届け先名">{order.delivery_name}</InfoRow>
+                <InfoRow label="お届け先住所">
+                  {order.delivery_address ? (
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.delivery_address)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-brand-600 hover:underline"
+                    >
+                      {order.delivery_address}
+                    </a>
+                  ) : "—"}
+                </InfoRow>
+                <InfoRow label="電話番号">
+                  {(order as { delivery_phone?: string | null }).delivery_phone ?? "—"}
+                </InfoRow>
+                <InfoRow label="メールアドレス">
+                  {(order as { delivery_email?: string | null }).delivery_email ?? "—"}
+                </InfoRow>
+                <InfoRow label="お届け希望日">
+                  {order.delivery_date ? (
+                    <>
+                      {new Date(order.delivery_date).toLocaleDateString("ja-JP", {
+                        year: "numeric", month: "long", day: "numeric", weekday: "short",
+                      })}
+                      {formatDeliveryTime(
+                        (order as { delivery_time_start?: string | null }).delivery_time_start ?? null,
+                        (order as { delivery_time_end?: string | null }).delivery_time_end ?? null
+                      ) && (
+                        <span className="ml-2 text-sm text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
+                          {formatDeliveryTime(
+                            (order as { delivery_time_start?: string | null }).delivery_time_start ?? null,
+                            (order as { delivery_time_end?: string | null }).delivery_time_end ?? null
                           )}
-                        </td>
-                        <td className="td text-right">{item.quantity}</td>
-                        <td className="td text-right">¥{item.unit_price.toLocaleString("ja-JP")}</td>
-                        <td className="td text-right font-medium">
-                          ¥{(excl + tax).toLocaleString("ja-JP")}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            {/* 税込合計サマリー */}
-            {(() => {
-              const totalExcl = orderItems.reduce((s, i) => s + i.quantity * i.unit_price, 0);
-              const taxRate   = orderItems[0].tax_rate;
-              const taxAmt    = Math.round(totalExcl * taxRate / 100);
-              return (
-                <div className="mt-3 pt-3 border-t space-y-1 text-sm">
-                  <div className="flex justify-end gap-8 text-gray-600">
-                    <span>小計（税抜）</span>
-                    <span>¥{totalExcl.toLocaleString("ja-JP")}</span>
-                  </div>
-                  <div className="flex justify-end gap-8 text-gray-600">
-                    <span>消費税（{taxRate}%）</span>
-                    <span>¥{taxAmt.toLocaleString("ja-JP")}</span>
-                  </div>
-                  <div className="flex justify-end gap-8 font-bold text-base text-brand-700 pt-1 border-t">
-                    <span>合計（税込）</span>
-                    <span>¥{(totalExcl + taxAmt).toLocaleString("ja-JP")}</span>
-                  </div>
-                </div>
-              );
-            })()}
-          </>
-        ) : (
-          <p className="text-sm text-gray-400">明細データがありません</p>
-        )}
-      </div>
-
-      {/* メッセージカード・備考 */}
-      {(order.message_card || order.remarks) && (
-        <div className="card p-5 space-y-3">
-          <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">
-            メッセージ・備考
-          </h2>
-          {order.message_card && (
-            <div className="text-sm">
-              <p className="text-xs text-gray-500 mb-1">メッセージカード内容</p>
-              <p className="bg-gray-50 rounded p-3 text-gray-800 whitespace-pre-wrap">
-                {order.message_card}
-              </p>
-            </div>
-          )}
-          {order.remarks && (
-            <div className="text-sm">
-              <p className="text-xs text-gray-500 mb-1">備考</p>
-              <p className="bg-gray-50 rounded p-3 text-gray-800 whitespace-pre-wrap">
-                {order.remarks}
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 写真 */}
-      <OrderPhotoPanel orderId={id} photos={photos} />
-
-      {/* ステータス更新 */}
-      {order.status !== "配達完了" && order.status !== "キャンセル" && (
-        <div className="card p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-1">ステータスを更新</h2>
-          <p className="text-xs text-gray-500 mb-4">
-            現在: <StatusBadge status={order.status as OrderStatus} size="sm" />
-          </p>
-          <form action={updateOrderStatus} className="space-y-4">
-            <input type="hidden" name="order_id" value={order.id} />
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="label">新しいステータス</label>
-                <select name="new_status" required className="input">
-                  <option value="">選択してください</option>
-                  {selectableStatuses.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="label">
-                  変更メモ{" "}
-                  <span className="text-gray-400 text-xs font-normal">（任意）</span>
-                </label>
-                <input
-                  name="note"
-                  type="text"
-                  placeholder="例: 午前中に配達予定"
-                  className="input"
-                />
-              </div>
-            </div>
-            <button type="submit" className="btn-primary">
-              ステータスを更新する
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* ステータス変更履歴 */}
-      <div className="card p-5">
-        <h2 className="text-sm font-semibold text-gray-700 mb-4">変更履歴</h2>
-        {!logs || logs.length === 0 ? (
-          <p className="text-sm text-gray-400">変更履歴がありません</p>
-        ) : (
-          <ol className="space-y-3">
-            {logs.map((log) => {
-              const changedBy =
-                (log.profiles as { display_name: string | null } | null)
-                  ?.display_name ?? "管理者";
-              return (
-                <li
-                  key={log.id}
-                  className="flex items-start gap-3 text-sm"
-                >
-                  <div className="mt-0.5 w-2 h-2 rounded-full bg-brand-400 flex-shrink-0 mt-1.5" />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      {log.old_status && (
-                        <>
-                          <StatusBadge
-                            status={log.old_status as OrderStatus}
-                            size="sm"
-                          />
-                          <span className="text-gray-400">→</span>
-                        </>
+                        </span>
                       )}
-                      <StatusBadge
-                        status={log.new_status as OrderStatus}
-                        size="sm"
-                      />
+                    </>
+                  ) : "—"}
+                </InfoRow>
+              </dl>
+            </div>
+          </div>
+
+          {/* 商品明細 */}
+          <div className="card p-5">
+            <h2 className="text-sm font-semibold text-gray-700 border-b pb-2 mb-4">商品明細</h2>
+            {orderItems && orderItems.length > 0 ? (
+              <>
+                <div className="table-container">
+                  <table className="table text-sm">
+                    <thead>
+                      <tr>
+                        <th className="th">商品名 / 説明</th>
+                        <th className="th text-right">数量</th>
+                        <th className="th text-right">単価（税抜）</th>
+                        <th className="th text-right">小計（税込）</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {orderItems.map((item) => {
+                        const excl = item.quantity * item.unit_price;
+                        const tax  = Math.round(excl * item.tax_rate / 100);
+                        return (
+                          <tr key={item.id}>
+                            <td className="td">
+                              <p className="font-medium">{item.product_name}</p>
+                              {(item as { description?: string | null }).description && (
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                  {(item as { description: string }).description}
+                                </p>
+                              )}
+                            </td>
+                            <td className="td text-right">{item.quantity}</td>
+                            <td className="td text-right">¥{item.unit_price.toLocaleString("ja-JP")}</td>
+                            <td className="td text-right font-medium">
+                              ¥{(excl + tax).toLocaleString("ja-JP")}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {(() => {
+                  const totalExcl = orderItems.reduce((s, i) => s + i.quantity * i.unit_price, 0);
+                  const taxRate   = orderItems[0].tax_rate;
+                  const taxAmt    = Math.round(totalExcl * taxRate / 100);
+                  return (
+                    <div className="mt-3 pt-3 border-t space-y-1 text-sm">
+                      <div className="flex justify-end gap-8 text-gray-600">
+                        <span>小計（税抜）</span>
+                        <span>¥{totalExcl.toLocaleString("ja-JP")}</span>
+                      </div>
+                      <div className="flex justify-end gap-8 text-gray-600">
+                        <span>消費税（{taxRate}%）</span>
+                        <span>¥{taxAmt.toLocaleString("ja-JP")}</span>
+                      </div>
+                      <div className="flex justify-end gap-8 font-bold text-base text-brand-700 pt-1 border-t">
+                        <span>合計（税込）</span>
+                        <span>¥{(totalExcl + taxAmt).toLocaleString("ja-JP")}</span>
+                      </div>
                     </div>
-                    {log.note && (
-                      <p className="text-gray-600 mt-0.5">{log.note}</p>
-                    )}
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {new Date(log.created_at).toLocaleString("ja-JP")} /{" "}
-                      {changedBy}
-                    </p>
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        )}
+                  );
+                })()}
+              </>
+            ) : (
+              <p className="text-sm text-gray-400">明細データがありません</p>
+            )}
+          </div>
+
+          {/* メッセージ・備考 */}
+          {(order.message_card || order.remarks) && (
+            <div className="card p-5 space-y-3">
+              <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">メッセージ・備考</h2>
+              {order.message_card && (
+                <div className="text-sm">
+                  <p className="text-xs text-gray-500 mb-1">メッセージカード内容</p>
+                  <p className="bg-gray-50 rounded p-3 text-gray-800 whitespace-pre-wrap">{order.message_card}</p>
+                </div>
+              )}
+              {order.remarks && (
+                <div className="text-sm">
+                  <p className="text-xs text-gray-500 mb-1">備考</p>
+                  <p className="bg-gray-50 rounded p-3 text-gray-800 whitespace-pre-wrap">{order.remarks}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 写真 */}
+          <OrderPhotoPanel orderId={id} photos={photos} />
+
+          {/* 変更履歴 */}
+          <div className="card p-5">
+            <h2 className="text-sm font-semibold text-gray-700 mb-4">変更履歴</h2>
+            {!logs || logs.length === 0 ? (
+              <p className="text-sm text-gray-400">変更履歴がありません</p>
+            ) : (
+              <ol className="space-y-3">
+                {logs.map((log) => {
+                  const changedBy =
+                    (log.profiles as { display_name: string | null } | null)?.display_name ?? "管理者";
+                  return (
+                    <li key={log.id} className="flex items-start gap-3 text-sm">
+                      <div className="w-2 h-2 rounded-full bg-brand-400 flex-shrink-0 mt-1.5" />
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {log.old_status && (
+                            <>
+                              <StatusBadge status={log.old_status as OrderStatus} size="sm" />
+                              <span className="text-gray-400">→</span>
+                            </>
+                          )}
+                          <StatusBadge status={log.new_status as OrderStatus} size="sm" />
+                        </div>
+                        {log.note && <p className="text-gray-600 mt-0.5">{log.note}</p>}
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {new Date(log.created_at).toLocaleString("ja-JP")} / {changedBy}
+                        </p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </div>
+        </div>
+
+        {/* ── 右: スティッキーサイドバー ── */}
+        <div className="sticky top-4 space-y-4">
+
+          {/* ステータス更新 */}
+          <div className="card p-4">
+            <h2 className="text-sm font-semibold text-gray-700 mb-3">ステータス</h2>
+
+            {/* 現在のステータス */}
+            <div className="flex items-center justify-center py-3 bg-gray-50 rounded-lg mb-4">
+              <StatusBadge status={order.status as OrderStatus} />
+            </div>
+
+            {isActive ? (
+              <form action={updateOrderStatus} className="space-y-3">
+                <input type="hidden" name="order_id" value={order.id} />
+                <div>
+                  <label className="label text-xs">新しいステータス</label>
+                  <select name="new_status" required className="input text-sm">
+                    <option value="">選択してください</option>
+                    {selectableStatuses.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="label text-xs">
+                    メモ
+                    <span className="text-gray-400 font-normal ml-1">（任意）</span>
+                  </label>
+                  <input
+                    name="note"
+                    type="text"
+                    placeholder="例: 午前中に配達予定"
+                    className="input text-sm"
+                  />
+                </div>
+                <button type="submit" className="btn-primary w-full text-sm">
+                  更新する
+                </button>
+              </form>
+            ) : (
+              <p className="text-xs text-center text-gray-400">
+                このステータスは変更できません
+              </p>
+            )}
+          </div>
+
+          {/* 注文サマリー */}
+          <div className="card p-4 space-y-2.5 text-sm">
+            <h2 className="text-sm font-semibold text-gray-700">サマリー</h2>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between text-gray-500">
+                <span>注文日</span>
+                <span className="text-gray-800 font-medium">
+                  {new Date(order.created_at).toLocaleDateString("ja-JP")}
+                </span>
+              </div>
+              {order.delivery_date && (
+                <div className="flex justify-between text-gray-500">
+                  <span>お届け日</span>
+                  <span className="text-gray-800 font-medium">
+                    {new Date(order.delivery_date).toLocaleDateString("ja-JP", {
+                      month: "numeric", day: "numeric", weekday: "short",
+                    })}
+                  </span>
+                </div>
+              )}
+              {(order as { total_amount?: number | null }).total_amount != null && (
+                <div className="flex justify-between text-gray-500 pt-2 border-t">
+                  <span>合計金額</span>
+                  <span className="text-brand-700 font-bold text-sm">
+                    ¥{(order as { total_amount: number }).total_amount.toLocaleString("ja-JP")}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );
