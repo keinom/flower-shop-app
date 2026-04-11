@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { createInvoice } from "./actions";
 
 interface Customer {
   id: string;
@@ -95,24 +94,32 @@ export default function NewInvoicePage() {
     if (!customerId) return setErrorMsg("顧客を選択してください");
     if (selectedOrders.length === 0) return setErrorMsg("請求する注文を1件以上選択してください");
 
-    const fd = new FormData();
-    fd.set("customer_id",       customerId);
-    fd.set("invoice_type",      invoiceType);
-    fd.set("target_year_month", invoiceType === "monthly" ? targetYearMonth : "");
-    fd.set("due_date",          dueDate);
-    fd.set("remarks",           remarks);
-    selectedOrders.forEach((id) => fd.append("order_ids[]", id));
-
     startTransition(() => {
-      void createInvoice(fd).then((result) => {
-        if ("error" in result) {
-          setErrorMsg(result.error);
-        } else {
-          router.push(`/admin/invoices/${result.invoiceId}?created=1`);
-        }
-      }).catch((err: unknown) => {
-        setErrorMsg(`エラーが発生しました: ${err instanceof Error ? err.message : String(err)}`);
-      });
+      void fetch("/api/invoices/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerId,
+          invoiceType,
+          targetYearMonth: invoiceType === "monthly" ? targetYearMonth : null,
+          dueDate:  dueDate  || null,
+          remarks:  remarks  || null,
+          orderIds: selectedOrders,
+        }),
+      })
+        .then(async (res) => {
+          const json = await res.json() as { invoiceId?: string; error?: string };
+          if (json.error) {
+            setErrorMsg(json.error);
+          } else if (json.invoiceId) {
+            router.push(`/admin/invoices/${json.invoiceId}?created=1`);
+          } else {
+            setErrorMsg("予期しない応答が返されました");
+          }
+        })
+        .catch((err: unknown) => {
+          setErrorMsg(`通信エラー: ${err instanceof Error ? err.message : String(err)}`);
+        });
     });
   };
 
