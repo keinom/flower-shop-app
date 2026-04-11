@@ -196,7 +196,7 @@ export default async function InvoicePrintPage({ params }: Props) {
               {/* 左: 宛先 → 挨拶文 → ご請求金額 */}
               <div style={{ flex: 1, paddingRight: "20pt" }}>
                 {/* 宛先 */}
-                <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "8pt", borderBottom: `1px solid ${RULE}`, paddingBottom: "5pt" }}>
+                <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "8pt", borderBottom: `1px solid ${RULE}`, paddingBottom: "5pt", width: "fit-content" }}>
                   {inv.customers?.name ?? "—"}
                   <span style={{ fontSize: "10pt", fontWeight: "500", marginLeft: "4pt" }}>様</span>
                 </div>
@@ -209,7 +209,7 @@ export default async function InvoicePrintPage({ params }: Props) {
                 {/* ご請求金額 */}
                 <div style={{ marginBottom: "5pt" }}>
                   <div style={{ fontSize: "8.5pt", color: GRAY3, marginBottom: "2pt" }}>ご請求金額</div>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: "5pt", borderBottom: `1.5px solid ${GRAY1}`, paddingBottom: "4pt", marginBottom: "6pt" }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "5pt", borderBottom: `1.5px solid ${GRAY1}`, paddingBottom: "4pt", marginBottom: "6pt", width: "fit-content" }}>
                     <span style={{ fontSize: "16pt", fontWeight: "700", color: GOLD, letterSpacing: "0.02em", lineHeight: 1 }}>
                       ¥{inv.total_amount.toLocaleString("ja-JP")}
                     </span>
