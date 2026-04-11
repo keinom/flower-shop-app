@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { InvoicePrintBar } from "@/components/admin/InvoicePrintBar";
 
 // ── 店舗情報 ────────────────────────────────────────────
 const SHOP_NAME    = "花長";
@@ -89,40 +90,7 @@ export default async function InvoicePrintPage({ params }: Props) {
   return (
     <>
       {/* 印刷ボタン */}
-      <div
-        className="no-print"
-        style={{
-          position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-          background: "white", borderBottom: "1px solid #e5e7eb",
-          padding: "12px 24px",
-          display: "flex", alignItems: "center", gap: "12px",
-        }}
-      >
-        <button
-          onClick={() => window.print()}
-          style={{
-            padding: "8px 20px",
-            background: "#8B6914",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            fontSize: "14px",
-            fontWeight: "600",
-            cursor: "pointer",
-          }}
-        >
-          🖨 印刷 / PDF保存
-        </button>
-        <a
-          href={`/admin/invoices/${id}`}
-          style={{ fontSize: "13px", color: "#6b7280", textDecoration: "none" }}
-        >
-          ← 請求書詳細に戻る
-        </a>
-        <span style={{ marginLeft: "auto", fontSize: "12px", color: "#9ca3af" }}>
-          {inv.invoice_number}
-        </span>
-      </div>
+      <InvoicePrintBar invoiceNumber={inv.invoice_number} invoiceId={id} />
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;700&display=swap');
