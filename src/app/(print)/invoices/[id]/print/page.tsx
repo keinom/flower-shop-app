@@ -196,9 +196,9 @@ export default async function InvoicePrintPage({ params }: Props) {
               {/* 左: 宛先 → 挨拶文 → ご請求金額 */}
               <div style={{ flex: 1, paddingRight: "20pt" }}>
                 {/* 宛先 */}
-                <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "8pt", borderBottom: `1px solid ${RULE}`, paddingBottom: "5pt", width: "fit-content" }}>
+                <div style={{ fontSize: "15pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "8pt", borderBottom: `1px solid ${RULE}`, paddingBottom: "5pt" }}>
                   {inv.customers?.name ?? "—"}
-                  <span style={{ fontSize: "10pt", fontWeight: "500", marginLeft: "4pt" }}>様</span>
+                  <span style={{ fontSize: "11pt", fontWeight: "500", marginLeft: "4pt" }}>様</span>
                 </div>
 
                 {/* 挨拶文 */}
@@ -209,8 +209,8 @@ export default async function InvoicePrintPage({ params }: Props) {
                 {/* ご請求金額 */}
                 <div style={{ marginBottom: "5pt" }}>
                   <div style={{ fontSize: "8.5pt", color: GRAY3, marginBottom: "2pt" }}>ご請求金額</div>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: "5pt", borderBottom: `1.5px solid ${GRAY1}`, paddingBottom: "4pt", marginBottom: "6pt", width: "fit-content" }}>
-                    <span style={{ fontSize: "16pt", fontWeight: "700", color: GOLD, letterSpacing: "0.02em", lineHeight: 1 }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "5pt", borderBottom: `1.5px solid ${GRAY1}`, paddingBottom: "4pt", marginBottom: "6pt" }}>
+                    <span style={{ fontSize: "20pt", fontWeight: "700", color: GOLD, letterSpacing: "0.02em", lineHeight: 1 }}>
                       ¥{inv.total_amount.toLocaleString("ja-JP")}
                     </span>
                     <span style={{ fontSize: "9pt", color: GRAY3 }}>（税込）</span>
@@ -417,7 +417,7 @@ export default async function InvoicePrintPage({ params }: Props) {
             marginBottom: "10pt",
           }}>
             <div style={{ fontSize: "8.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.08em", marginBottom: "6pt" }}>
-              お振込先　<span style={{ fontWeight: "400", fontSize: "8pt", color: GRAY3 }}>口座名義：{BANK_HOLDER}</span>
+              お振込先
             </div>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "9pt" }}>
               <thead>
