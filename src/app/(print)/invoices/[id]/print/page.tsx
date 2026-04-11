@@ -199,19 +199,16 @@ export default async function InvoicePrintPage({ params }: Props) {
           </div>
 
           {/* ── 請求先（名前のみ） + ご請求金額 ── */}
-          <div style={{ display: "flex", gap: "12pt", marginBottom: "14pt" }}>
+          <div style={{ display: "flex", gap: "12pt", marginBottom: "14pt", alignItems: "flex-start" }}>
             {/* 請求先：名前のみ */}
             <div style={{
               flex: "1",
               border: `1px solid ${RULE}`,
               borderRadius: "3pt",
-              padding: "12pt 16pt",
+              padding: "9pt 14pt",
               backgroundColor: GOLD_L,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
             }}>
-              <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", marginBottom: "8pt" }}>
+              <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", marginBottom: "6pt" }}>
                 請求先
               </div>
               <div style={{ fontSize: "17pt", fontWeight: "700", lineHeight: 1.3 }}>
@@ -415,19 +412,23 @@ export default async function InvoicePrintPage({ params }: Props) {
             </div>
           )}
 
-          {/* ── フッター ── */}
-          <div style={{ marginTop: "auto", paddingTop: "10pt" }}>
-            <div style={{ borderTop: `1px solid ${RULE}`, marginBottom: "6pt" }} />
+          {/* ── お支払いのお願い ── */}
+          <div style={{ marginTop: "auto", paddingTop: "16pt" }}>
             <div style={{
-              fontSize: "7pt",
+              fontSize: "7.5pt",
               color: GRAY3,
-              textAlign: "center",
               lineHeight: 2,
-              letterSpacing: "0.06em",
+              letterSpacing: "0.04em",
             }}>
-              期日までのお支払いをお願いいたします。
+              平素よりご愛顧を賜り、誠にありがとうございます。
+              ご多忙の折、誠に恐れ入りますが、期日までにご入金いただきますようよろしくお願い申し上げます。
             </div>
-            <div style={{ borderTop: `0.5px solid ${RULE}`, marginTop: "6pt" }} />
+          </div>
+
+          {/* ── フッター（装飾ライン） ── */}
+          <div style={{ paddingTop: "10pt" }}>
+            <div style={{ borderTop: `1px solid ${RULE}`, marginBottom: "1.5pt" }} />
+            <div style={{ borderTop: `0.5px solid ${RULE}` }} />
           </div>
         </div>
       </div>
