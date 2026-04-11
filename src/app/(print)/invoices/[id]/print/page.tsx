@@ -166,108 +166,95 @@ export default async function InvoicePrintPage({ params }: Props) {
             flexDirection: "column",
           }}
         >
-          {/* ── ヘッダー ── */}
-          <div style={{ marginBottom: "12pt" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-              {/* 左: ロゴ + 店舗情報 */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "3pt" }}>
+          {/* ── ヘッダー：日本標準フォーマット ── */}
+          <div style={{ marginBottom: "14pt" }}>
+
+            {/* 1行目: 右に請求日・請求書番号 */}
+            <div style={{ textAlign: "right", marginBottom: "6pt" }}>
+              <div style={{ fontSize: "7.5pt", color: GRAY3, lineHeight: 1.8 }}>
+                <div>請求日：{issuedDateFmt}</div>
+                <div>No. {inv.invoice_number}</div>
+              </div>
+            </div>
+
+            {/* 2行目: タイトル中央 */}
+            <div style={{ textAlign: "center", marginBottom: "14pt" }}>
+              <div style={{
+                fontSize: "22pt",
+                fontWeight: "700",
+                letterSpacing: "0.5em",
+                color: GRAY1,
+                lineHeight: 1,
+              }}>
+                請　求　書
+              </div>
+            </div>
+
+            {/* 3行目: 左=宛先＋金額 / 右=発行元 */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12pt" }}>
+
+              {/* 左: 宛先 → 挨拶文 → ご請求金額 */}
+              <div style={{ flex: 1, paddingRight: "20pt" }}>
+                {/* 宛先 */}
+                <div style={{ fontSize: "16pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "10pt", borderBottom: `1px solid ${RULE}`, paddingBottom: "6pt" }}>
+                  {inv.customers?.name ?? "—"}
+                  <span style={{ fontSize: "11pt", fontWeight: "500", marginLeft: "4pt" }}>様</span>
+                </div>
+
+                {/* 挨拶文 */}
+                <div style={{ fontSize: "8.5pt", color: GRAY2, marginBottom: "12pt" }}>
+                  下記の通りご請求申し上げます。
+                </div>
+
+                {/* ご請求金額 */}
+                <div style={{ marginBottom: "6pt" }}>
+                  <div style={{ fontSize: "7.5pt", color: GRAY3, marginBottom: "3pt" }}>ご請求金額</div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "5pt", borderBottom: `1.5px solid ${GRAY1}`, paddingBottom: "4pt", marginBottom: "8pt" }}>
+                    <span style={{ fontSize: "22pt", fontWeight: "700", color: GOLD, letterSpacing: "0.02em", lineHeight: 1 }}>
+                      ¥{inv.total_amount.toLocaleString("ja-JP")}
+                    </span>
+                    <span style={{ fontSize: "9pt", color: GRAY3 }}>（税込）</span>
+                  </div>
+                </div>
+
+                {/* 対象期間・支払期限 */}
+                <div style={{ fontSize: "8pt", color: GRAY2, lineHeight: 2 }}>
+                  {targetPeriodLabel && (
+                    <div><span style={{ color: GRAY3 }}>対象期間：</span>{targetPeriodLabel}</div>
+                  )}
+                  {dueDateFmt && (
+                    <div>
+                      <span style={{ color: GRAY3 }}>お支払期限：</span>
+                      <span style={{ fontWeight: "600", color: isOverdue ? "#dc2626" : GRAY1 }}>
+                        {dueDateFmt}
+                      </span>
+                      {isOverdue && (
+                        <span style={{ fontSize: "7pt", marginLeft: "4pt", color: "#dc2626" }}>（期限超過）</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 右: 発行元（花長）情報 */}
+              <div style={{ textAlign: "right", flexShrink: 0, minWidth: "130pt" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/logo.png"
                   alt={SHOP_NAME}
-                  style={{ height: "36pt", width: "auto", objectFit: "contain", objectPosition: "left center" }}
+                  style={{ height: "32pt", width: "auto", objectFit: "contain", objectPosition: "right center", display: "block", marginLeft: "auto", marginBottom: "5pt" }}
                 />
-                <div style={{ fontSize: "7pt", color: GRAY3, lineHeight: 1.7, marginTop: "2pt" }}>
+                <div style={{ fontSize: "7pt", color: GRAY3, lineHeight: 2 }}>
                   <div>{SHOP_ADDRESS}</div>
-                  <div>TEL {SHOP_TEL}　{SHOP_EMAIL}</div>
-                </div>
-              </div>
-
-              {/* 右: タイトル + 発行日 + No. （ステータスは非表示） */}
-              <div style={{ textAlign: "right" }}>
-                <div style={{
-                  fontSize: "24pt",
-                  fontWeight: "700",
-                  letterSpacing: "0.35em",
-                  color: GRAY1,
-                  lineHeight: 1,
-                  marginBottom: "6pt",
-                }}>
-                  請　求　書
-                </div>
-                <div style={{ fontSize: "7.5pt", color: GRAY3, lineHeight: 1.9 }}>
-                  <div>発行日：{issuedDateFmt}</div>
-                  <div style={{ letterSpacing: "0.02em" }}>No. {inv.invoice_number}</div>
+                  <div>TEL {SHOP_TEL}</div>
+                  <div>{SHOP_EMAIL}</div>
                 </div>
               </div>
             </div>
 
             {/* 区切り線 */}
-            <div style={{ marginTop: "8pt", borderTop: `2px solid ${GOLD}` }} />
+            <div style={{ borderTop: `2px solid ${GOLD}` }} />
             <div style={{ marginTop: "1.5pt", borderTop: `0.5px solid ${RULE}` }} />
-          </div>
-
-          {/* ── 請求先（名前のみ） + ご請求金額 ── */}
-          <div style={{ display: "flex", gap: "12pt", marginBottom: "14pt", alignItems: "flex-start" }}>
-            {/* 請求先：名前のみ */}
-            <div style={{
-              flex: "1",
-              border: `1px solid ${RULE}`,
-              borderRadius: "3pt",
-              padding: "9pt 14pt",
-              backgroundColor: GOLD_L,
-            }}>
-              <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", marginBottom: "6pt" }}>
-                請求先
-              </div>
-              <div style={{ fontSize: "17pt", fontWeight: "700", lineHeight: 1.3 }}>
-                {inv.customers?.name ?? "—"}
-                <span style={{ fontSize: "11pt", fontWeight: "500", marginLeft: "4pt" }}>様</span>
-              </div>
-            </div>
-
-            {/* ご請求金額（最上部）+ 対象期間 + 支払期限 */}
-            <div style={{
-              width: "150pt",
-              border: `1px solid #ddd8ce`,
-              borderRadius: "3pt",
-              padding: "12pt 14pt",
-              backgroundColor: "#fdfcfa",
-              flexShrink: 0,
-            }}>
-              {/* 金額：最上部に大きく */}
-              <div style={{ textAlign: "center", paddingBottom: "8pt" }}>
-                <div style={{ fontSize: "7pt", color: GRAY3, marginBottom: "4pt", letterSpacing: "0.05em" }}>
-                  ご請求金額
-                </div>
-                <div style={{ fontSize: "20pt", fontWeight: "700", color: GOLD, letterSpacing: "0.02em", lineHeight: 1.1 }}>
-                  ¥{inv.total_amount.toLocaleString("ja-JP")}
-                </div>
-                <div style={{ fontSize: "7pt", color: GRAY3, marginTop: "3pt" }}>（税込）</div>
-              </div>
-
-              {/* 対象期間 + 支払期限 */}
-              {(targetPeriodLabel || dueDateFmt) && (
-                <div style={{ borderTop: `1px solid ${RULE}`, paddingTop: "8pt", display: "flex", flexDirection: "column", gap: "5pt" }}>
-                  {targetPeriodLabel && (
-                    <div style={{ fontSize: "8pt", color: GRAY1, fontWeight: "600" }}>
-                      {targetPeriodLabel}
-                    </div>
-                  )}
-                  {dueDateFmt && (
-                    <div style={{ fontSize: "7.5pt", color: isOverdue ? "#dc2626" : GRAY2 }}>
-                      <span style={{ color: GRAY3, fontSize: "7pt" }}>支払期限　</span>
-                      <span style={{ fontWeight: "600" }}>
-                        {dueDateFmt}
-                      </span>
-                      {isOverdue && (
-                        <span style={{ fontSize: "6.5pt", color: "#dc2626", display: "block", marginTop: "1pt" }}>（期限超過）</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
           </div>
 
           {/* ── 明細テーブル ── */}
