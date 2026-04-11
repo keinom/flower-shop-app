@@ -184,13 +184,13 @@ export default async function InvoiceDetailPage({ params, searchParams }: Props)
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {invoiceItems.map((item) => {
-                    const excl = item.quantity * item.unit_price;
-                    const tax  = Math.round(excl * item.tax_rate / 100);
+                    const excl = (item.quantity ?? 0) * (item.unit_price ?? 0);
+                    const tax  = Math.round(excl * (item.tax_rate ?? 10) / 100);
                     return (
                       <tr key={item.id}>
-                        <td className="td font-medium">{item.description}</td>
-                        <td className="td text-right">{item.quantity}</td>
-                        <td className="td text-right">¥{item.unit_price.toLocaleString("ja-JP")}</td>
+                        <td className="td font-medium">{item.description ?? "—"}</td>
+                        <td className="td text-right">{item.quantity ?? 0}</td>
+                        <td className="td text-right">¥{(item.unit_price ?? 0).toLocaleString("ja-JP")}</td>
                         <td className="td text-right font-medium">¥{(excl + tax).toLocaleString("ja-JP")}</td>
                         <td className="td text-right">
                           {item.order_id && (
@@ -208,15 +208,15 @@ export default async function InvoiceDetailPage({ params, searchParams }: Props)
             <div className="mt-3 pt-3 border-t space-y-1 text-sm">
               <div className="flex justify-end gap-8 text-gray-600">
                 <span>小計（税抜）</span>
-                <span>¥{inv.subtotal.toLocaleString("ja-JP")}</span>
+                <span>¥{(inv.subtotal ?? 0).toLocaleString("ja-JP")}</span>
               </div>
               <div className="flex justify-end gap-8 text-gray-600">
                 <span>消費税（10%）</span>
-                <span>¥{inv.tax_amount.toLocaleString("ja-JP")}</span>
+                <span>¥{(inv.tax_amount ?? 0).toLocaleString("ja-JP")}</span>
               </div>
               <div className="flex justify-end gap-8 font-bold text-base text-brand-700 pt-1 border-t">
                 <span>合計（税込）</span>
-                <span>¥{inv.total_amount.toLocaleString("ja-JP")}</span>
+                <span>¥{(inv.total_amount ?? 0).toLocaleString("ja-JP")}</span>
               </div>
             </div>
           </div>

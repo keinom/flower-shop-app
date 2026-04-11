@@ -163,12 +163,12 @@ export default async function InvoicesPage({ searchParams }: InvoicesPageProps) 
                     )}
                   </td>
                   <td className="td">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${STATUS_COLORS[inv.status]}`}>
-                      {STATUS_LABELS[inv.status]}
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${STATUS_COLORS[inv.status] ?? "bg-gray-100 text-gray-600 border-gray-200"}`}>
+                      {STATUS_LABELS[inv.status] ?? inv.status}
                     </span>
                   </td>
                   <td className="td text-right text-sm font-semibold text-gray-800">
-                    ¥{inv.total_amount.toLocaleString("ja-JP")}
+                    ¥{(inv.total_amount ?? 0).toLocaleString("ja-JP")}
                   </td>
                   <td className="td text-sm text-gray-500 whitespace-nowrap">
                     {inv.issued_at ? new Date(inv.issued_at).toLocaleDateString("ja-JP") : "—"}
