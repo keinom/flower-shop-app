@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { updateInvoiceStatus, deleteInvoice } from "./actions";
+import { updateInvoiceStatus } from "./actions";
+import { DeleteInvoiceButton } from "@/components/admin/DeleteInvoiceButton";
 
 type InvoiceStatus = "draft" | "issued" | "sent" | "paid";
 
@@ -260,16 +261,7 @@ export default async function InvoiceDetailPage({ params, searchParams }: Props)
           {inv.status === "draft" && (
             <div className="card p-4">
               <h2 className="text-sm font-semibold text-gray-700 mb-3">削除</h2>
-              <form action={deleteInvoice}>
-                <input type="hidden" name="invoice_id" value={inv.id} />
-                <button
-                  type="submit"
-                  onClick={(e) => { if (!confirm("この請求書を削除しますか？")) e.preventDefault(); }}
-                  className="w-full py-2 rounded-lg text-sm font-medium border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  削除する
-                </button>
-              </form>
+              <DeleteInvoiceButton invoiceId={inv.id} />
             </div>
           )}
         </div>
