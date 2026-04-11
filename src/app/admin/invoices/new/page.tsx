@@ -103,10 +103,13 @@ export default function NewInvoicePage() {
     fd.set("remarks",           remarks);
     selectedOrders.forEach((id) => fd.append("order_ids[]", id));
 
-    startTransition(() => {
-      createInvoice(fd).then((result) => {
-        if (result?.error) setErrorMsg(result.error);
-      });
+    startTransition(async () => {
+      const result = await createInvoice(fd);
+      if (result?.error) {
+        setErrorMsg(result.error);
+      } else if (result?.invoiceId) {
+        router.push(`/admin/invoices/${result.invoiceId}?created=1`);
+      }
     });
   };
 

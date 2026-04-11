@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 function generateInvoiceNumber(yearMonth: string, seq: number): string {
@@ -132,5 +131,5 @@ export async function createInvoice(formData: FormData) {
   }
 
   revalidatePath("/admin/invoices");
-  redirect(`/admin/invoices/${invoiceId}?created=1`);
+  return { invoiceId };
 }
