@@ -7,6 +7,15 @@ const SHOP_NAME    = "花長";
 const SHOP_ADDRESS = "東京都港区南青山 7-12-9";
 const SHOP_TEL     = "03-3407-0211";
 const SHOP_EMAIL   = "aoyamahanacho@nifty.com";
+
+// ── 振込先口座 ──────────────────────────────────────────
+const BANK_HOLDER = "カ）ハナチョウ";
+const BANK_ACCOUNTS = [
+  { bank: "みずほ銀行",     branch: "新橋支店",   type: "当座", number: "0009847" },
+  { bank: "三井住友銀行",   branch: "青山支店",   type: "当座", number: "0258543" },
+  { bank: "三菱UFJ銀行",   branch: "青山支店",   type: "当座", number: "0305686" },
+  { bank: "三菱UFJ銀行",   branch: "六本木支店", type: "普通", number: "0011926" },
+];
 // ────────────────────────────────────────────────────────
 
 // デザイントークン
@@ -411,6 +420,47 @@ export default async function InvoicePrintPage({ params }: Props) {
               </p>
             </div>
           )}
+
+          {/* ── 振込先 ── */}
+          <div style={{
+            border: `1px solid #ddd8ce`,
+            borderRadius: "3pt",
+            padding: "9pt 14pt",
+            backgroundColor: "#fdfcfa",
+            marginBottom: "12pt",
+          }}>
+            <div style={{ fontSize: "7pt", fontWeight: "700", color: GOLD, letterSpacing: "0.1em", marginBottom: "7pt" }}>
+              お振込先　<span style={{ fontWeight: "400", fontSize: "6.5pt", color: GRAY3 }}>口座名義：{BANK_HOLDER}</span>
+            </div>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "8pt" }}>
+              <thead>
+                <tr style={{ backgroundColor: BG_ROW }}>
+                  {(["銀行名", "支店名", "種別", "口座番号"] as const).map((h) => (
+                    <th key={h} style={{
+                      padding: "3pt 8pt",
+                      textAlign: "left",
+                      fontWeight: "700",
+                      fontSize: "7pt",
+                      color: GRAY3,
+                      borderTop: `1px solid #e5dfd3`,
+                      borderBottom: `1px solid #e5dfd3`,
+                      letterSpacing: "0.04em",
+                    }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {BANK_ACCOUNTS.map((acct, i) => (
+                  <tr key={i} style={{ borderBottom: i < BANK_ACCOUNTS.length - 1 ? `0.5px solid #ede8de` : undefined }}>
+                    <td style={{ padding: "4pt 8pt", fontWeight: "600", color: GRAY1, whiteSpace: "nowrap" }}>{acct.bank}</td>
+                    <td style={{ padding: "4pt 8pt", color: GRAY2, whiteSpace: "nowrap" }}>{acct.branch}</td>
+                    <td style={{ padding: "4pt 8pt", color: GRAY2, whiteSpace: "nowrap" }}>{acct.type}</td>
+                    <td style={{ padding: "4pt 8pt", fontWeight: "600", color: GRAY1, letterSpacing: "0.05em" }}>{acct.number}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {/* ── お支払いのお願い ── */}
           <div style={{ marginTop: "auto", paddingTop: "16pt" }}>
