@@ -20,7 +20,10 @@ export async function GET(req: NextRequest) {
   // 月別の場合は対象月のみ絞り込み
   if (type === "monthly" && ym) {
     const from = `${ym}-01`;
-    const to   = `${ym}-31`;
+    // 月末日を正確に算出（例: 4月→30日, 2月→28/29日）
+    const [y, m] = ym.split("-").map(Number);
+    const lastDay = new Date(y, m, 0).getDate(); // 翌月0日 = 当月末日
+    const to = `${ym}-${String(lastDay).padStart(2, "0")}`;
     query = query.gte("delivery_date", from).lte("delivery_date", to);
   }
 
