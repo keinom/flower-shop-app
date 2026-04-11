@@ -167,20 +167,20 @@ export default async function InvoicePrintPage({ params }: Props) {
           }}
         >
           {/* ── ヘッダー：日本標準フォーマット ── */}
-          <div style={{ marginBottom: "14pt" }}>
+          <div style={{ marginBottom: "12pt" }}>
 
             {/* 1行目: 右に請求日・請求書番号 */}
-            <div style={{ textAlign: "right", marginBottom: "6pt" }}>
-              <div style={{ fontSize: "7.5pt", color: GRAY3, lineHeight: 1.8 }}>
+            <div style={{ textAlign: "right", marginBottom: "5pt" }}>
+              <div style={{ fontSize: "8.5pt", color: GRAY3, lineHeight: 1.8 }}>
                 <div>請求日：{issuedDateFmt}</div>
                 <div>No. {inv.invoice_number}</div>
               </div>
             </div>
 
             {/* 2行目: タイトル中央 */}
-            <div style={{ textAlign: "center", marginBottom: "14pt" }}>
+            <div style={{ textAlign: "center", marginBottom: "12pt" }}>
               <div style={{
-                fontSize: "22pt",
+                fontSize: "16pt",
                 fontWeight: "700",
                 letterSpacing: "0.5em",
                 color: GRAY1,
@@ -191,26 +191,26 @@ export default async function InvoicePrintPage({ params }: Props) {
             </div>
 
             {/* 3行目: 左=宛先＋金額 / 右=発行元 */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12pt" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10pt" }}>
 
               {/* 左: 宛先 → 挨拶文 → ご請求金額 */}
               <div style={{ flex: 1, paddingRight: "20pt" }}>
                 {/* 宛先 */}
-                <div style={{ fontSize: "16pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "10pt", borderBottom: `1px solid ${RULE}`, paddingBottom: "6pt" }}>
+                <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "8pt", borderBottom: `1px solid ${RULE}`, paddingBottom: "5pt" }}>
                   {inv.customers?.name ?? "—"}
-                  <span style={{ fontSize: "11pt", fontWeight: "500", marginLeft: "4pt" }}>様</span>
+                  <span style={{ fontSize: "10pt", fontWeight: "500", marginLeft: "4pt" }}>様</span>
                 </div>
 
                 {/* 挨拶文 */}
-                <div style={{ fontSize: "8.5pt", color: GRAY2, marginBottom: "12pt" }}>
+                <div style={{ fontSize: "9pt", color: GRAY2, marginBottom: "10pt" }}>
                   下記の通りご請求申し上げます。
                 </div>
 
                 {/* ご請求金額 */}
-                <div style={{ marginBottom: "6pt" }}>
-                  <div style={{ fontSize: "7.5pt", color: GRAY3, marginBottom: "3pt" }}>ご請求金額</div>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: "5pt", borderBottom: `1.5px solid ${GRAY1}`, paddingBottom: "4pt", marginBottom: "8pt" }}>
-                    <span style={{ fontSize: "22pt", fontWeight: "700", color: GOLD, letterSpacing: "0.02em", lineHeight: 1 }}>
+                <div style={{ marginBottom: "5pt" }}>
+                  <div style={{ fontSize: "8.5pt", color: GRAY3, marginBottom: "2pt" }}>ご請求金額</div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "5pt", borderBottom: `1.5px solid ${GRAY1}`, paddingBottom: "4pt", marginBottom: "6pt" }}>
+                    <span style={{ fontSize: "16pt", fontWeight: "700", color: GOLD, letterSpacing: "0.02em", lineHeight: 1 }}>
                       ¥{inv.total_amount.toLocaleString("ja-JP")}
                     </span>
                     <span style={{ fontSize: "9pt", color: GRAY3 }}>（税込）</span>
@@ -218,7 +218,7 @@ export default async function InvoicePrintPage({ params }: Props) {
                 </div>
 
                 {/* 対象期間・支払期限 */}
-                <div style={{ fontSize: "8pt", color: GRAY2, lineHeight: 2 }}>
+                <div style={{ fontSize: "9pt", color: GRAY2, lineHeight: 1.9 }}>
                   {targetPeriodLabel && (
                     <div><span style={{ color: GRAY3 }}>対象期間：</span>{targetPeriodLabel}</div>
                   )}
@@ -229,7 +229,7 @@ export default async function InvoicePrintPage({ params }: Props) {
                         {dueDateFmt}
                       </span>
                       {isOverdue && (
-                        <span style={{ fontSize: "7pt", marginLeft: "4pt", color: "#dc2626" }}>（期限超過）</span>
+                        <span style={{ fontSize: "8pt", marginLeft: "4pt", color: "#dc2626" }}>（期限超過）</span>
                       )}
                     </div>
                   )}
@@ -242,9 +242,9 @@ export default async function InvoicePrintPage({ params }: Props) {
                 <img
                   src="/logo.png"
                   alt={SHOP_NAME}
-                  style={{ height: "32pt", width: "auto", objectFit: "contain", objectPosition: "right center", display: "block", marginLeft: "auto", marginBottom: "5pt" }}
+                  style={{ height: "28pt", width: "auto", objectFit: "contain", objectPosition: "right center", display: "block", marginLeft: "auto", marginBottom: "5pt" }}
                 />
-                <div style={{ fontSize: "7pt", color: GRAY3, lineHeight: 2 }}>
+                <div style={{ fontSize: "8.5pt", color: GRAY3, lineHeight: 1.9 }}>
                   <div>{SHOP_ADDRESS}</div>
                   <div>TEL {SHOP_TEL}</div>
                   <div>{SHOP_EMAIL}</div>
@@ -258,11 +258,11 @@ export default async function InvoicePrintPage({ params }: Props) {
           </div>
 
           {/* ── 明細テーブル ── */}
-          <div style={{ marginBottom: "14pt" }}>
-            <div style={{ fontSize: "8pt", fontWeight: "700", color: GOLD, letterSpacing: "0.1em", marginBottom: "6pt" }}>
+          <div style={{ marginBottom: "12pt" }}>
+            <div style={{ fontSize: "8.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.1em", marginBottom: "5pt" }}>
               明　細
             </div>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "8.5pt" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "9pt" }}>
               <thead>
                 <tr>
                   {(["品名・内容", "数量", "単価（税抜）", "税率", "金額（税込）"] as const).map((h, i) => (
@@ -270,10 +270,10 @@ export default async function InvoicePrintPage({ params }: Props) {
                       key={h}
                       style={{
                         textAlign: i === 0 ? "left" : "right",
-                        padding: "5pt 8pt",
+                        padding: "4pt 8pt",
                         fontWeight: "700",
-                        fontSize: "7.5pt",
-                        letterSpacing: "0.04em",
+                        fontSize: "8.5pt",
+                        letterSpacing: "0.03em",
                         color: GOLD,
                         borderTop: `1.5px solid ${RULE}`,
                         borderBottom: `1px solid ${RULE}`,
@@ -296,9 +296,9 @@ export default async function InvoicePrintPage({ params }: Props) {
                       <td
                         colSpan={5}
                         style={{
-                          padding: "4pt 8pt",
+                          padding: "3.5pt 8pt",
                           backgroundColor: GOLD_L,
-                          fontSize: "7.5pt",
+                          fontSize: "8.5pt",
                           fontWeight: "700",
                           color: GOLD,
                           borderBottom: `0.5px solid ${RULE}`,
@@ -316,19 +316,19 @@ export default async function InvoicePrintPage({ params }: Props) {
                       const tax  = Math.round(excl * item.tax_rate / 100);
                       return (
                         <tr key={item.id} style={{ backgroundColor: idx % 2 === 1 ? BG_ROW : "white" }}>
-                          <td style={{ padding: "5pt 8pt 5pt 16pt", borderBottom: `0.5px solid #e5dfd3`, fontWeight: "600" }}>
+                          <td style={{ padding: "4pt 8pt 4pt 16pt", borderBottom: `0.5px solid #e5dfd3`, fontWeight: "600" }}>
                             {item.description}
                           </td>
-                          <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
+                          <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
                             {item.quantity}
                           </td>
-                          <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
+                          <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
                             ¥{item.unit_price.toLocaleString("ja-JP")}
                           </td>
-                          <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
+                          <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
                             {item.tax_rate}%
                           </td>
-                          <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, fontWeight: "600", whiteSpace: "nowrap" }}>
+                          <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3`, fontWeight: "600", whiteSpace: "nowrap" }}>
                             ¥{(excl + tax).toLocaleString("ja-JP")}
                           </td>
                         </tr>
@@ -342,19 +342,19 @@ export default async function InvoicePrintPage({ params }: Props) {
                     const tax  = Math.round(excl * item.tax_rate / 100);
                     return (
                       <tr key={item.id} style={{ backgroundColor: idx % 2 === 1 ? BG_ROW : "white" }}>
-                        <td style={{ padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, fontWeight: "600" }}>
+                        <td style={{ padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3`, fontWeight: "600" }}>
                           {item.description}
                         </td>
-                        <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
+                        <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
                           {item.quantity}
                         </td>
-                        <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
+                        <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
                           ¥{item.unit_price.toLocaleString("ja-JP")}
                         </td>
-                        <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
+                        <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
                           {item.tax_rate}%
                         </td>
-                        <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, fontWeight: "600", whiteSpace: "nowrap" }}>
+                        <td style={{ textAlign: "right", padding: "4pt 8pt", borderBottom: `0.5px solid #e5dfd3`, fontWeight: "600", whiteSpace: "nowrap" }}>
                           ¥{(excl + tax).toLocaleString("ja-JP")}
                         </td>
                       </tr>
@@ -365,20 +365,20 @@ export default async function InvoicePrintPage({ params }: Props) {
             </table>
 
             {/* 合計 */}
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8pt" }}>
-              <div style={{ minWidth: "200pt", fontSize: "8.5pt" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", padding: "2.5pt 8pt", color: GRAY3 }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "6pt" }}>
+              <div style={{ minWidth: "200pt", fontSize: "9pt" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "2pt 8pt", color: GRAY3 }}>
                   <span>小計（税抜）</span>
                   <span>¥{inv.subtotal.toLocaleString("ja-JP")}</span>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", padding: "2.5pt 8pt", color: GRAY3 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "2pt 8pt", color: GRAY3 }}>
                   <span>消費税（10%）</span>
                   <span>¥{inv.tax_amount.toLocaleString("ja-JP")}</span>
                 </div>
                 <div style={{
                   display: "flex", justifyContent: "space-between",
-                  padding: "6pt 8pt",
-                  fontWeight: "700", fontSize: "12pt",
+                  padding: "5pt 8pt",
+                  fontWeight: "700", fontSize: "11pt",
                   borderTop: `1.5px solid ${RULE}`,
                   marginTop: "3pt",
                   color: GOLD,
@@ -395,14 +395,14 @@ export default async function InvoicePrintPage({ params }: Props) {
             <div style={{
               border: `1px solid #ddd8ce`,
               borderRadius: "3pt",
-              padding: "10pt 14pt",
+              padding: "8pt 12pt",
               backgroundColor: "#fdfcfa",
-              marginBottom: "12pt",
+              marginBottom: "10pt",
             }}>
-              <div style={{ fontSize: "7pt", fontWeight: "700", color: GOLD, letterSpacing: "0.1em", marginBottom: "6pt" }}>
+              <div style={{ fontSize: "8.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.08em", marginBottom: "5pt" }}>
                 備　考
               </div>
-              <p style={{ fontSize: "8.5pt", color: GRAY2, lineHeight: 1.9, whiteSpace: "pre-wrap", margin: 0 }}>
+              <p style={{ fontSize: "9pt", color: GRAY2, lineHeight: 1.8, whiteSpace: "pre-wrap", margin: 0 }}>
                 {inv.remarks}
               </p>
             </div>
@@ -412,14 +412,14 @@ export default async function InvoicePrintPage({ params }: Props) {
           <div style={{
             border: `1px solid #ddd8ce`,
             borderRadius: "3pt",
-            padding: "9pt 14pt",
+            padding: "8pt 12pt",
             backgroundColor: "#fdfcfa",
-            marginBottom: "12pt",
+            marginBottom: "10pt",
           }}>
-            <div style={{ fontSize: "7pt", fontWeight: "700", color: GOLD, letterSpacing: "0.1em", marginBottom: "7pt" }}>
-              お振込先　<span style={{ fontWeight: "400", fontSize: "6.5pt", color: GRAY3 }}>口座名義：{BANK_HOLDER}</span>
+            <div style={{ fontSize: "8.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.08em", marginBottom: "6pt" }}>
+              お振込先　<span style={{ fontWeight: "400", fontSize: "8pt", color: GRAY3 }}>口座名義：{BANK_HOLDER}</span>
             </div>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "8pt" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "9pt" }}>
               <thead>
                 <tr style={{ backgroundColor: BG_ROW }}>
                   {(["銀行名", "支店名", "種別", "口座番号"] as const).map((h) => (
@@ -427,11 +427,11 @@ export default async function InvoicePrintPage({ params }: Props) {
                       padding: "3pt 8pt",
                       textAlign: "left",
                       fontWeight: "700",
-                      fontSize: "7pt",
+                      fontSize: "8.5pt",
                       color: GRAY3,
                       borderTop: `1px solid #e5dfd3`,
                       borderBottom: `1px solid #e5dfd3`,
-                      letterSpacing: "0.04em",
+                      letterSpacing: "0.03em",
                     }}>{h}</th>
                   ))}
                 </tr>
@@ -439,10 +439,10 @@ export default async function InvoicePrintPage({ params }: Props) {
               <tbody>
                 {BANK_ACCOUNTS.map((acct, i) => (
                   <tr key={i} style={{ borderBottom: i < BANK_ACCOUNTS.length - 1 ? `0.5px solid #ede8de` : undefined }}>
-                    <td style={{ padding: "4pt 8pt", fontWeight: "600", color: GRAY1, whiteSpace: "nowrap" }}>{acct.bank}</td>
-                    <td style={{ padding: "4pt 8pt", color: GRAY2, whiteSpace: "nowrap" }}>{acct.branch}</td>
-                    <td style={{ padding: "4pt 8pt", color: GRAY2, whiteSpace: "nowrap" }}>{acct.type}</td>
-                    <td style={{ padding: "4pt 8pt", fontWeight: "600", color: GRAY1, letterSpacing: "0.05em" }}>{acct.number}</td>
+                    <td style={{ padding: "3.5pt 8pt", fontWeight: "600", color: GRAY1, whiteSpace: "nowrap" }}>{acct.bank}</td>
+                    <td style={{ padding: "3.5pt 8pt", color: GRAY2, whiteSpace: "nowrap" }}>{acct.branch}</td>
+                    <td style={{ padding: "3.5pt 8pt", color: GRAY2, whiteSpace: "nowrap" }}>{acct.type}</td>
+                    <td style={{ padding: "3.5pt 8pt", fontWeight: "600", color: GRAY1, letterSpacing: "0.05em" }}>{acct.number}</td>
                   </tr>
                 ))}
               </tbody>
@@ -450,12 +450,12 @@ export default async function InvoicePrintPage({ params }: Props) {
           </div>
 
           {/* ── お支払いのお願い ── */}
-          <div style={{ marginTop: "auto", paddingTop: "16pt" }}>
+          <div style={{ marginTop: "auto", paddingTop: "12pt" }}>
             <div style={{
-              fontSize: "7.5pt",
+              fontSize: "8.5pt",
               color: GRAY3,
-              lineHeight: 2,
-              letterSpacing: "0.04em",
+              lineHeight: 1.9,
+              letterSpacing: "0.03em",
             }}>
               平素よりご愛顧を賜り、誠にありがとうございます。
               ご多忙の折、誠に恐れ入りますが、期日までにご入金いただきますようよろしくお願い申し上げます。
@@ -463,7 +463,7 @@ export default async function InvoicePrintPage({ params }: Props) {
           </div>
 
           {/* ── フッター（装飾ライン） ── */}
-          <div style={{ paddingTop: "10pt" }}>
+          <div style={{ paddingTop: "8pt" }}>
             <div style={{ borderTop: `1px solid ${RULE}`, marginBottom: "1.5pt" }} />
             <div style={{ borderTop: `0.5px solid ${RULE}` }} />
           </div>
