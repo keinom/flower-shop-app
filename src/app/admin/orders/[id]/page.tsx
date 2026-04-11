@@ -318,14 +318,6 @@ export default async function OrderDetailPage({
         {/* ── 右: スティッキーサイドバー ── */}
         <div className="sticky top-4 space-y-4">
 
-          {/* 支払い */}
-          <PaymentPanel
-            orderId={id}
-            currentPaymentStatus={paymentStatus}
-            currentPaymentMethod={paymentMethod}
-            currentPaymentPlan={paymentPlan}
-          />
-
           {/* ステータス更新 */}
           <div className="card p-4">
             <h2 className="text-sm font-semibold text-gray-700 mb-3">ステータス</h2>
@@ -363,6 +355,14 @@ export default async function OrderDetailPage({
               </button>
             </form>
           </div>
+
+          {/* 支払い */}
+          <PaymentPanel
+            orderId={id}
+            currentPaymentStatus={paymentStatus}
+            currentPaymentMethod={paymentMethod}
+            currentPaymentPlan={paymentPlan}
+          />
 
 
 </div>
