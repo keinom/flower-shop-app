@@ -7,13 +7,6 @@ const SHOP_NAME    = "花長";
 const SHOP_ADDRESS = "東京都港区南青山 7-12-9";
 const SHOP_TEL     = "03-3407-0211";
 const SHOP_EMAIL   = "aoyamahanacho@nifty.com";
-
-// ── 振込先情報 ──────────────────────────────────────────
-const BANK_NAME    = "三井住友銀行";
-const BANK_BRANCH  = "青山支店";
-const BANK_TYPE    = "普通";
-const BANK_NUMBER  = "1234567";
-const BANK_HOLDER  = "カ）ハナチョウ";
 // ────────────────────────────────────────────────────────
 
 // デザイントークン
@@ -26,13 +19,6 @@ const GRAY3  = "#7c6f60";
 const BG_ROW = "#faf8f4";
 
 type InvoiceStatus = "draft" | "issued" | "sent" | "paid";
-
-const STATUS_LABELS: Record<InvoiceStatus, string> = {
-  draft:  "下書き",
-  issued: "発行済み",
-  sent:   "送付済み",
-  paid:   "入金済み",
-};
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -54,7 +40,7 @@ export default async function InvoicePrintPage({ params }: Props) {
 
   const { data: invoice } = await supabase
     .from("invoices" as never)
-    .select("*, customers(id, name, phone, email, address)")
+    .select("*, customers(id, name)")
     .eq("id", id)
     .single();
   if (!invoice) notFound();
@@ -65,16 +51,20 @@ export default async function InvoicePrintPage({ params }: Props) {
     subtotal: number; tax_amount: number; total_amount: number;
     issued_at: string | null; sent_at: string | null; due_date: string | null;
     remarks: string | null; created_at: string;
-    customers: { id: string; name: string; phone: string | null; email: string | null; address: string | null } | null;
+    customers: { id: string; name: string } | null;
   };
 
   const { data: items } = await supabase
     .from("invoice_items" as never)
-    .select("id, description, quantity, unit_price, tax_rate, order_id")
+    .select("id, description, quantity, unit_price, tax_rate, order_id, orders(delivery_date)")
     .eq("invoice_id", id)
     .order("created_at", { ascending: true });
 
-  type ItemRow = { id: string; description: string; quantity: number; unit_price: number; tax_rate: number; order_id: string | null };
+  type ItemRow = {
+    id: string; description: string; quantity: number; unit_price: number;
+    tax_rate: number; order_id: string | null;
+    orders: { delivery_date: string | null } | null;
+  };
   const invoiceItems = (items ?? []) as unknown as ItemRow[];
 
   const issuedDateFmt = inv.issued_at
@@ -86,6 +76,34 @@ export default async function InvoicePrintPage({ params }: Props) {
     : null;
 
   const isOverdue = inv.due_date && new Date(inv.due_date) < new Date() && inv.status !== "paid";
+
+  // 対象期間ラベル
+  let targetPeriodLabel = "";
+  if (inv.invoice_type === "monthly" && inv.target_year_month) {
+    const [y, m] = inv.target_year_month.split("-");
+    targetPeriodLabel = `${y}年${parseInt(m)}月分`;
+  } else if (invoiceItems.length > 0) {
+    const firstDelivery = invoiceItems[0].orders?.delivery_date;
+    if (firstDelivery) {
+      const d = new Date(firstDelivery);
+      targetPeriodLabel = d.toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" }) + "のお届け分";
+    }
+  }
+
+  // 月別請求の場合：お届け日でグループ化
+  type OrderGroup = { orderId: string | null; deliveryDate: string | null; items: ItemRow[] };
+  const orderGroups: OrderGroup[] = [];
+  if (inv.invoice_type === "monthly") {
+    const seen = new Map<string, number>();
+    for (const item of invoiceItems) {
+      const key = item.order_id ?? "__null__";
+      if (!seen.has(key)) {
+        seen.set(key, orderGroups.length);
+        orderGroups.push({ orderId: item.order_id, deliveryDate: item.orders?.delivery_date ?? null, items: [] });
+      }
+      orderGroups[seen.get(key)!].items.push(item);
+    }
+  }
 
   return (
     <>
@@ -156,7 +174,7 @@ export default async function InvoicePrintPage({ params }: Props) {
                 </div>
               </div>
 
-              {/* 右: タイトル */}
+              {/* 右: タイトル + 発行日 + No. （ステータスは非表示） */}
               <div style={{ textAlign: "right" }}>
                 <div style={{
                   fontSize: "24pt",
@@ -171,30 +189,6 @@ export default async function InvoicePrintPage({ params }: Props) {
                 <div style={{ fontSize: "7.5pt", color: GRAY3, lineHeight: 1.9 }}>
                   <div>発行日：{issuedDateFmt}</div>
                   <div style={{ letterSpacing: "0.02em" }}>No. {inv.invoice_number}</div>
-                  <div style={{ marginTop: "2pt" }}>
-                    <span style={{
-                      display: "inline-block",
-                      padding: "1.5pt 7pt",
-                      borderRadius: "99pt",
-                      fontSize: "7pt",
-                      fontWeight: "600",
-                      background:
-                        inv.status === "paid"   ? "#d1fae5" :
-                        inv.status === "sent"   ? "#fef3c7" :
-                        inv.status === "issued" ? "#dbeafe" : "#f3f4f6",
-                      color:
-                        inv.status === "paid"   ? "#065f46" :
-                        inv.status === "sent"   ? "#92400e" :
-                        inv.status === "issued" ? "#1e40af" : "#374151",
-                      border: "1px solid",
-                      borderColor:
-                        inv.status === "paid"   ? "#6ee7b7" :
-                        inv.status === "sent"   ? "#fcd34d" :
-                        inv.status === "issued" ? "#93c5fd" : "#d1d5db",
-                    }}>
-                      {STATUS_LABELS[inv.status]}
-                    </span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -204,93 +198,69 @@ export default async function InvoicePrintPage({ params }: Props) {
             <div style={{ marginTop: "1.5pt", borderTop: `0.5px solid ${RULE}` }} />
           </div>
 
-          {/* ── 請求先 + 請求情報 ── */}
+          {/* ── 請求先（名前のみ） + ご請求金額 ── */}
           <div style={{ display: "flex", gap: "12pt", marginBottom: "14pt" }}>
-            {/* 請求先 */}
+            {/* 請求先：名前のみ */}
             <div style={{
               flex: "1",
               border: `1px solid ${RULE}`,
               borderRadius: "3pt",
-              padding: "10pt 14pt",
+              padding: "12pt 16pt",
               backgroundColor: GOLD_L,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
             }}>
-              <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", marginBottom: "6pt", textTransform: "uppercase" }}>
+              <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", marginBottom: "8pt" }}>
                 請求先
               </div>
-              <div style={{ fontSize: "15pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "5pt" }}>
+              <div style={{ fontSize: "17pt", fontWeight: "700", lineHeight: 1.3 }}>
                 {inv.customers?.name ?? "—"}
-                <span style={{ fontSize: "10pt", fontWeight: "500", marginLeft: "3pt" }}>様</span>
+                <span style={{ fontSize: "11pt", fontWeight: "500", marginLeft: "4pt" }}>様</span>
               </div>
-              {inv.customers?.address && (
-                <div style={{ fontSize: "8pt", color: GRAY2, lineHeight: 1.7 }}>{inv.customers.address}</div>
-              )}
-              {inv.customers?.phone && (
-                <div style={{ fontSize: "8pt", color: GRAY2, lineHeight: 1.7 }}>TEL {inv.customers.phone}</div>
-              )}
-              {inv.customers?.email && (
-                <div style={{ fontSize: "8pt", color: GRAY2, lineHeight: 1.7 }}>{inv.customers.email}</div>
-              )}
             </div>
 
-            {/* 請求情報 */}
+            {/* ご請求金額（最上部）+ 対象期間 + 支払期限 */}
             <div style={{
-              width: "140pt",
+              width: "150pt",
               border: `1px solid #ddd8ce`,
               borderRadius: "3pt",
-              padding: "10pt 14pt",
+              padding: "12pt 14pt",
               backgroundColor: "#fdfcfa",
               flexShrink: 0,
             }}>
-              <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", marginBottom: "8pt", textTransform: "uppercase" }}>
-                請求情報
-              </div>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "8pt" }}>
-                <tbody>
-                  {dueDateFmt && (
-                    <tr>
-                      <td style={{ color: GRAY3, paddingBottom: "4pt", width: "48pt", verticalAlign: "top" }}>支払期限</td>
-                      <td style={{
-                        fontWeight: "600",
-                        paddingBottom: "4pt",
-                        color: isOverdue ? "#dc2626" : GRAY1,
-                        verticalAlign: "top",
-                      }}>
-                        {dueDateFmt}
-                        {isOverdue && (
-                          <span style={{ fontSize: "6.5pt", marginLeft: "3pt", color: "#dc2626" }}>（期限超過）</span>
-                        )}
-                      </td>
-                    </tr>
-                  )}
-                  <tr>
-                    <td style={{ color: GRAY3, paddingBottom: "4pt", verticalAlign: "top" }}>種別</td>
-                    <td style={{ paddingBottom: "4pt", verticalAlign: "top" }}>
-                      {inv.invoice_type === "monthly" ? "月別まとめ" : "個別"}
-                      {inv.target_year_month && (
-                        <span style={{ fontSize: "7pt", color: GRAY3, marginLeft: "3pt" }}>
-                          （{inv.target_year_month}）
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-
-              {/* 合計金額ハイライト */}
-              <div style={{
-                marginTop: "8pt",
-                paddingTop: "8pt",
-                borderTop: `1px solid ${RULE}`,
-                textAlign: "center",
-              }}>
-                <div style={{ fontSize: "7pt", color: GRAY3, marginBottom: "3pt", letterSpacing: "0.05em" }}>
+              {/* 金額：最上部に大きく */}
+              <div style={{ textAlign: "center", paddingBottom: "8pt" }}>
+                <div style={{ fontSize: "7pt", color: GRAY3, marginBottom: "4pt", letterSpacing: "0.05em" }}>
                   ご請求金額
                 </div>
-                <div style={{ fontSize: "17pt", fontWeight: "700", color: GOLD, letterSpacing: "0.02em" }}>
+                <div style={{ fontSize: "20pt", fontWeight: "700", color: GOLD, letterSpacing: "0.02em", lineHeight: 1.1 }}>
                   ¥{inv.total_amount.toLocaleString("ja-JP")}
                 </div>
-                <div style={{ fontSize: "7pt", color: GRAY3, marginTop: "2pt" }}>（税込）</div>
+                <div style={{ fontSize: "7pt", color: GRAY3, marginTop: "3pt" }}>（税込）</div>
               </div>
+
+              {/* 対象期間 + 支払期限 */}
+              {(targetPeriodLabel || dueDateFmt) && (
+                <div style={{ borderTop: `1px solid ${RULE}`, paddingTop: "8pt", display: "flex", flexDirection: "column", gap: "5pt" }}>
+                  {targetPeriodLabel && (
+                    <div style={{ fontSize: "8pt", color: GRAY1, fontWeight: "600" }}>
+                      {targetPeriodLabel}
+                    </div>
+                  )}
+                  {dueDateFmt && (
+                    <div style={{ fontSize: "7.5pt", color: isOverdue ? "#dc2626" : GRAY2 }}>
+                      <span style={{ color: GRAY3, fontSize: "7pt" }}>支払期限　</span>
+                      <span style={{ fontWeight: "600" }}>
+                        {dueDateFmt}
+                      </span>
+                      {isOverdue && (
+                        <span style={{ fontSize: "6.5pt", color: "#dc2626", display: "block", marginTop: "1pt" }}>（期限超過）</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -325,29 +295,79 @@ export default async function InvoicePrintPage({ params }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {invoiceItems.map((item, idx) => {
-                  const excl = item.quantity * item.unit_price;
-                  const tax  = Math.round(excl * item.tax_rate / 100);
-                  return (
-                    <tr key={item.id} style={{ backgroundColor: idx % 2 === 1 ? BG_ROW : "white" }}>
-                      <td style={{ padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, fontWeight: "600" }}>
-                        {item.description}
+                {inv.invoice_type === "monthly" ? (
+                  // 月別：お届け日でグループ化して表示
+                  orderGroups.flatMap((group, gi) => [
+                    // お届け日ヘッダー行
+                    <tr key={`group-${gi}`}>
+                      <td
+                        colSpan={5}
+                        style={{
+                          padding: "4pt 8pt",
+                          backgroundColor: GOLD_L,
+                          fontSize: "7.5pt",
+                          fontWeight: "700",
+                          color: GOLD,
+                          borderBottom: `0.5px solid ${RULE}`,
+                          borderTop: gi > 0 ? `1px solid ${RULE}` : undefined,
+                        }}
+                      >
+                        {group.deliveryDate
+                          ? `お届け日：${new Date(group.deliveryDate).toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" })}`
+                          : "お届け日：—"}
                       </td>
-                      <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
-                        {item.quantity}
-                      </td>
-                      <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
-                        ¥{item.unit_price.toLocaleString("ja-JP")}
-                      </td>
-                      <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
-                        {item.tax_rate}%
-                      </td>
-                      <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, fontWeight: "600", whiteSpace: "nowrap" }}>
-                        ¥{(excl + tax).toLocaleString("ja-JP")}
-                      </td>
-                    </tr>
-                  );
-                })}
+                    </tr>,
+                    // 各明細行
+                    ...group.items.map((item, idx) => {
+                      const excl = item.quantity * item.unit_price;
+                      const tax  = Math.round(excl * item.tax_rate / 100);
+                      return (
+                        <tr key={item.id} style={{ backgroundColor: idx % 2 === 1 ? BG_ROW : "white" }}>
+                          <td style={{ padding: "5pt 8pt 5pt 16pt", borderBottom: `0.5px solid #e5dfd3`, fontWeight: "600" }}>
+                            {item.description}
+                          </td>
+                          <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
+                            {item.quantity}
+                          </td>
+                          <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
+                            ¥{item.unit_price.toLocaleString("ja-JP")}
+                          </td>
+                          <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
+                            {item.tax_rate}%
+                          </td>
+                          <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, fontWeight: "600", whiteSpace: "nowrap" }}>
+                            ¥{(excl + tax).toLocaleString("ja-JP")}
+                          </td>
+                        </tr>
+                      );
+                    }),
+                  ])
+                ) : (
+                  // 個別：通常表示
+                  invoiceItems.map((item, idx) => {
+                    const excl = item.quantity * item.unit_price;
+                    const tax  = Math.round(excl * item.tax_rate / 100);
+                    return (
+                      <tr key={item.id} style={{ backgroundColor: idx % 2 === 1 ? BG_ROW : "white" }}>
+                        <td style={{ padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, fontWeight: "600" }}>
+                          {item.description}
+                        </td>
+                        <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
+                          {item.quantity}
+                        </td>
+                        <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
+                          ¥{item.unit_price.toLocaleString("ja-JP")}
+                        </td>
+                        <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, whiteSpace: "nowrap" }}>
+                          {item.tax_rate}%
+                        </td>
+                        <td style={{ textAlign: "right", padding: "5pt 8pt", borderBottom: `0.5px solid #e5dfd3`, fontWeight: "600", whiteSpace: "nowrap" }}>
+                          ¥{(excl + tax).toLocaleString("ja-JP")}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
 
@@ -377,42 +397,6 @@ export default async function InvoicePrintPage({ params }: Props) {
             </div>
           </div>
 
-          {/* ── 振込先 ── */}
-          <div style={{
-            border: `1px solid #ddd8ce`,
-            borderRadius: "3pt",
-            padding: "10pt 14pt",
-            backgroundColor: "#fdfcfa",
-            marginBottom: "12pt",
-          }}>
-            <div style={{ fontSize: "7pt", fontWeight: "700", color: GOLD, letterSpacing: "0.1em", marginBottom: "8pt" }}>
-              お振込先
-            </div>
-            <div style={{ display: "flex", gap: "20pt", flexWrap: "wrap", fontSize: "8.5pt", color: GRAY2 }}>
-              <div>
-                <span style={{ fontSize: "7pt", color: GRAY3, display: "block", marginBottom: "2pt" }}>銀行名</span>
-                <span style={{ fontWeight: "600" }}>{BANK_NAME}　{BANK_BRANCH}</span>
-              </div>
-              <div>
-                <span style={{ fontSize: "7pt", color: GRAY3, display: "block", marginBottom: "2pt" }}>口座種別</span>
-                <span style={{ fontWeight: "600" }}>{BANK_TYPE}</span>
-              </div>
-              <div>
-                <span style={{ fontSize: "7pt", color: GRAY3, display: "block", marginBottom: "2pt" }}>口座番号</span>
-                <span style={{ fontWeight: "600" }}>{BANK_NUMBER}</span>
-              </div>
-              <div>
-                <span style={{ fontSize: "7pt", color: GRAY3, display: "block", marginBottom: "2pt" }}>口座名義</span>
-                <span style={{ fontWeight: "600" }}>{BANK_HOLDER}</span>
-              </div>
-            </div>
-            {dueDateFmt && (
-              <div style={{ marginTop: "8pt", fontSize: "7.5pt", color: GRAY3 }}>
-                ※ お支払期限：<span style={{ fontWeight: "600", color: isOverdue ? "#dc2626" : GRAY2 }}>{dueDateFmt}</span>　までにご入金をお願いいたします。
-              </div>
-            )}
-          </div>
-
           {/* ── 備考 ── */}
           {inv.remarks && (
             <div style={{
@@ -439,10 +423,9 @@ export default async function InvoicePrintPage({ params }: Props) {
               color: GRAY3,
               textAlign: "center",
               lineHeight: 2,
-              fontStyle: "italic",
               letterSpacing: "0.06em",
             }}>
-              お花のご注文やご相談など、どうぞいつでもお気軽にお問い合わせくださいませ。
+              期日までのお支払いをお願いいたします。
             </div>
             <div style={{ borderTop: `0.5px solid ${RULE}`, marginTop: "6pt" }} />
           </div>
