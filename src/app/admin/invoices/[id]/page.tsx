@@ -20,13 +20,6 @@ const STATUS_COLORS: Record<InvoiceStatus, string> = {
   paid:   "bg-emerald-100 text-emerald-700 border-emerald-200",
 };
 
-// 次のステータスへの遷移定義
-const NEXT_STATUS: Partial<Record<InvoiceStatus, { status: InvoiceStatus; label: string; color: string }>> = {
-  draft:  { status: "issued", label: "発行する",  color: "bg-blue-600 hover:bg-blue-700 text-white" },
-  issued: { status: "sent",   label: "送付済みにする", color: "bg-amber-500 hover:bg-amber-600 text-white" },
-  sent:   { status: "paid",   label: "入金済みにする", color: "bg-emerald-600 hover:bg-emerald-700 text-white" },
-};
-
 interface Props {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ created?: string; success?: string; error?: string }>;
@@ -63,7 +56,6 @@ export default async function InvoiceDetailPage({ params, searchParams }: Props)
   type ItemRow = { id: string; description: string; quantity: number; unit_price: number; tax_rate: number; order_id: string | null };
   const invoiceItems = (items ?? []) as unknown as ItemRow[];
 
-  const nextStep = NEXT_STATUS[inv.status];
   const TYPE_LABELS: Record<string, string> = { single: "個別請求", monthly: "月別まとめ請求" };
 
   return (
@@ -78,6 +70,12 @@ export default async function InvoiceDetailPage({ params, searchParams }: Props)
           {STATUS_LABELS[inv.status]}
         </span>
         <div className="ml-auto flex items-center gap-2">
+          <Link
+            href={`/admin/invoices/${id}/edit`}
+            className="btn-secondary text-sm"
+          >
+            ✏️ 編集
+          </Link>
           <Link
             href={`/invoices/${id}/print`}
             target="_blank"
@@ -242,19 +240,27 @@ export default async function InvoiceDetailPage({ params, searchParams }: Props)
               </span>
             </div>
 
-            {nextStep && (
-              <form action={updateInvoiceStatus}>
-                <input type="hidden" name="invoice_id" value={inv.id} />
-                <input type="hidden" name="new_status"  value={nextStep.status} />
-                <button type="submit" className={`w-full py-2 rounded-lg text-sm font-semibold transition-colors ${nextStep.color}`}>
-                  {nextStep.label}
-                </button>
-              </form>
-            )}
-
-            {inv.status === "paid" && (
-              <p className="text-xs text-center text-emerald-600 font-medium">✓ 入金確認済み</p>
-            )}
+            <form action={updateInvoiceStatus} className="space-y-2">
+              <input type="hidden" name="invoice_id" value={inv.id} />
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">変更後のステータス</label>
+                <select
+                  name="new_status"
+                  defaultValue={inv.status}
+                  className="input text-sm"
+                >
+                  {(["draft", "issued", "sent", "paid"] as InvoiceStatus[]).map((s) => (
+                    <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="submit"
+                className="w-full py-2 rounded-lg text-sm font-semibold bg-brand-600 hover:bg-brand-700 text-white transition-colors"
+              >
+                更新する
+              </button>
+            </form>
           </div>
 
           {/* 下書き削除 */}
