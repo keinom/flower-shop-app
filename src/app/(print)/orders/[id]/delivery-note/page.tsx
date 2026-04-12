@@ -6,6 +6,7 @@ import { PrintActions } from "./PrintActions";
 const SHOP_NAME    = "花長";
 const SHOP_ADDRESS = "東京都港区南青山 7-12-9";
 const SHOP_TEL     = "03-3407-0211";
+const SHOP_FAX     = "03-3407-0245";
 const SHOP_EMAIL   = "info@aoyama-hanacho.com";
 // ────────────────────────────────────────────────────
 
@@ -201,7 +202,8 @@ function NoteHeader({ title, orderNo, issuedAt }: { title: string; orderNo: stri
           />
           <div style={{ fontSize: "7pt", color: GRAY3, lineHeight: 1.6, marginTop: "1pt", textAlign: "right" }}>
             <div>{SHOP_ADDRESS}</div>
-            <div>電話番号 {SHOP_TEL}　{SHOP_EMAIL}</div>
+            <div>TEL {SHOP_TEL}　FAX {SHOP_FAX}</div>
+            <div>{SHOP_EMAIL}</div>
           </div>
         </div>
       </div>

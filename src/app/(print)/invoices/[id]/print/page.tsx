@@ -6,6 +6,7 @@ import { InvoicePrintBar } from "@/components/admin/InvoicePrintBar";
 const SHOP_NAME    = "花長";
 const SHOP_ADDRESS = "東京都港区南青山 7-12-9";
 const SHOP_TEL     = "03-3407-0211";
+const SHOP_FAX     = "03-3407-0245";
 const SHOP_EMAIL   = "info@aoyama-hanacho.com";
 
 // ── 振込先口座 ──────────────────────────────────────────
@@ -245,7 +246,7 @@ export default async function InvoicePrintPage({ params }: Props) {
                 />
                 <div style={{ fontSize: "8.5pt", color: GRAY3, lineHeight: 1.9 }}>
                   <div>{SHOP_ADDRESS}</div>
-                  <div>TEL {SHOP_TEL}</div>
+                  <div>TEL {SHOP_TEL}　FAX {SHOP_FAX}</div>
                   <div>{SHOP_EMAIL}</div>
                 </div>
               </div>
