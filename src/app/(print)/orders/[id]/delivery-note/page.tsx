@@ -173,22 +173,8 @@ function NoteHeader({ title, orderNo, issuedAt }: { title: string; orderNo: stri
   return (
     <div style={{ marginBottom: "10pt" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        {/* 左: ロゴ + 店舗情報 */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "3pt" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/logo.png"
-            alt={SHOP_NAME}
-            style={{ height: "32pt", width: "auto", objectFit: "contain", objectPosition: "left center" }}
-          />
-          <div style={{ fontSize: "7pt", color: GRAY3, lineHeight: 1.6, marginTop: "1pt" }}>
-            <div>{SHOP_ADDRESS}</div>
-            <div>電話番号 {SHOP_TEL}　{SHOP_EMAIL}</div>
-          </div>
-        </div>
-
-        {/* 右: タイトル + 発行情報 */}
-        <div style={{ textAlign: "right" }}>
+        {/* 左: タイトル + 発行情報 */}
+        <div>
           <div style={{
             fontSize: "20pt",
             fontWeight: "700",
@@ -202,6 +188,20 @@ function NoteHeader({ title, orderNo, issuedAt }: { title: string; orderNo: stri
           <div style={{ fontSize: "7.5pt", color: GRAY3, lineHeight: 1.8 }}>
             <div>発行日：{issuedAt}</div>
             <div style={{ letterSpacing: "0.02em" }}>No. {orderNo}</div>
+          </div>
+        </div>
+
+        {/* 右: ロゴ + 店舗情報 */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "3pt" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo.png"
+            alt={SHOP_NAME}
+            style={{ height: "32pt", width: "auto", objectFit: "contain", objectPosition: "right center" }}
+          />
+          <div style={{ fontSize: "7pt", color: GRAY3, lineHeight: 1.6, marginTop: "1pt", textAlign: "right" }}>
+            <div>{SHOP_ADDRESS}</div>
+            <div>電話番号 {SHOP_TEL}　{SHOP_EMAIL}</div>
           </div>
         </div>
       </div>
