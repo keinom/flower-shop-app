@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AdminOrderFormClient } from "@/components/admin/AdminOrderFormClient";
 
 interface NewAdminOrderPageProps {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; customer_id?: string }>;
 }
 
 export default async function NewAdminOrderPage({ searchParams }: NewAdminOrderPageProps) {
@@ -41,7 +41,7 @@ export default async function NewAdminOrderPage({ searchParams }: NewAdminOrderP
         </div>
       )}
 
-      <AdminOrderFormClient customers={customers ?? []} today={today} taxRate={taxRate} />
+      <AdminOrderFormClient customers={customers ?? []} today={today} taxRate={taxRate} presetCustomerId={sp.customer_id} />
     </div>
   );
 }

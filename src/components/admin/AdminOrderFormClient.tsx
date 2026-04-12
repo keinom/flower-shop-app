@@ -21,11 +21,16 @@ interface Props {
   customers: Customer[];
   today: string;
   taxRate: number;
+  presetCustomerId?: string;
 }
 
-export function AdminOrderFormClient({ customers, today, taxRate }: Props) {
+export function AdminOrderFormClient({ customers, today, taxRate, presetCustomerId }: Props) {
   // ── 顧客モード ──
-  const [mode, setMode] = useState<"new" | "existing">("new");
+  const preset = presetCustomerId
+    ? (customers.find((c) => c.id === presetCustomerId) ?? null)
+    : null;
+
+  const [mode, setMode] = useState<"new" | "existing">(preset ? "existing" : "new");
 
   // ── 新規顧客フィールド（反映ボタン用にcontrolled）──
   const [newName, setNewName]       = useState("");
@@ -34,8 +39,8 @@ export function AdminOrderFormClient({ customers, today, taxRate }: Props) {
   const [newAddress, setNewAddress] = useState("");
 
   // ── 既存顧客検索 ──
-  const [searchQuery, setSearchQuery]           = useState("");
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [searchQuery, setSearchQuery]           = useState(preset?.name ?? "");
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(preset);
   const [showSuggestions, setShowSuggestions]   = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 

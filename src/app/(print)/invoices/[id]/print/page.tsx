@@ -9,7 +9,6 @@ const SHOP_TEL     = "03-3407-0211";
 const SHOP_EMAIL   = "aoyamahanacho@nifty.com";
 
 // ── 振込先口座 ──────────────────────────────────────────
-const BANK_HOLDER = "カ）ハナチョウ";
 const BANK_ACCOUNTS = [
   { bank: "みずほ銀行",     branch: "新橋支店",   type: "当座", number: "0009847" },
   { bank: "三井住友銀行",   branch: "青山支店",   type: "当座", number: "0258543" },

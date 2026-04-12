@@ -53,6 +53,8 @@ export async function deleteInvoice(formData: FormData) {
   const invoiceId = formData.get("invoice_id") as string;
   const supabase  = await createClient();
 
+  // 明細を先に削除してから請求書本体を削除
+  await supabase.from("invoice_items" as never).delete().eq("invoice_id", invoiceId);
   await supabase.from("invoices" as never).delete().eq("id", invoiceId);
 
   revalidatePath("/admin/invoices");

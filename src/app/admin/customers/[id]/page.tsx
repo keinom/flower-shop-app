@@ -187,7 +187,7 @@ export default async function CustomerDetailPage({
             注文履歴（全{orders?.length ?? 0}件）
           </h2>
           <Link
-            href={`/admin/orders/new`}
+            href={`/admin/orders/new?customer_id=${id}`}
             className="text-xs text-brand-600 hover:underline"
           >
             + 注文を作成
