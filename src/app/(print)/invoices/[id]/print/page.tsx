@@ -6,7 +6,7 @@ import { InvoicePrintBar } from "@/components/admin/InvoicePrintBar";
 const SHOP_NAME    = "花長";
 const SHOP_ADDRESS = "東京都港区南青山 7-12-9";
 const SHOP_TEL     = "03-3407-0211";
-const SHOP_EMAIL   = "aoyamahanacho@nifty.com";
+const SHOP_EMAIL   = "info@aoyama-hanacho.com";
 
 // ── 振込先口座 ──────────────────────────────────────────
 const BANK_ACCOUNTS = [

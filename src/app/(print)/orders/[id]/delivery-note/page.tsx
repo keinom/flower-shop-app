@@ -6,7 +6,7 @@ import { PrintActions } from "./PrintActions";
 const SHOP_NAME    = "花長";
 const SHOP_ADDRESS = "東京都港区南青山 7-12-9";
 const SHOP_TEL     = "03-3407-0211";
-const SHOP_EMAIL   = "aoyamahanacho@nifty.com";
+const SHOP_EMAIL   = "info@aoyama-hanacho.com";
 // ────────────────────────────────────────────────────
 
 // 配送料の品名は「配送料」とだけ表示する
