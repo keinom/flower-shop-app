@@ -17,7 +17,7 @@ export type OrderStatus =
   | "配達完了"
   | "キャンセル";
 
-export type ShiftPreferenceType = "full" | "am" | "pm" | "off";
+export type ShiftPreferenceType = "available" | "off";
 export type ShiftTimeSlot       = "AM" | "PM" | "FULL";
 export type ShiftStatus         = "draft" | "confirmed";
 
@@ -362,6 +362,10 @@ export interface Database {
           day_of_week: number;
           am_required: number;
           pm_required: number;
+          am_start: string;
+          am_end: string;
+          pm_start: string;
+          pm_end: string;
           updated_at: string;
           updated_by: string | null;
         };
@@ -369,6 +373,10 @@ export interface Database {
           day_of_week: number;
           am_required?: number;
           pm_required?: number;
+          am_start?: string;
+          am_end?: string;
+          pm_start?: string;
+          pm_end?: string;
           updated_at?: string;
           updated_by?: string | null;
         };
@@ -376,6 +384,10 @@ export interface Database {
           day_of_week?: number;
           am_required?: number;
           pm_required?: number;
+          am_start?: string;
+          am_end?: string;
+          pm_start?: string;
+          pm_end?: string;
           updated_at?: string;
           updated_by?: string | null;
         };
@@ -387,6 +399,8 @@ export interface Database {
           employee_id: string;
           preference_date: string;
           preference_type: ShiftPreferenceType;
+          start_time: string | null;
+          end_time: string | null;
           updated_at: string;
         };
         Insert: {
@@ -394,6 +408,8 @@ export interface Database {
           employee_id: string;
           preference_date: string;
           preference_type: ShiftPreferenceType;
+          start_time?: string | null;
+          end_time?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -401,6 +417,8 @@ export interface Database {
           employee_id?: string;
           preference_date?: string;
           preference_type?: ShiftPreferenceType;
+          start_time?: string | null;
+          end_time?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -412,6 +430,8 @@ export interface Database {
           shift_date: string;
           time_slot: ShiftTimeSlot;
           status: ShiftStatus;
+          start_time: string | null;
+          end_time: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -421,6 +441,8 @@ export interface Database {
           shift_date: string;
           time_slot: ShiftTimeSlot;
           status?: ShiftStatus;
+          start_time?: string | null;
+          end_time?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -430,6 +452,8 @@ export interface Database {
           shift_date?: string;
           time_slot?: ShiftTimeSlot;
           status?: ShiftStatus;
+          start_time?: string | null;
+          end_time?: string | null;
           created_at?: string;
           updated_at?: string;
         };

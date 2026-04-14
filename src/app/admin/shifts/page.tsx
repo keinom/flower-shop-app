@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateShifts, confirmShifts } from "./actions";
-import type { ShiftPreferenceType, ShiftTimeSlot, ShiftStatus } from "@/types/database";
+import type { ShiftTimeSlot, ShiftStatus } from "@/types/database";
 
 interface Props {
   searchParams: Promise<{
@@ -13,18 +13,18 @@ interface Props {
 // ----------------------------------------------------------------
 // 定数
 // ----------------------------------------------------------------
-const PREF_LABEL: Record<ShiftPreferenceType, string> = {
-  full: "終日",
-  am:   "午前",
-  pm:   "午後",
-  off:  "―",
-};
-const PREF_COLOR: Record<ShiftPreferenceType, string> = {
-  full: "bg-emerald-100 text-emerald-700",
-  am:   "bg-sky-100 text-sky-700",
-  pm:   "bg-amber-100 text-amber-700",
-  off:  "text-gray-300",
-};
+function prefBadge(
+  type: string,
+  startTime: string | null,
+  endTime: string | null
+): { label: string; style: string } {
+  if (type !== "available" || !startTime || !endTime) {
+    return { label: "―", style: "text-gray-300" };
+  }
+  const s = startTime.replace(/^0/, "");
+  const e = endTime.replace(/^0/, "");
+  return { label: `${s}-${e}`, style: "bg-emerald-100 text-emerald-700 text-xs" };
+}
 const SLOT_LABEL: Record<ShiftTimeSlot, string> = {
   FULL: "終日", AM: "午前", PM: "午後",
 };
@@ -89,15 +89,20 @@ export default async function ShiftsAdminPage({ searchParams }: Props) {
   // 希望データ
   const { data: prefRows } = await supabase
     .from("shift_preferences")
-    .select("employee_id, preference_date, preference_type")
+    .select("employee_id, preference_date, preference_type, start_time, end_time")
     .gte("preference_date", startDate)
     .lte("preference_date", endDate);
 
-  // prefMap: employeeId → dateStr → type
-  const prefMap = new Map<string, Map<string, ShiftPreferenceType>>();
+  type PrefEntry = { type: string; start_time: string | null; end_time: string | null };
+  // prefMap: employeeId → dateStr → PrefEntry
+  const prefMap = new Map<string, Map<string, PrefEntry>>();
   for (const row of prefRows ?? []) {
     if (!prefMap.has(row.employee_id)) prefMap.set(row.employee_id, new Map());
-    prefMap.get(row.employee_id)!.set(row.preference_date, row.preference_type as ShiftPreferenceType);
+    prefMap.get(row.employee_id)!.set(row.preference_date, {
+      type:       row.preference_type,
+      start_time: row.start_time,
+      end_time:   row.end_time,
+    });
   }
 
   // 生成済みシフト
@@ -132,9 +137,9 @@ export default async function ShiftsAdminPage({ searchParams }: Props) {
     reqMap.set(r.day_of_week, { am: r.am_required, pm: r.pm_required });
   }
 
-  // 希望提出人数（少なくとも1日でも提出した人）
+  // 希望提出人数（少なくとも1日でも「出勤可」を提出した人）
   const submittedCount = staff.filter((s) =>
-    Array.from(prefMap.get(s.id)?.values() ?? []).some((v) => v !== "off")
+    Array.from(prefMap.get(s.id)?.values() ?? []).some((v) => v.type === "available")
   ).length;
 
   return (
@@ -236,7 +241,7 @@ export default async function ShiftsAdminPage({ searchParams }: Props) {
             <tbody className="divide-y divide-gray-100 bg-white">
               {staff.map((s) => {
                 const myPrefs = prefMap.get(s.id);
-                const hasAny = myPrefs && Array.from(myPrefs.values()).some((v) => v !== "off");
+                const hasAny = myPrefs && Array.from(myPrefs.values()).some((v) => v.type === "available");
                 return (
                   <tr key={s.id} className="hover:bg-gray-50">
                     <td className="sticky left-0 bg-white hover:bg-gray-50 z-10 px-3 py-2 border-r border-gray-200 font-medium text-gray-800">
@@ -248,7 +253,8 @@ export default async function ShiftsAdminPage({ searchParams }: Props) {
                       </div>
                     </td>
                     {dates.map(({ str, dow }) => {
-                      const pref = myPrefs?.get(str) ?? "off";
+                      const pref  = myPrefs?.get(str) ?? { type: "off", start_time: null, end_time: null };
+                      const badge = prefBadge(pref.type, pref.start_time, pref.end_time);
                       return (
                         <td
                           key={str}
@@ -256,9 +262,9 @@ export default async function ShiftsAdminPage({ searchParams }: Props) {
                             dow === 0 ? "bg-red-50/30" : dow === 6 ? "bg-blue-50/30" : ""
                           }`}
                         >
-                          {pref !== "off" ? (
-                            <span className={`inline-block text-xs font-semibold px-1 py-0.5 rounded ${PREF_COLOR[pref]}`}>
-                              {PREF_LABEL[pref]}
+                          {pref.type === "available" ? (
+                            <span className={`inline-block font-semibold px-1 py-0.5 rounded ${badge.style}`}>
+                              {badge.label}
                             </span>
                           ) : (
                             <span className="text-gray-200">―</span>
