@@ -17,6 +17,10 @@ export type OrderStatus =
   | "配達完了"
   | "キャンセル";
 
+export type ShiftPreferenceType = "full" | "am" | "pm" | "off";
+export type ShiftTimeSlot       = "AM" | "PM" | "FULL";
+export type ShiftStatus         = "draft" | "confirmed";
+
 export interface Database {
   public: {
     Tables: {
@@ -353,12 +357,94 @@ export interface Database {
         };
         Relationships: [];
       };
+      shift_requirements: {
+        Row: {
+          day_of_week: number;
+          am_required: number;
+          pm_required: number;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          day_of_week: number;
+          am_required?: number;
+          pm_required?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          day_of_week?: number;
+          am_required?: number;
+          pm_required?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
+      shift_preferences: {
+        Row: {
+          id: string;
+          employee_id: string;
+          preference_date: string;
+          preference_type: ShiftPreferenceType;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          employee_id: string;
+          preference_date: string;
+          preference_type: ShiftPreferenceType;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          employee_id?: string;
+          preference_date?: string;
+          preference_type?: ShiftPreferenceType;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      shifts: {
+        Row: {
+          id: string;
+          employee_id: string;
+          shift_date: string;
+          time_slot: ShiftTimeSlot;
+          status: ShiftStatus;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          employee_id: string;
+          shift_date: string;
+          time_slot: ShiftTimeSlot;
+          status?: ShiftStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          employee_id?: string;
+          shift_date?: string;
+          time_slot?: ShiftTimeSlot;
+          status?: ShiftStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
       is_admin: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+      is_staff: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
