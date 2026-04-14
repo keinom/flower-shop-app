@@ -333,10 +333,21 @@ export default async function ShiftsAdminPage({ searchParams }: Props) {
                       </span>
                     </td>
                     {dates.map(({ str, dow }) => {
-                      const assigned = shiftMap.get(str)?.get(slot) ?? [];
-                      const req = reqMap.get(dow) ?? { am: 0, pm: 0 };
-                      const needed = slot === "AM" ? req.am : slot === "PM" ? req.pm : 0;
-                      const fulfilled = slot === "FULL" ? true : assigned.length >= needed;
+                      const assigned    = shiftMap.get(str)?.get(slot) ?? [];
+                      const fullCount   = shiftMap.get(str)?.get("FULL")?.length ?? 0;
+                      const req         = reqMap.get(dow) ?? { am: 0, pm: 0 };
+
+                      // FULL勤務者はAM・PMの両方をカバーするため、充足チェックに加算
+                      const covered =
+                        slot === "AM"   ? assigned.length + fullCount :
+                        slot === "PM"   ? assigned.length + fullCount :
+                        /* FULL */        assigned.length;
+                      const needed =
+                        slot === "AM"   ? req.am :
+                        slot === "PM"   ? req.pm :
+                        /* FULL */        0;
+                      const fulfilled = slot === "FULL" || needed === 0 || covered >= needed;
+
                       return (
                         <td
                           key={str}
@@ -361,10 +372,10 @@ export default async function ShiftsAdminPage({ searchParams }: Props) {
                           ) : (
                             <span className="text-gray-200">―</span>
                           )}
-                          {/* 不足表示 */}
+                          {/* 不足表示: FULL勤務者を加味した上でも人数不足の場合のみ表示 */}
                           {slot !== "FULL" && needed > 0 && !fulfilled && (
-                            <div className="text-red-500 font-bold mt-0.5">
-                              ⚠{assigned.length}/{needed}
+                            <div className="text-red-500 font-bold mt-0.5 text-xs">
+                              ⚠{covered}/{needed}
                             </div>
                           )}
                         </td>

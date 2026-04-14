@@ -74,13 +74,22 @@ export function ShiftPreferenceCalendar({ year, month, existing }: Props) {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setPending(true);
-    const fd = new FormData();
-    fd.set("year", String(year));
-    fd.set("month", String(month));
-    fd.set("preferences", JSON.stringify(prefs));
-    await saveShiftPreferences(fd);
-    // saveShiftPreferences does redirect, so this line is usually not reached
-    setPending(false);
+    try {
+      // 全日付を確実に含めた prefs を送信（未操作の日は "off" として補完）
+      const fullPrefs: Record<string, string> = {};
+      days.forEach((d) => {
+        const dateStr = toDateStr(d);
+        fullPrefs[dateStr] = prefs[dateStr] ?? "off";
+      });
+      const fd = new FormData();
+      fd.set("year", String(year));
+      fd.set("month", String(month));
+      fd.set("preferences", JSON.stringify(fullPrefs));
+      await saveShiftPreferences(fd);
+      // Server Action の redirect() が発火するため、以降は通常実行されない
+    } finally {
+      setPending(false);
+    }
   }
 
   // 凡例のサマリー
@@ -91,9 +100,7 @@ export function ShiftPreferenceCalendar({ year, month, existing }: Props) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <input type="hidden" name="year"  value={year} />
-      <input type="hidden" name="month" value={month} />
-      <input type="hidden" name="preferences" value={JSON.stringify(prefs)} readOnly />
+      {/* hidden inputs は handleSubmit 内で FormData を直接構築するため不要 */}
 
       {/* 一括設定ボタン */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
