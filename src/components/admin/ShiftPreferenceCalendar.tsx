@@ -31,7 +31,7 @@ interface Preset {
 
 const DOW_LABELS    = ["日", "月", "火", "水", "木", "金", "土"];
 const DOW_FULLNAMES = ["日曜", "月曜", "火曜", "水曜", "木曜", "金曜", "土曜"];
-const WEEKDAYS      = [1, 2, 3, 4, 5, 6];
+const WEEKDAYS      = [1, 2, 3, 4, 5, 6, 0];
 
 // 30分刻みの時刻選択肢 (06:00〜22:30)
 const TIME_OPTIONS: string[] = [];
@@ -142,10 +142,7 @@ export function ShiftPreferenceCalendar({
   function setAllDays(preset: Preset) {
     const all: Record<string, DayData> = {};
     days.forEach((d) => {
-      const ds = toDateStr(d);
-      all[ds] = d.getDay() === 0
-        ? { start_time: null, end_time: null }
-        : { start_time: preset.start, end_time: preset.end };
+      all[toDateStr(d)] = { start_time: preset.start, end_time: preset.end };
     });
     setPrefs(all);
   }
@@ -209,7 +206,6 @@ export function ShiftPreferenceCalendar({
   ].map((opt) => ({
     ...opt,
     count: days.filter((d) => {
-      if (d.getDay() === 0) return false;
       const day = prefs[toDateStr(d)] ?? { start_time: null, end_time: null };
       if (opt.id === "custom") return isCustom(day);
       return !isCustom(day) && matchPreset(day).id === opt.id;
@@ -254,7 +250,7 @@ export function ShiftPreferenceCalendar({
             <tbody>
               {WEEKDAYS.map((dow) => (
                 <tr key={dow} className="border-t border-gray-100">
-                  <td className={`pr-4 py-2 font-semibold ${dow === 6 ? "text-blue-500" : "text-gray-700"}`}>
+                  <td className={`pr-4 py-2 font-semibold ${dow === 0 ? "text-red-500" : dow === 6 ? "text-blue-500" : "text-gray-700"}`}>
                     {DOW_LABELS[dow]}曜
                   </td>
                   {PRESETS.map((p) => (
@@ -310,23 +306,6 @@ export function ShiftPreferenceCalendar({
               const dayColor =
                 dow === 0 ? "text-red-500" : dow === 6 ? "text-blue-500" : "text-gray-800";
               const isEditing = editingDate === ds;
-
-              // 日曜: 定休日
-              if (dow === 0) {
-                return (
-                  <div key={ds} className="border border-red-100 rounded-xl bg-red-50/50 flex flex-col">
-                    <div className="px-2 pt-2 pb-1">
-                      <span className={`text-sm font-bold ${dayColor}`}>{d.getDate()}</span>
-                    </div>
-                    <div className="flex-1 flex items-center justify-center pb-2">
-                      <span className="text-xs text-red-400 font-semibold bg-red-100 px-2 py-0.5 rounded-full">
-                        定休
-                      </span>
-                    </div>
-                  </div>
-                );
-              }
-
               const day   = prefs[ds] ?? { start_time: null, end_time: null };
               const style = getStyle(day);
               const badge = getBadge(day);
@@ -484,7 +463,7 @@ export function ShiftPreferenceCalendar({
 
       {/* ── 注記 ── */}
       <p className="text-xs text-gray-400">
-        ※ セル上部クリック: 終日→午前→午後→休みの順に切り替え　✏ 時刻編集ボタン: 任意の時刻を指定　★: カスタム時刻設定済み
+        ※ セル上部クリック: 終日→午前→午後→休みの順に切り替え　✏ 時刻編集ボタン: 任意の時刻を指定　★: カスタム時刻設定済み（日曜も設定可）
       </p>
 
       {/* ── 送信ボタン ── */}
