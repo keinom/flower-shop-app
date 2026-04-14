@@ -64,7 +64,7 @@ export default async function MyShiftPreferencePage({ searchParams }: Props) {
   const pmEnd   = presetTimes?.pm_end   ?? "18:00";
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6">
       {/* ヘッダー */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>

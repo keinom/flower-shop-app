@@ -24,13 +24,21 @@ interface Preset {
   start:     string | null;
   end:       string | null;
   cellStyle: string;
-  btnStyle:  string;
+  badgeStyle: string;
+  editBtnStyle: string;
   badge:     string;
 }
 
 const DOW_LABELS    = ["日", "月", "火", "水", "木", "金", "土"];
 const DOW_FULLNAMES = ["日曜", "月曜", "火曜", "水曜", "木曜", "金曜", "土曜"];
-const WEEKDAYS      = [1, 2, 3, 4, 5, 6]; // Mon–Sat
+const WEEKDAYS      = [1, 2, 3, 4, 5, 6];
+
+// 30分刻みの時刻選択肢 (06:00〜22:30)
+const TIME_OPTIONS: string[] = [];
+for (let h = 6; h <= 22; h++) {
+  TIME_OPTIONS.push(`${String(h).padStart(2, "0")}:00`);
+  if (h < 22) TIME_OPTIONS.push(`${String(h).padStart(2, "0")}:30`);
+}
 
 function getDaysInMonth(year: number, month: number): Date[] {
   const days: Date[] = [];
@@ -54,53 +62,56 @@ export function ShiftPreferenceCalendar({
     {
       id: "full", label: "終日",
       start: amStart, end: pmEnd,
-      cellStyle: "bg-emerald-50 border-emerald-300",
-      btnStyle:  "bg-emerald-500 text-white",
-      badge:     `${fmt(amStart)}-${fmt(pmEnd)}`,
+      cellStyle:    "bg-emerald-50 border-emerald-300",
+      badgeStyle:   "bg-emerald-500 text-white",
+      editBtnStyle: "border-emerald-200 text-emerald-600 hover:bg-emerald-100",
+      badge: `${fmt(amStart)}-${fmt(pmEnd)}`,
     },
     {
       id: "am", label: "午前",
       start: amStart, end: amEnd,
-      cellStyle: "bg-sky-50 border-sky-300",
-      btnStyle:  "bg-sky-500 text-white",
-      badge:     `${fmt(amStart)}-${fmt(amEnd)}`,
+      cellStyle:    "bg-sky-50 border-sky-300",
+      badgeStyle:   "bg-sky-500 text-white",
+      editBtnStyle: "border-sky-200 text-sky-600 hover:bg-sky-100",
+      badge: `${fmt(amStart)}-${fmt(amEnd)}`,
     },
     {
       id: "pm", label: "午後",
       start: pmStart, end: pmEnd,
-      cellStyle: "bg-amber-50 border-amber-300",
-      btnStyle:  "bg-amber-500 text-white",
-      badge:     `${fmt(pmStart)}-${fmt(pmEnd)}`,
+      cellStyle:    "bg-amber-50 border-amber-300",
+      badgeStyle:   "bg-amber-500 text-white",
+      editBtnStyle: "border-amber-200 text-amber-600 hover:bg-amber-100",
+      badge: `${fmt(pmStart)}-${fmt(pmEnd)}`,
     },
     {
       id: "off", label: "休み",
       start: null, end: null,
-      cellStyle: "bg-gray-50 border-gray-200",
-      btnStyle:  "bg-gray-400 text-white",
-      badge:     "休",
+      cellStyle:    "bg-gray-50 border-gray-200",
+      badgeStyle:   "bg-gray-300 text-gray-600",
+      editBtnStyle: "border-gray-200 text-gray-400 hover:bg-gray-100",
+      badge: "休",
     },
   ];
 
-  // カスタム時刻（プリセット以外）用スタイル
-  const CUSTOM_STYLE = {
-    cellStyle: "bg-violet-50 border-violet-300",
-    btnStyle:  "bg-violet-500 text-white",
+  const CUSTOM = {
+    cellStyle:    "bg-violet-50 border-violet-300",
+    badgeStyle:   "bg-violet-500 text-white",
+    editBtnStyle: "border-violet-200 text-violet-600 hover:bg-violet-100",
   };
 
-  const [prefs, setPrefs]           = useState<Record<string, DayData>>(existing);
-  const [pending, setPending]       = useState(false);
+  const [prefs,       setPrefs]       = useState<Record<string, DayData>>(existing);
+  const [pending,     setPending]     = useState(false);
   const [editingDate, setEditingDate] = useState<string | null>(null);
-  const [editStart, setEditStart]   = useState("");
-  const [editEnd, setEditEnd]       = useState("");
+  const [editStart,   setEditStart]   = useState(amStart);
+  const [editEnd,     setEditEnd]     = useState(pmEnd);
 
   const days     = getDaysInMonth(year, month);
   const firstDow = days[0].getDay();
   const offset   = firstDow === 0 ? 6 : firstDow - 1;
 
-  // プリセット一致チェック
-  function matchPreset(day: DayData): Preset | null {
-    if (!day.start_time || !day.end_time) return PRESETS[3]; // off
-    return PRESETS.find((p) => p.start === day.start_time && p.end === day.end_time) ?? null;
+  function matchPreset(day: DayData): Preset {
+    if (!day.start_time || !day.end_time) return PRESETS[3];
+    return PRESETS.find((p) => p.start === day.start_time && p.end === day.end_time) ?? PRESETS[0];
   }
 
   function isCustom(day: DayData): boolean {
@@ -108,14 +119,10 @@ export function ShiftPreferenceCalendar({
     return !PRESETS.some((p) => p.start === day.start_time && p.end === day.end_time);
   }
 
-  function getCellStyle(day: DayData) {
-    if (isCustom(day)) return CUSTOM_STYLE.cellStyle;
-    return (matchPreset(day) ?? PRESETS[3]).cellStyle;
+  function getStyle(day: DayData) {
+    return isCustom(day) ? CUSTOM : matchPreset(day);
   }
-  function getBtnStyle(day: DayData) {
-    if (isCustom(day)) return CUSTOM_STYLE.btnStyle;
-    return (matchPreset(day) ?? PRESETS[3]).btnStyle;
-  }
+
   function getBadge(day: DayData): string {
     if (!day.start_time || !day.end_time) return "休";
     return `${fmt(day.start_time)}-${fmt(day.end_time)}`;
@@ -126,14 +133,9 @@ export function ShiftPreferenceCalendar({
   }
 
   function cyclePreset(dateStr: string) {
-    const cur  = prefs[dateStr] ?? { start_time: null, end_time: null };
-    const match = matchPreset(cur);
-    if (isCustom(cur)) {
-      // カスタム時刻の場合は最初のプリセット（終日）に戻す
-      applyPreset(dateStr, PRESETS[0]);
-      return;
-    }
-    const idx = PRESETS.findIndex((p) => p.id === (match?.id ?? "off"));
+    const cur = prefs[dateStr] ?? { start_time: null, end_time: null };
+    if (isCustom(cur)) { applyPreset(dateStr, PRESETS[0]); return; }
+    const idx = PRESETS.findIndex((p) => p.id === matchPreset(cur).id);
     applyPreset(dateStr, PRESETS[(idx + 1) % PRESETS.length]);
   }
 
@@ -159,24 +161,21 @@ export function ShiftPreferenceCalendar({
     });
   }
 
-  // 時刻手動編集
   function openEdit(e: React.MouseEvent, dateStr: string) {
     e.stopPropagation();
     const day = prefs[dateStr] ?? { start_time: null, end_time: null };
     setEditStart(day.start_time ?? amStart);
     setEditEnd(day.end_time ?? pmEnd);
     setEditingDate(dateStr);
+    // 少し待ってからスクロール
+    setTimeout(() => {
+      document.getElementById("time-edit-panel")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 50);
   }
 
   function applyEdit() {
-    if (!editingDate) return;
-    if (editStart && editEnd) {
-      setPrefs((prev) => ({ ...prev, [editingDate]: { start_time: editStart, end_time: editEnd } }));
-    }
-    setEditingDate(null);
-  }
-
-  function cancelEdit() {
+    if (!editingDate || !editStart || !editEnd) return;
+    setPrefs((prev) => ({ ...prev, [editingDate]: { start_time: editStart, end_time: editEnd } }));
     setEditingDate(null);
   }
 
@@ -204,22 +203,19 @@ export function ShiftPreferenceCalendar({
     }
   }
 
-  // 集計サマリー（日曜除く）
   const counts = [
     ...PRESETS,
-    { id: "custom", label: "カスタム", cellStyle: CUSTOM_STYLE.cellStyle, btnStyle: CUSTOM_STYLE.btnStyle },
+    { id: "custom", label: "カスタム", cellStyle: CUSTOM.cellStyle, badgeStyle: CUSTOM.badgeStyle },
   ].map((opt) => ({
     ...opt,
     count: days.filter((d) => {
       if (d.getDay() === 0) return false;
       const day = prefs[toDateStr(d)] ?? { start_time: null, end_time: null };
       if (opt.id === "custom") return isCustom(day);
-      const match = matchPreset(day);
-      return !isCustom(day) && (match?.id ?? "off") === opt.id;
+      return !isCustom(day) && matchPreset(day).id === opt.id;
     }).length,
-  })).filter((c) => c.count > 0 || c.id !== "custom");
+  }));
 
-  // 編集対象日の情報
   const editingDay = editingDate ? days.find((d) => toDateStr(d) === editingDate) : null;
 
   return (
@@ -234,7 +230,7 @@ export function ShiftPreferenceCalendar({
               key={p.id}
               type="button"
               onClick={() => setAllDays(p)}
-              className={`text-xs px-3 py-1.5 rounded-full font-medium ${p.btnStyle}`}
+              className={`text-xs px-3 py-1.5 rounded-full font-medium ${p.badgeStyle}`}
             >
               全日 {p.label}{p.id !== "off" ? ` (${p.badge})` : ""}
             </button>
@@ -249,24 +245,24 @@ export function ShiftPreferenceCalendar({
           <table className="text-xs w-full">
             <thead>
               <tr>
-                <th className="text-left pr-4 py-1 text-gray-500 font-semibold w-12">曜日</th>
+                <th className="text-left pr-4 py-1.5 text-gray-500 font-semibold w-14">曜日</th>
                 {PRESETS.map((p) => (
-                  <th key={p.id} className="px-2 py-1 text-center text-gray-500 font-medium">{p.label}</th>
+                  <th key={p.id} className="px-2 py-1.5 text-center text-gray-500 font-medium">{p.label}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {WEEKDAYS.map((dow) => (
                 <tr key={dow} className="border-t border-gray-100">
-                  <td className={`pr-4 py-1.5 font-semibold ${dow === 6 ? "text-blue-500" : "text-gray-700"}`}>
+                  <td className={`pr-4 py-2 font-semibold ${dow === 6 ? "text-blue-500" : "text-gray-700"}`}>
                     {DOW_LABELS[dow]}曜
                   </td>
                   {PRESETS.map((p) => (
-                    <td key={p.id} className="px-2 py-1.5 text-center">
+                    <td key={p.id} className="px-2 py-2 text-center">
                       <button
                         type="button"
                         onClick={() => setByDow(dow, p)}
-                        className={`px-2.5 py-0.5 rounded text-xs font-medium ${p.btnStyle}`}
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${p.badgeStyle}`}
                       >
                         {p.id === "off" ? "休み" : p.badge}
                       </button>
@@ -283,16 +279,21 @@ export function ShiftPreferenceCalendar({
       <div>
         <p className="text-xs font-semibold text-gray-500 mb-2">
           日別設定
-          <span className="font-normal text-gray-400">（セルをクリック: プリセット切り替え　✏ ボタン: 時刻を手動入力）</span>
+          <span className="font-normal text-gray-400 ml-1">
+            （上半分クリック: 種別切替　「時刻編集」ボタン: 時刻を直接指定）
+          </span>
         </p>
+
+        {/* 7列グリッド: overflow-x-auto で小画面対応 */}
         <div className="overflow-x-auto">
-          <div className="grid grid-cols-7 gap-1 min-w-[560px]">
-            {/* ヘッダー */}
+          <div className="grid grid-cols-7 gap-1.5" style={{ minWidth: "560px" }}>
+
+            {/* 曜日ヘッダー (月始まり) */}
             {[1, 2, 3, 4, 5, 6, 0].map((dow) => (
               <div
                 key={dow}
-                className={`text-center text-xs font-semibold py-1 ${
-                  dow === 0 ? "text-red-500" : dow === 6 ? "text-blue-500" : "text-gray-700"
+                className={`text-center text-xs font-semibold py-1.5 ${
+                  dow === 0 ? "text-red-500" : dow === 6 ? "text-blue-500" : "text-gray-600"
                 }`}
               >
                 {DOW_LABELS[dow]}
@@ -300,70 +301,68 @@ export function ShiftPreferenceCalendar({
             ))}
 
             {/* オフセット空白 */}
-            {Array.from({ length: offset }).map((_, i) => (
-              <div key={`blank-${i}`} />
-            ))}
+            {Array.from({ length: offset }).map((_, i) => <div key={`b${i}`} />)}
 
             {/* 日付セル */}
             {days.map((d) => {
               const ds  = toDateStr(d);
               const dow = d.getDay();
-              const dayColor = dow === 0 ? "text-red-500" : dow === 6 ? "text-blue-500" : "text-gray-800";
+              const dayColor =
+                dow === 0 ? "text-red-500" : dow === 6 ? "text-blue-500" : "text-gray-800";
               const isEditing = editingDate === ds;
 
+              // 日曜: 定休日
               if (dow === 0) {
                 return (
-                  <div
-                    key={ds}
-                    className="border rounded-lg p-1.5 text-left bg-red-50/40 border-red-100"
-                  >
-                    <div className={`text-xs font-bold mb-1 ${dayColor}`}>{d.getDate()}</div>
-                    <div className="text-center text-xs text-red-400 font-medium px-1 py-0.5 rounded bg-red-100">
-                      定休
+                  <div key={ds} className="border border-red-100 rounded-xl bg-red-50/50 flex flex-col">
+                    <div className="px-2 pt-2 pb-1">
+                      <span className={`text-sm font-bold ${dayColor}`}>{d.getDate()}</span>
+                    </div>
+                    <div className="flex-1 flex items-center justify-center pb-2">
+                      <span className="text-xs text-red-400 font-semibold bg-red-100 px-2 py-0.5 rounded-full">
+                        定休
+                      </span>
                     </div>
                   </div>
                 );
               }
 
-              const day    = prefs[ds] ?? { start_time: null, end_time: null };
-              const cell   = getCellStyle(day);
-              const btn    = getBtnStyle(day);
-              const badge  = getBadge(day);
+              const day   = prefs[ds] ?? { start_time: null, end_time: null };
+              const style = getStyle(day);
+              const badge = getBadge(day);
               const custom = isCustom(day);
 
               return (
                 <div
                   key={ds}
-                  className={`border rounded-lg text-left transition-all relative ${cell} ${
-                    isEditing ? "ring-2 ring-violet-400 ring-offset-1" : ""
+                  className={`border rounded-xl flex flex-col overflow-hidden transition-all ${style.cellStyle} ${
+                    isEditing ? "ring-2 ring-violet-400 ring-offset-1 shadow-md" : ""
                   }`}
                 >
-                  {/* クリックでプリセット切り替え */}
+                  {/* 上部: クリックでプリセット切り替え */}
                   <button
                     type="button"
                     onClick={() => cyclePreset(ds)}
-                    className="w-full p-1.5 text-left hover:opacity-80 active:scale-95 transition-all"
+                    className="flex-1 px-2 pt-2 pb-1.5 text-left hover:brightness-95 active:scale-95 transition-all"
                   >
-                    <div className="flex items-start justify-between mb-1">
-                      <span className={`text-xs font-bold ${dayColor}`}>{d.getDate()}</span>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className={`text-sm font-bold leading-none ${dayColor}`}>{d.getDate()}</span>
                       {custom && (
-                        <span className="text-xs text-violet-400 font-bold leading-none">★</span>
+                        <span className="text-violet-500 text-xs leading-none font-bold">★</span>
                       )}
                     </div>
-                    <div className={`text-center text-xs font-semibold px-1 py-0.5 rounded ${btn}`}>
+                    <div className={`text-center text-xs font-semibold py-1 rounded-lg ${style.badgeStyle}`}>
                       {badge}
                     </div>
                   </button>
-                  {/* 時刻手動編集ボタン */}
+
+                  {/* 下部: 時刻編集ボタン */}
                   <button
                     type="button"
                     onClick={(e) => openEdit(e, ds)}
-                    className="absolute top-0.5 right-0.5 w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-white/70 rounded transition-colors"
-                    title="時刻を手動で編集"
+                    className={`w-full text-center text-xs font-medium py-1.5 border-t transition-colors ${style.editBtnStyle}`}
                   >
-                    <svg width="9" height="9" viewBox="0 0 12 12" fill="currentColor">
-                      <path d="M8.5 1.5a1.5 1.5 0 0 1 2.121 2.121L9.5 4.75 7.25 2.5 8.5 1.5zm-1.75 1.75L1.5 8.5 1 11l2.5-.5 5.25-5.25L6.75 3.25z"/>
-                    </svg>
+                    ✏ 時刻編集
                   </button>
                 </div>
               );
@@ -372,66 +371,82 @@ export function ShiftPreferenceCalendar({
         </div>
       </div>
 
-      {/* ── 手動時刻編集パネル ── */}
+      {/* ── 時刻手動編集パネル ── */}
       {editingDate && editingDay && (
-        <div className="border border-violet-200 bg-violet-50 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-sm font-semibold text-violet-800">
+        <div id="time-edit-panel" className="border-2 border-violet-300 bg-white rounded-2xl p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-bold text-violet-800">
               {month}月{editingDay.getDate()}日（{DOW_FULLNAMES[editingDay.getDay()]}）の時刻を編集
-            </span>
+            </h3>
             <button
               type="button"
-              onClick={cancelEdit}
-              className="ml-auto text-gray-400 hover:text-gray-600 text-xs px-2 py-0.5 rounded hover:bg-white/70 transition-colors"
+              onClick={() => setEditingDate(null)}
+              className="text-gray-400 hover:text-gray-600 text-lg leading-none px-1"
             >
-              ✕ キャンセル
+              ✕
             </button>
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-gray-600 w-12">開始</label>
-              <input
-                type="time"
+          {/* 時刻セレクト */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">開始時刻</label>
+              <select
                 value={editStart}
                 onChange={(e) => setEditStart(e.target.value)}
-                className="input text-sm py-1 w-32"
-              />
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base font-semibold text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400"
+              >
+                {TIME_OPTIONS.map((t) => (
+                  <option key={t} value={t}>{t.replace(/^0/, "")}</option>
+                ))}
+              </select>
             </div>
-            <span className="text-gray-400 font-medium">〜</span>
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-gray-600 w-12">終了</label>
-              <input
-                type="time"
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">終了時刻</label>
+              <select
                 value={editEnd}
                 onChange={(e) => setEditEnd(e.target.value)}
-                className="input text-sm py-1 w-32"
-              />
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base font-semibold text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400"
+              >
+                {TIME_OPTIONS.map((t) => (
+                  <option key={t} value={t}>{t.replace(/^0/, "")}</option>
+                ))}
+              </select>
             </div>
           </div>
 
-          {/* プリセットをクイック選択 */}
-          <div className="mt-3 flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-gray-500">プリセット:</span>
-            {PRESETS.filter((p) => p.id !== "off").map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => { setEditStart(p.start!); setEditEnd(p.end!); }}
-                className={`text-xs px-2 py-0.5 rounded font-medium ${p.btnStyle}`}
-              >
-                {p.label} ({p.badge})
-              </button>
-            ))}
+          {/* 設定プレビュー */}
+          {editStart && editEnd && (
+            <div className="mb-4 px-3 py-2 bg-violet-50 rounded-lg text-sm text-violet-700 font-medium text-center">
+              {fmt(editStart)} 〜 {fmt(editEnd)} で設定
+            </div>
+          )}
+
+          {/* プリセットクイック選択 */}
+          <div className="mb-4">
+            <p className="text-xs text-gray-500 mb-2">プリセットから選ぶ</p>
+            <div className="flex gap-2 flex-wrap">
+              {PRESETS.filter((p) => p.id !== "off").map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => { setEditStart(p.start!); setEditEnd(p.end!); }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${p.badgeStyle}`}
+                >
+                  {p.label}（{p.badge}）
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="mt-4 flex gap-2">
+          {/* 操作ボタン */}
+          <div className="flex gap-2 flex-wrap">
             <button
               type="button"
               onClick={applyEdit}
-              className="text-sm font-semibold px-4 py-1.5 rounded-lg bg-violet-600 text-white hover:bg-violet-700 transition-colors"
+              className="flex-1 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-bold hover:bg-violet-700 transition-colors"
             >
-              この時刻を適用
+              この時刻を適用する
             </button>
             <button
               type="button"
@@ -439,22 +454,29 @@ export function ShiftPreferenceCalendar({
                 setPrefs((prev) => ({ ...prev, [editingDate]: { start_time: null, end_time: null } }));
                 setEditingDate(null);
               }}
-              className="text-sm font-medium px-4 py-1.5 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+              className="px-4 py-2.5 rounded-xl bg-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-300 transition-colors"
             >
               休みにする
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditingDate(null)}
+              className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-500 text-sm hover:bg-gray-50 transition-colors"
+            >
+              キャンセル
             </button>
           </div>
         </div>
       )}
 
       {/* ── 集計サマリー ── */}
-      <div className="flex gap-3 flex-wrap">
+      <div className="flex gap-2 flex-wrap">
         {counts.filter((c) => c.count > 0).map((opt) => (
           <div
             key={opt.id}
-            className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border ${opt.cellStyle}`}
+            className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border ${opt.cellStyle}`}
           >
-            <span className={`font-bold ${opt.btnStyle} px-1.5 py-0.5 rounded`}>{opt.label}</span>
+            <span className={`font-bold ${opt.badgeStyle} px-1.5 py-0.5 rounded-full`}>{opt.label}</span>
             <span className="font-bold text-gray-900">{opt.count}日</span>
           </div>
         ))}
@@ -462,7 +484,7 @@ export function ShiftPreferenceCalendar({
 
       {/* ── 注記 ── */}
       <p className="text-xs text-gray-400">
-        ※ セルをクリック: 終日→午前→午後→休みの順に切り替え　✏ アイコン: 任意の時刻を手動入力　★ マーク: カスタム時刻設定済み
+        ※ セル上部クリック: 終日→午前→午後→休みの順に切り替え　✏ 時刻編集ボタン: 任意の時刻を指定　★: カスタム時刻設定済み
       </p>
 
       {/* ── 送信ボタン ── */}
