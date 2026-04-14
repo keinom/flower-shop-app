@@ -271,20 +271,66 @@ export function ShiftPreferenceCalendar({
         </div>
       </div>
 
-      {/* ── カレンダーグリッド ── */}
+      {/* ── 日別設定 ── */}
       <div>
         <p className="text-xs font-semibold text-gray-500 mb-2">
           日別設定
-          <span className="font-normal text-gray-400 ml-1">
+          <span className="font-normal text-gray-400 ml-1 hidden sm:inline">
             （上半分クリック: 種別切替　「時刻編集」ボタン: 時刻を直接指定）
           </span>
         </p>
 
-        {/* 7列グリッド: overflow-x-auto で小画面対応 */}
-        <div className="overflow-x-auto">
-          <div className="grid grid-cols-7 gap-1.5" style={{ minWidth: "560px" }}>
+        {/* ── モバイル: 縦リスト ── */}
+        <div className="sm:hidden space-y-1.5">
+          {days.map((d) => {
+            const ds     = toDateStr(d);
+            const dow    = d.getDay();
+            const day    = prefs[ds] ?? { start_time: null, end_time: null };
+            const style  = getStyle(day);
+            const badge  = getBadge(day);
+            const custom = isCustom(day);
+            const isEditing = editingDate === ds;
+            const dayColor  = dow === 0 ? "text-red-500" : dow === 6 ? "text-blue-500" : "text-gray-700";
 
-            {/* 曜日ヘッダー (月始まり) */}
+            return (
+              <div
+                key={ds}
+                className={`flex items-center gap-2 rounded-xl border px-3 py-2 transition-all ${style.cellStyle} ${
+                  isEditing ? "ring-2 ring-violet-400 ring-offset-1" : ""
+                }`}
+              >
+                {/* 日付 */}
+                <div className="w-16 flex-shrink-0 flex items-baseline gap-1">
+                  <span className={`text-xs font-semibold ${dayColor}`}>{DOW_LABELS[dow]}</span>
+                  <span className={`text-xl font-bold leading-none ${dayColor}`}>{d.getDate()}</span>
+                  {custom && <span className="text-violet-500 text-xs font-bold">★</span>}
+                </div>
+
+                {/* バッジ（タップでプリセット切り替え） */}
+                <button
+                  type="button"
+                  onClick={() => cyclePreset(ds)}
+                  className={`flex-1 text-center text-sm font-semibold py-2.5 rounded-xl active:scale-95 transition-all ${style.badgeStyle}`}
+                >
+                  {badge}
+                </button>
+
+                {/* 時刻編集ボタン */}
+                <button
+                  type="button"
+                  onClick={(e) => openEdit(e, ds)}
+                  className={`flex-shrink-0 px-3 py-2.5 text-xs font-semibold rounded-xl border transition-colors ${style.editBtnStyle}`}
+                >
+                  時刻編集
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ── タブレット/PC: グリッド ── */}
+        <div className="hidden sm:block overflow-x-auto">
+          <div className="grid grid-cols-7 gap-1.5" style={{ minWidth: "560px" }}>
             {[1, 2, 3, 4, 5, 6, 0].map((dow) => (
               <div
                 key={dow}
@@ -296,19 +342,16 @@ export function ShiftPreferenceCalendar({
               </div>
             ))}
 
-            {/* オフセット空白 */}
             {Array.from({ length: offset }).map((_, i) => <div key={`b${i}`} />)}
 
-            {/* 日付セル */}
             {days.map((d) => {
-              const ds  = toDateStr(d);
-              const dow = d.getDay();
-              const dayColor =
-                dow === 0 ? "text-red-500" : dow === 6 ? "text-blue-500" : "text-gray-800";
+              const ds     = toDateStr(d);
+              const dow    = d.getDay();
+              const dayColor = dow === 0 ? "text-red-500" : dow === 6 ? "text-blue-500" : "text-gray-800";
               const isEditing = editingDate === ds;
-              const day   = prefs[ds] ?? { start_time: null, end_time: null };
-              const style = getStyle(day);
-              const badge = getBadge(day);
+              const day    = prefs[ds] ?? { start_time: null, end_time: null };
+              const style  = getStyle(day);
+              const badge  = getBadge(day);
               const custom = isCustom(day);
 
               return (
@@ -318,7 +361,6 @@ export function ShiftPreferenceCalendar({
                     isEditing ? "ring-2 ring-violet-400 ring-offset-1 shadow-md" : ""
                   }`}
                 >
-                  {/* 上部: クリックでプリセット切り替え */}
                   <button
                     type="button"
                     onClick={() => cyclePreset(ds)}
@@ -326,16 +368,12 @@ export function ShiftPreferenceCalendar({
                   >
                     <div className="flex items-center justify-between mb-1.5">
                       <span className={`text-sm font-bold leading-none ${dayColor}`}>{d.getDate()}</span>
-                      {custom && (
-                        <span className="text-violet-500 text-xs leading-none font-bold">★</span>
-                      )}
+                      {custom && <span className="text-violet-500 text-xs leading-none font-bold">★</span>}
                     </div>
                     <div className={`text-center text-xs font-semibold py-1 rounded-lg ${style.badgeStyle}`}>
                       {badge}
                     </div>
                   </button>
-
-                  {/* 下部: 時刻編集ボタン */}
                   <button
                     type="button"
                     onClick={(e) => openEdit(e, ds)}
