@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { updateTaxRate } from "./actions";
 
@@ -8,6 +9,12 @@ interface SettingsPageProps {
 export default async function SettingsPage({ searchParams }: SettingsPageProps) {
   const sp = await searchParams;
   const supabase = await createClient();
+
+  // 管理者のみアクセス可能
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  if (profile?.role !== "admin") redirect("/admin");
 
   // 現在の税率（最新の行）
   const { data: currentSetting } = await supabase

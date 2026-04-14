@@ -47,7 +47,7 @@ export async function login(
 
   revalidatePath("/", "layout");
 
-  if (profile?.role === "admin") {
+  if (profile?.role === "admin" || profile?.role === "employee") {
     redirect("/admin");
   } else {
     redirect("/customer");

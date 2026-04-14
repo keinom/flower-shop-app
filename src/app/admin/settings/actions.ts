@@ -10,6 +10,12 @@ export async function updateTaxRate(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // 管理者のみ操作可能
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  if (profile?.role !== "admin") {
+    redirect("/admin/settings?error=" + encodeURIComponent("権限がありません"));
+  }
+
   const rateRaw = formData.get("rate") as string;
   const note    = (formData.get("note") as string)?.trim() || null;
   const rate    = parseInt(rateRaw, 10);

@@ -56,11 +56,15 @@ export async function updateSession(request: NextRequest) {
       .single();
 
     const url = request.nextUrl.clone();
-    url.pathname = profile?.role === "admin" ? "/admin" : "/customer";
+    // admin・employee はどちらも管理画面へ
+    url.pathname =
+      profile?.role === "admin" || profile?.role === "employee"
+        ? "/admin"
+        : "/customer";
     return NextResponse.redirect(url);
   }
 
-  // 管理者ルートに顧客がアクセス → 顧客ページへリダイレクト
+  // 管理者ルートへのアクセス制御
   if (pathname.startsWith("/admin") && user) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -68,14 +72,28 @@ export async function updateSession(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    if (profile?.role !== "admin") {
+    const role = profile?.role;
+
+    // スタッフ以外（顧客など）は顧客ページへ
+    if (role !== "admin" && role !== "employee") {
       const url = request.nextUrl.clone();
       url.pathname = "/customer";
       return NextResponse.redirect(url);
     }
+
+    // 従業員が管理者専用ページへアクセス → ダッシュボードへ
+    const isAdminOnlyPath =
+      pathname.startsWith("/admin/settings") ||
+      pathname.startsWith("/admin/users");
+
+    if (role === "employee" && isAdminOnlyPath) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin";
+      return NextResponse.redirect(url);
+    }
   }
 
-  // 顧客ルートに管理者がアクセス → 管理者ページへリダイレクト
+  // 顧客ルートにスタッフがアクセス → 管理画面へリダイレクト
   if (pathname.startsWith("/customer") && user) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -83,7 +101,7 @@ export async function updateSession(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    if (profile?.role === "admin") {
+    if (profile?.role === "admin" || profile?.role === "employee") {
       const url = request.nextUrl.clone();
       url.pathname = "/admin";
       return NextResponse.redirect(url);

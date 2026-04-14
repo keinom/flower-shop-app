@@ -3,7 +3,7 @@
  * テーブル構造の変更時はこのファイルも更新すること
  */
 
-export type UserRole = "admin" | "customer";
+export type UserRole = "admin" | "employee" | "customer";
 
 export type OrderType = "来店" | "配達" | "発送" | "生け込み";
 

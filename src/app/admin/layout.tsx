@@ -21,7 +21,10 @@ export default async function AdminLayout({
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== "admin") redirect("/customer");
+  // スタッフ（admin / employee）以外はアクセス不可
+  if (profile?.role !== "admin" && profile?.role !== "employee") redirect("/customer");
+
+  const isAdmin = profile?.role === "admin";
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -73,7 +76,7 @@ export default async function AdminLayout({
                   {profile?.display_name ?? user.email}
                 </span>
                 <span className="text-xs" style={{ color: "rgba(255,255,255,0.45)", letterSpacing: "0.04em" }}>
-                  管理者
+                  {isAdmin ? "管理者" : "従業員"}
                 </span>
               </div>
               <div style={{ width: "1px", height: "24px", background: "rgba(255,255,255,0.2)" }} className="hidden sm:block" />
@@ -117,14 +120,18 @@ export default async function AdminLayout({
             <NavItem href="/admin/orders" label="注文検索" icon="📋" />
             <NavItem href="/admin/recurring" label="定期注文" icon="🔄" />
             <NavItem href="/admin/invoices" label="請求書" icon="📄" />
-            <div className="mx-4 my-3 border-t border-gray-200" />
-            <div className="px-3 mb-1">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 py-1">
-                設定
-              </p>
-            </div>
-            <NavItem href="/admin/users" label="管理者管理" icon="🔑" />
-            <NavItem href="/admin/settings" label="設定" icon="⚙️" />
+            {isAdmin && (
+              <>
+                <div className="mx-4 my-3 border-t border-gray-200" />
+                <div className="px-3 mb-1">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 py-1">
+                    設定
+                  </p>
+                </div>
+                <NavItem href="/admin/users" label="ユーザー管理" icon="🔑" />
+                <NavItem href="/admin/settings" label="設定" icon="⚙️" />
+              </>
+            )}
           </div>
         </nav>
 
