@@ -50,7 +50,7 @@ async function runGeminiOcr(pdfBuffer: ArrayBuffer): Promise<OcrResult> {
             { text: prompt },
           ],
         }],
-        generationConfig: { response_mime_type: "application/json" },
+        generationConfig: { temperature: 0.1 },
       }),
     }
   );
@@ -63,8 +63,12 @@ async function runGeminiOcr(pdfBuffer: ArrayBuffer): Promise<OcrResult> {
   const data = await res.json();
   const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
 
+  // ```json ... ``` ブロックがあれば中身を取り出す
+  const jsonMatch = raw.match(/```json\s*([\s\S]*?)```/) ?? raw.match(/(\{[\s\S]*\})/);
+  const jsonText  = jsonMatch ? jsonMatch[1].trim() : raw.trim();
+
   try {
-    const parsed = JSON.parse(raw) as OcrResult;
+    const parsed = JSON.parse(jsonText) as OcrResult;
     return {
       occasion:   parsed.occasion   ?? null,
       recipient:  parsed.recipient  ?? null,
