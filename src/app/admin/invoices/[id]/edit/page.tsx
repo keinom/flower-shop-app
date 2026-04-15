@@ -126,7 +126,7 @@ export default async function InvoiceEditPage({ params, searchParams }: Props) {
                       className="input text-sm"
                     />
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     <div>
                       <label className="label text-xs">数量</label>
                       <input

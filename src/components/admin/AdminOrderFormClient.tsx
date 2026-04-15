@@ -165,7 +165,7 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
                 className="input"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="label" htmlFor="new_customer_phone">電話番号</label>
                 <input
@@ -341,7 +341,7 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="delivery_phone" className="label">電話番号</label>
             <input

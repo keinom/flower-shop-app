@@ -63,7 +63,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         </div>
 
         <form action={updateTaxRate} className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="label">
                 新しい税率（%） <span className="text-red-500">*</span>

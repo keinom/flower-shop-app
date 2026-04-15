@@ -207,7 +207,7 @@ export default async function RecurringTemplateDetailPage({ params, searchParams
       {/* 注文テンプレート詳細 */}
       <div className="card p-5 space-y-4">
         <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">注文テンプレート詳細</h2>
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-xs text-gray-500">注文種別</p>
             <div className="mt-0.5">
@@ -219,7 +219,7 @@ export default async function RecurringTemplateDetailPage({ params, searchParams
             <p className="mt-0.5 font-medium text-gray-900">{template.delivery_name}</p>
           </div>
           {template.delivery_address && (
-            <div className="col-span-2">
+            <div className="col-span-1 sm:col-span-2">
               <p className="text-xs text-gray-500">お届け先住所</p>
               <p className="mt-0.5 text-gray-900">{template.delivery_address}</p>
             </div>

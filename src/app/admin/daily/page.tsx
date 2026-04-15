@@ -167,7 +167,7 @@ function DaySingleFull({
             <span className="text-sm font-normal text-gray-500 ml-1">件</span>
           </span>
         </div>
-        <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-8">
           {ORDER_STATUSES.map((status) => (
             <Link
               key={status}

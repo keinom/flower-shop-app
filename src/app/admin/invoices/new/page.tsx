@@ -290,7 +290,7 @@ export default function NewInvoicePage() {
         {/* 支払期限・備考 */}
         <div className="card p-5 space-y-4">
           <h2 className="text-sm font-semibold text-gray-700">その他</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label">支払期限（任意）</label>
               <input

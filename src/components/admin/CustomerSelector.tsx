@@ -129,7 +129,7 @@ export function CustomerSelector({ customers }: CustomerSelectorProps) {
               className="input"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="label" htmlFor="new_customer_phone">電話番号</label>
               <input

@@ -112,7 +112,7 @@ export default async function CustomerDetailPage({
       {/* 顧客情報 */}
       <div className="card p-5">
         <h2 className="text-sm font-semibold text-gray-700 mb-4">顧客情報</h2>
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
           <InfoRow label="顧客名" value={customer.name} />
           <InfoRow label="電話番号" value={customer.phone} />
           <InfoRow label="メールアドレス" value={customer.email} />
@@ -126,10 +126,10 @@ export default async function CustomerDetailPage({
               )
             }
           />
-          <div className="col-span-2">
+          <div className="col-span-1 sm:col-span-2">
             <InfoRow label="住所" value={customer.address} />
           </div>
-          <div className="col-span-2">
+          <div className="col-span-1 sm:col-span-2">
             <InfoRow label="備考" value={customer.notes} />
           </div>
         </dl>
@@ -147,7 +147,7 @@ export default async function CustomerDetailPage({
           <form action={issueAccount} className="space-y-4">
             <input type="hidden" name="customer_id" value={customer.id} />
             <input type="hidden" name="display_name" value={customer.name} />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="label">ログイン用メールアドレス</label>
                 <input

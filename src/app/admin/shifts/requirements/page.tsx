@@ -70,7 +70,7 @@ export default async function ShiftRequirementsPage({ searchParams }: Props) {
             シフト希望画面のプリセット時刻と、自動生成時のカバレッジ判定に使用されます。
           </p>
           <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-semibold text-sky-600 block mb-1">午前 開始</label>
                 <input
@@ -92,7 +92,7 @@ export default async function ShiftRequirementsPage({ searchParams }: Props) {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-semibold text-amber-600 block mb-1">午後 開始</label>
                 <input

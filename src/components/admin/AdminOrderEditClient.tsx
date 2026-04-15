@@ -99,7 +99,7 @@ export function AdminOrderEditClient({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="delivery_phone" className="label">電話番号</label>
             <input
