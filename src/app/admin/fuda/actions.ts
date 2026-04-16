@@ -16,8 +16,8 @@ interface OcrResult {
 
 // ── Gemini Vision OCR ────────────────────────────────
 async function runGeminiOcr(pdfBuffer: ArrayBuffer): Promise<OcrResult> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY が設定されていません");
+  const apiKey = process.env.GOOGLE_API_KEY;
+  if (!apiKey) throw new Error("GOOGLE_API_KEY が設定されていません");
 
   const base64 = Buffer.from(pdfBuffer).toString("base64");
 
