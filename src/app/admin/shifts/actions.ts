@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { ShiftTimeSlot } from "@/types/database";
+import type { ShiftTimeSlot, ShiftPreferenceType } from "@/types/database";
 
 // ============================================================
 // 従業員: シフト希望を保存
@@ -49,7 +49,7 @@ export async function saveShiftPreferences(formData: FormData) {
     upsertRows.push({
       employee_id:     user.id,
       preference_date: dateStr,
-      preference_type: isAvail ? "available" : "off",
+      preference_type: (isAvail ? "available" : "off") as ShiftPreferenceType,
       start_time:      isAvail ? pref.start_time : null,
       end_time:        isAvail ? pref.end_time   : null,
       updated_at:      new Date().toISOString(),
