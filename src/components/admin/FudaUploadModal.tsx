@@ -34,11 +34,10 @@ export function FudaUploadModal() {
   }, []);
 
   const handleClose = useCallback(() => {
-    if (uploading) return;
     setOpen(false);
     reset();
     setMode("single");
-  }, [uploading, reset]);
+  }, [reset]);
 
   const addFiles = useCallback(
     (files: File[]) => {
@@ -179,8 +178,7 @@ export function FudaUploadModal() {
                 <button
                   type="button"
                   onClick={handleClose}
-                  disabled={uploading}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 disabled:opacity-40"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                     <line x1="3" y1="3" x2="13" y2="13" />
@@ -318,7 +316,6 @@ export function FudaUploadModal() {
                     <button
                       type="button"
                       onClick={handleClose}
-                      disabled={uploading}
                       className="btn-secondary text-sm"
                     >
                       キャンセル
