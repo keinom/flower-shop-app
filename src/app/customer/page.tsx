@@ -43,7 +43,7 @@ export default async function CustomerTopPage({ searchParams }: CustomerTopPageP
     .order("created_at", { ascending: false });
 
   if (filterStatus) {
-    query = query.eq("status", filterStatus);
+    query = query.eq("status", filterStatus as OrderStatus);
   }
 
   const { data: orders } = await query;

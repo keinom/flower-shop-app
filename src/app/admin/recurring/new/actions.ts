@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import type { OrderType } from "@/types";
 
 export async function createRecurringTemplate(formData: FormData) {
   const supabase = await createClient();
@@ -17,7 +18,7 @@ export async function createRecurringTemplate(formData: FormData) {
   }
 
   // Recurrence rule
-  const recurrenceType = formData.get("recurrence_type") as string;
+  const recurrenceType = formData.get("recurrence_type") as "weekly" | "monthly_date" | "monthly_weekday" | "interval";
   const weeklyDaysRaw = formData.get("weekly_days") as string;
   const weeklyDays = weeklyDaysRaw ? JSON.parse(weeklyDaysRaw) : null;
   const monthlyDay = formData.get("monthly_day") ? parseInt(formData.get("monthly_day") as string) : null;
@@ -29,7 +30,7 @@ export async function createRecurringTemplate(formData: FormData) {
   const endDate = endDateRaw || null;
 
   // Order info
-  const orderType = (formData.get("order_type") as string) || "配達";
+  const orderType = ((formData.get("order_type") as string) || "配達") as OrderType;
   const deliveryName = (formData.get("delivery_name") as string)?.trim();
   const deliveryAddress = (formData.get("delivery_address") as string)?.trim() || null;
   const deliveryPhone = (formData.get("delivery_phone") as string)?.trim() || null;

@@ -69,12 +69,12 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
 
   // ステータス
   if (p.status?.trim()) {
-    query = query.eq("status", p.status.trim());
+    query = query.eq("status", p.status.trim() as OrderStatus);
   }
 
   // 種別
   if (p.order_type?.trim()) {
-    query = query.eq("order_type", p.order_type.trim());
+    query = query.eq("order_type", p.order_type.trim() as OrderType);
   }
 
   // 用途

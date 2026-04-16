@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
         .insert({
           customer_id: template.customer_id,
           status: '受付',
-          order_type: template.order_type as string,
+          order_type: template.order_type,
           recurring_template_id: template.id,
           delivery_name: template.delivery_name,
           delivery_address: template.delivery_address,

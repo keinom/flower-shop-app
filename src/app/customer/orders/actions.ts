@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import type { OrderType } from "@/types";
 
 export async function createOrder(formData: FormData) {
   const supabase = await createClient();
@@ -22,7 +23,7 @@ export async function createOrder(formData: FormData) {
   }
 
   // フォームデータを取得
-  const orderType       = (formData.get("order_type") as string)?.trim() || "配達";
+  const orderType       = ((formData.get("order_type") as string)?.trim() || "配達") as OrderType;
   const deliveryName    = (formData.get("delivery_name") as string).trim();
   const deliveryAddress = (formData.get("delivery_address") as string).trim();
   const deliveryPhone   = (formData.get("delivery_phone") as string)?.trim() || null;

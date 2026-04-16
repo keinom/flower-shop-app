@@ -79,7 +79,15 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "customers_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       orders: {
         Row: {
@@ -148,7 +156,22 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "customers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "orders_recurring_template_id_fkey";
+            columns: ["recurring_template_id"];
+            isOneToOne: false;
+            referencedRelation: "recurring_order_templates";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       recurring_order_templates: {
         Row: {
@@ -232,7 +255,15 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "recurring_order_templates_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "customers";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       recurring_order_template_items: {
         Row: {
@@ -268,7 +299,15 @@ export interface Database {
           sort_order?: number;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "recurring_order_template_items_template_id_fkey";
+            columns: ["template_id"];
+            isOneToOne: false;
+            referencedRelation: "recurring_order_templates";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       order_items: {
         Row: {
@@ -301,7 +340,15 @@ export interface Database {
           tax_rate?: number;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       tax_settings: {
         Row: {
@@ -355,7 +402,22 @@ export interface Database {
           note?: string | null;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "order_status_logs_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_status_logs_changed_by_fkey";
+            columns: ["changed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       shift_requirements: {
         Row: {
@@ -459,22 +521,184 @@ export interface Database {
         };
         Relationships: [];
       };
+      invoices: {
+        Row: {
+          id: string;
+          invoice_number: string;
+          customer_id: string;
+          invoice_type: "single" | "monthly";
+          target_year_month: string | null;
+          status: "draft" | "issued" | "sent" | "paid";
+          subtotal: number;
+          tax_amount: number;
+          total_amount: number;
+          issued_at: string | null;
+          sent_at: string | null;
+          due_date: string | null;
+          remarks: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          invoice_number: string;
+          customer_id: string;
+          invoice_type: "single" | "monthly";
+          target_year_month?: string | null;
+          status?: "draft" | "issued" | "sent" | "paid";
+          subtotal?: number;
+          tax_amount?: number;
+          total_amount?: number;
+          issued_at?: string | null;
+          sent_at?: string | null;
+          due_date?: string | null;
+          remarks?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          invoice_number?: string;
+          customer_id?: string;
+          invoice_type?: "single" | "monthly";
+          target_year_month?: string | null;
+          status?: "draft" | "issued" | "sent" | "paid";
+          subtotal?: number;
+          tax_amount?: number;
+          total_amount?: number;
+          issued_at?: string | null;
+          sent_at?: string | null;
+          due_date?: string | null;
+          remarks?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "invoices_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "customers";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      invoice_items: {
+        Row: {
+          id: string;
+          invoice_id: string;
+          order_id: string | null;
+          description: string;
+          quantity: number;
+          unit_price: number;
+          tax_rate: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          invoice_id: string;
+          order_id?: string | null;
+          description: string;
+          quantity?: number;
+          unit_price?: number;
+          tax_rate?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          invoice_id?: string;
+          order_id?: string | null;
+          description?: string;
+          quantity?: number;
+          unit_price?: number;
+          tax_rate?: number;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey";
+            columns: ["invoice_id"];
+            isOneToOne: false;
+            referencedRelation: "invoices";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "invoice_items_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      fuda_documents: {
+        Row: {
+          id: string;
+          file_name: string;
+          storage_path: string;
+          occasion: string | null;
+          recipient: string | null;
+          sender: string | null;
+          all_text: string | null;
+          ocr_raw: Record<string, unknown> | null;
+          ocr_confidence: "high" | "medium" | "low" | null;
+          ocr_done: boolean;
+          ocr_error: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          file_name: string;
+          storage_path: string;
+          occasion?: string | null;
+          recipient?: string | null;
+          sender?: string | null;
+          all_text?: string | null;
+          ocr_raw?: Record<string, unknown> | null;
+          ocr_confidence?: "high" | "medium" | "low" | null;
+          ocr_done?: boolean;
+          ocr_error?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          file_name?: string;
+          storage_path?: string;
+          occasion?: string | null;
+          recipient?: string | null;
+          sender?: string | null;
+          all_text?: string | null;
+          ocr_raw?: Record<string, unknown> | null;
+          ocr_confidence?: "high" | "medium" | "low" | null;
+          ocr_done?: boolean;
+          ocr_error?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fuda_documents_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
-    Views: {
-      [_ in never]: never;
-    };
+    Views: Record<string, never>;
     Functions: {
       is_admin: {
-        Args: Record<PropertyKey, never>;
+        Args: Record<string, never>;
         Returns: boolean;
       };
       is_staff: {
-        Args: Record<PropertyKey, never>;
+        Args: Record<string, never>;
         Returns: boolean;
       };
     };
-    Enums: {
-      [_ in never]: never;
-    };
+    Enums: Record<string, never>;
   };
 }

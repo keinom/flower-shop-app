@@ -25,8 +25,7 @@ export default async function CustomerDetailPage({
     .from("customers")
     .select("*")
     .eq("id", id)
-    .returns<CustomerRow>()
-    .single();
+    .single() as { data: CustomerRow | null; error: unknown };
 
   if (!customer) notFound();
 

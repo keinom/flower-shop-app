@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import type { OrderType } from "@/types";
 
 export async function createAdminOrder(formData: FormData) {
   const supabase = await createClient();
@@ -47,7 +48,7 @@ export async function createAdminOrder(formData: FormData) {
   }
 
   // ── お届け先データを取得 ──
-  const orderType       = (formData.get("order_type") as string)?.trim() || "配達";
+  const orderType       = ((formData.get("order_type") as string)?.trim() || "配達") as OrderType;
   const deliveryName    = (formData.get("delivery_name") as string)?.trim();
   const deliveryAddress = (formData.get("delivery_address") as string)?.trim() || null;
   const deliveryDate      = (formData.get("delivery_date")       as string) || null;
