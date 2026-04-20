@@ -5,7 +5,7 @@ import { FudaUploadModal } from "@/components/admin/FudaUploadModal";
 import { FudaDeleteButton } from "@/components/admin/FudaDeleteButton";
 
 interface Props {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; searched?: string }>;
 }
 
 interface FudaDoc {
@@ -134,6 +134,7 @@ export default async function FudaListPage({ searchParams }: Props) {
   const sp       = await searchParams;
   const q        = sp.q?.trim() ?? "";
   const keywords = parseKeywords(q);
+  const searched = sp.searched === "1";
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -148,17 +149,18 @@ export default async function FudaListPage({ searchParams }: Props) {
 
   const isAdmin = profile?.role === "admin";
 
-  // ── キーワードがない場合は DB を叩かない ──
+  // ── 検索ボタンが押された場合のみ DB を叩く ──
   let rows: FudaDoc[] = [];
-  if (keywords.length > 0) {
+  if (searched) {
     let query = supabase
       .from("fuda_documents" as never)
       .select(
         "id, file_name, occasion, recipient, sender, all_text, ocr_done, ocr_error, ocr_confidence, created_at"
       )
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(200);
 
-    // キーワードごとに AND 条件を追加（各キーワードはいずれかのフィールドに部分一致）
+    // キーワードがある場合のみ絞り込む（なければ全件）
     for (const kw of keywords) {
       const like = `%${kw}%`;
       query = query.or(
@@ -199,6 +201,7 @@ export default async function FudaListPage({ searchParams }: Props) {
 
       {/* 検索バー */}
       <form method="get" className="flex gap-2">
+        <input type="hidden" name="searched" value="1" />
         <input
           type="text"
           name="q"
@@ -207,21 +210,21 @@ export default async function FudaListPage({ searchParams }: Props) {
           className="input flex-1"
         />
         <button type="submit" className="btn-primary text-sm px-4">
-          検索
+          🔍 検索
         </button>
-        {q && (
+        {searched && (
           <a href="/admin/fuda" className="btn-secondary text-sm px-3">
             クリア
           </a>
         )}
       </form>
 
-      {/* 検索前: 案内 */}
-      {keywords.length === 0 && (
+      {/* 検索前: 案内（まだ検索ボタンを押していない） */}
+      {!searched && (
         <div className="card p-12 text-center">
           <div className="text-4xl mb-3">🔍</div>
           <p className="text-gray-500 text-sm font-medium">
-            キーワードを入力して検索してください
+            「検索」を押すと全件表示、キーワードを入力すると絞り込み検索できます
           </p>
           <p className="text-gray-400 text-xs mt-2 leading-relaxed">
             宛名・差出人・用途・全文テキストで検索できます
@@ -231,24 +234,33 @@ export default async function FudaListPage({ searchParams }: Props) {
         </div>
       )}
 
-      {/* 検索後: 件数 */}
-      {keywords.length > 0 && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <p className="text-sm text-gray-500">
-            {keywords.map((kw, i) => (
-              <span key={i}>
-                {i > 0 && <span className="mx-1 text-gray-400">AND</span>}
-                「<span className="font-semibold text-gray-800">{kw}</span>」
-              </span>
-            ))}
-            の検索結果：
-            <span className="font-semibold text-gray-800 ml-1">{rows.length}</span> 件
-          </p>
+      {/* 検索後: 件数バー */}
+      {searched && (
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <span className="font-bold text-brand-700 text-lg">{rows.length}</span>
+          <span>件の立て札</span>
+          {keywords.length > 0 && (
+            <span className="text-gray-400">
+              （
+              {keywords.map((kw, i) => (
+                <span key={i}>
+                  {i > 0 && <span className="mx-1">AND</span>}
+                  「<span className="font-semibold text-gray-700">{kw}</span>」
+                </span>
+              ))}
+              で絞り込み）
+            </span>
+          )}
+          {rows.length >= 200 && (
+            <span className="text-xs text-amber-600 ml-1">
+              ※ 最大200件まで表示されています。条件を絞り込んでください。
+            </span>
+          )}
         </div>
       )}
 
       {/* 検索後: 結果一覧 */}
-      {keywords.length > 0 && (
+      {searched && (
         rows.length === 0 ? (
           <div className="card p-12 text-center">
             <div className="text-4xl mb-3">🌸</div>
