@@ -90,6 +90,7 @@ export function MobileNav({ isAdmin, displayName }: Props) {
           <NavItem href="/admin/recurring" label="定期注文"       icon="🔄" />
           <NavItem href="/admin/invoices"  label="請求書"         icon="📄" />
           <NavItem href="/admin/fuda"      label="立て札"         icon="🌸" />
+          <NavItem href="/admin/print"     label="帳票印刷"       icon="🖨️" />
 
           <div className="mx-4 my-3 border-t border-gray-200" />
           <div className="px-3 mb-1">
