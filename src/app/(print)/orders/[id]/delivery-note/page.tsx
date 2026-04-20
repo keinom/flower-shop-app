@@ -48,12 +48,24 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
     .single();
   if (profile?.role !== "admin" && profile?.role !== "employee") redirect("/login");
 
-  const { data: order } = await supabase
+  const { data: order, error: orderError } = await supabase
     .from("orders")
     .select("*, customers(id, name, phone, email, postal_code, address)")
     .eq("id", id)
     .single();
-  if (!order) notFound();
+
+  // postal_code 列が未マイグレーションの場合はフォールバッククエリを使用
+  let resolvedOrder = order;
+  if (!order || orderError) {
+    const { data: fallbackOrder } = await supabase
+      .from("orders")
+      .select("*, customers(id, name, phone, email, address)")
+      .eq("id", id)
+      .single();
+    resolvedOrder = fallbackOrder ?? null;
+  }
+
+  if (!resolvedOrder) notFound();
 
   const { data: items } = await supabase
     .from("order_items")
@@ -61,11 +73,11 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
     .eq("order_id", id)
     .order("created_at", { ascending: true });
 
-  const customer = order.customers as {
+  const customer = (resolvedOrder!.customers as {
     id: string; name: string;
     phone: string | null; email: string | null;
-    postal_code: string | null; address: string | null;
-  } | null;
+    postal_code?: string | null; address: string | null;
+  } | null);
 
   const hasItems  = items != null && items.length > 0;
   const totalExcl = hasItems ? items!.reduce((s, i) => s + i.quantity * i.unit_price, 0) : 0;
@@ -76,21 +88,21 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
   const issuedAt = new Date().toLocaleDateString("ja-JP", {
     year: "numeric", month: "long", day: "numeric", weekday: "short",
   });
-  const deliveryDateFmt = order.delivery_date
-    ? new Date(order.delivery_date).toLocaleDateString("ja-JP", {
+  const deliveryDateFmt = resolvedOrder!.delivery_date
+    ? new Date(resolvedOrder!.delivery_date).toLocaleDateString("ja-JP", {
         year: "numeric", month: "long", day: "numeric", weekday: "short",
       })
     : "未定";
 
-  const timeStart    = (order as { delivery_time_start?: string | null }).delivery_time_start;
-  const timeEnd      = (order as { delivery_time_end?: string | null }).delivery_time_end;
+  const timeStart    = (resolvedOrder! as { delivery_time_start?: string | null }).delivery_time_start;
+  const timeEnd      = (resolvedOrder! as { delivery_time_end?: string | null }).delivery_time_end;
   const deliveryTime = timeStart || timeEnd
     ? `${timeStart ? timeStart.slice(0, 5) : ""}〜${timeEnd ? timeEnd.slice(0, 5) : ""}`
     : null;
 
-  const deliveryPhone      = (order as { delivery_phone?: string | null }).delivery_phone;
-  const deliveryEmail      = (order as { delivery_email?: string | null }).delivery_email;
-  const deliveryPostalCode = (order as { delivery_postal_code?: string | null }).delivery_postal_code;
+  const deliveryPhone      = (resolvedOrder! as { delivery_phone?: string | null }).delivery_phone;
+  const deliveryEmail      = (resolvedOrder! as { delivery_email?: string | null }).delivery_email;
+  const deliveryPostalCode = (resolvedOrder! as { delivery_postal_code?: string | null }).delivery_postal_code;
   const orderNo = `DEC${id.slice(0, 8).toUpperCase()}`;
 
   return (
@@ -145,10 +157,10 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
           {type === "standard"
             ? <StandardNote
                 orderNo={orderNo} issuedAt={issuedAt}
-                deliveryName={order.delivery_name}
+                deliveryName={resolvedOrder!.delivery_name}
                 items={items ?? []}
-                productName={order.product_name ?? ""}
-                quantity={order.quantity}
+                productName={resolvedOrder!.product_name ?? ""}
+                quantity={resolvedOrder!.quantity}
                 totalExcl={totalExcl} taxRate={taxRate} taxAmt={taxAmt} totalIncl={totalIncl}
                 hasItems={hasItems}
               />
@@ -158,9 +170,9 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
                 senderPostalCode={customer?.postal_code ?? null}
                 senderAddress={customer?.address ?? null}
                 senderPhone={customer?.phone ?? null}
-                deliveryName={order.delivery_name}
+                deliveryName={resolvedOrder!.delivery_name}
                 deliveryPostalCode={deliveryPostalCode ?? null}
-                deliveryAddress={order.delivery_address ?? ""}
+                deliveryAddress={resolvedOrder!.delivery_address ?? ""}
                 deliveryPhone={deliveryPhone ?? null}
                 deliveryDate={deliveryDateFmt}
               />
