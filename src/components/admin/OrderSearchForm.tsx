@@ -51,7 +51,7 @@ export function OrderSearchForm() {
             name="q"
             type="text"
             defaultValue={get("q")}
-            placeholder="商品名・配達先名で検索"
+            placeholder="商品名・配達先名・住所で検索"
             className="input"
           />
         </div>

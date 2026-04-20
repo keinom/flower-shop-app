@@ -64,7 +64,7 @@ export default async function OrderDetailPage({
       {/* ─── ヘッダー ─── */}
       <div className="flex items-center gap-3 flex-wrap">
         <Link href="/admin/orders" className="text-sm text-gray-500 hover:text-gray-700">
-          ← 注文一覧
+          ← 注文検索
         </Link>
         <h1 className="text-xl font-bold text-gray-900">注文詳細</h1>
         {(order as { order_type?: string }).order_type && (

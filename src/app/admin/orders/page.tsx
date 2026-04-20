@@ -54,11 +54,11 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
     .order("created_at", { ascending: false })
     .limit(200);
 
-  // キーワード: 商品名 OR 配達先名
+  // キーワード: 商品名 OR 配達先名 OR お届け先住所
   if (p.q?.trim()) {
     const kw = p.q.trim();
     query = query.or(
-      `product_name.ilike.%${kw}%,delivery_name.ilike.%${kw}%`
+      `product_name.ilike.%${kw}%,delivery_name.ilike.%${kw}%,delivery_address.ilike.%${kw}%`
     );
   }
 

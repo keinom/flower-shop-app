@@ -50,7 +50,7 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
 
   const { data: order } = await supabase
     .from("orders")
-    .select("*, customers(id, name, phone, email, address)")
+    .select("*, customers(id, name, phone, email, postal_code, address)")
     .eq("id", id)
     .single();
   if (!order) notFound();
