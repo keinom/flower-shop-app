@@ -46,7 +46,7 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
     .select("role")
     .eq("id", user.id)
     .single();
-  if (profile?.role !== "admin") redirect("/customer");
+  if (profile?.role !== "admin" && profile?.role !== "employee") redirect("/login");
 
   const { data: order } = await supabase
     .from("orders")
