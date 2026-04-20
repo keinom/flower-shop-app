@@ -148,6 +148,11 @@ export default async function OrderDetailPage({
               <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">お届け情報</h2>
               <dl className="space-y-3 text-sm">
                 <InfoRow label="お届け先名">{order.delivery_name}</InfoRow>
+                <InfoRow label="郵便番号">
+                  {(order as { delivery_postal_code?: string | null }).delivery_postal_code
+                    ? `〒${(order as { delivery_postal_code: string }).delivery_postal_code}`
+                    : "—"}
+                </InfoRow>
                 <InfoRow label="お届け先住所">
                   {order.delivery_address ? (
                     <a

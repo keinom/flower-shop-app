@@ -6,7 +6,7 @@ import { issueAccount } from "../actions";
 import type { OrderStatus } from "@/types";
 import type { Database } from "@/types/database";
 
-type CustomerRow = Database["public"]["Tables"]["customers"]["Row"];
+type CustomerRow = Database["public"]["Tables"]["customers"]["Row"] & { postal_code?: string | null };
 
 interface CustomerDetailPageProps {
   params: Promise<{ id: string }>;
@@ -125,8 +125,16 @@ export default async function CustomerDetailPage({
               )
             }
           />
+          <InfoRow label="郵便番号" value={customer.postal_code} />
           <div className="col-span-1 sm:col-span-2">
-            <InfoRow label="住所" value={customer.address} />
+            <InfoRow
+              label="住所"
+              value={
+                customer.postal_code && customer.address
+                  ? `〒${customer.postal_code} ${customer.address}`
+                  : customer.address
+              }
+            />
           </div>
           <div className="col-span-1 sm:col-span-2">
             <InfoRow label="備考" value={customer.notes} />

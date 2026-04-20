@@ -12,7 +12,7 @@ export default async function NewAdminOrderPage({ searchParams }: NewAdminOrderP
 
   const { data: customers } = await supabase
     .from("customers")
-    .select("id, name, phone, email, address")
+    .select("id, name, phone, email, postal_code, address")
     .order("name", { ascending: true });
 
   // 現在の消費税率を取得

@@ -66,6 +66,18 @@ export default async function NewCustomerPage({ searchParams }: NewCustomerPageP
           </div>
 
           <div>
+            <label htmlFor="postal_code" className="label">郵便番号</label>
+            <input
+              id="postal_code"
+              name="postal_code"
+              type="text"
+              placeholder="例: 123-4567"
+              className="input"
+              maxLength={8}
+            />
+          </div>
+
+          <div>
             <label htmlFor="address" className="label">住所</label>
             <input
               id="address"

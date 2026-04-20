@@ -52,6 +52,7 @@ export interface Database {
           name: string;
           phone: string | null;
           email: string | null;
+          postal_code: string | null;
           address: string | null;
           notes: string | null;
           created_at: string;
@@ -63,6 +64,7 @@ export interface Database {
           name: string;
           phone?: string | null;
           email?: string | null;
+          postal_code?: string | null;
           address?: string | null;
           notes?: string | null;
           created_at?: string;
@@ -74,6 +76,7 @@ export interface Database {
           name?: string;
           phone?: string | null;
           email?: string | null;
+          postal_code?: string | null;
           address?: string | null;
           notes?: string | null;
           created_at?: string;
@@ -96,6 +99,7 @@ export interface Database {
           status: OrderStatus;
           order_type: OrderType;
           delivery_name: string;
+          delivery_postal_code: string | null;
           delivery_address: string | null;
           delivery_date: string | null;
           delivery_time_start: string | null;
@@ -118,6 +122,7 @@ export interface Database {
           status?: OrderStatus;
           order_type?: OrderType;
           delivery_name: string;
+          delivery_postal_code?: string | null;
           delivery_address?: string | null;
           delivery_date?: string | null;
           delivery_time_start?: string | null;
@@ -140,6 +145,7 @@ export interface Database {
           status?: OrderStatus;
           order_type?: OrderType;
           delivery_name?: string;
+          delivery_postal_code?: string | null;
           delivery_address?: string | null;
           delivery_date?: string | null;
           delivery_time_start?: string | null;

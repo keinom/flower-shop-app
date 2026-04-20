@@ -14,6 +14,7 @@ export async function createCustomer(formData: FormData) {
   const name = (formData.get("name") as string).trim();
   const phone = (formData.get("phone") as string).trim() || null;
   const email = (formData.get("email") as string).trim() || null;
+  const postalCode = (formData.get("postal_code") as string).trim() || null;
   const address = (formData.get("address") as string).trim() || null;
   const notes = (formData.get("notes") as string).trim() || null;
   const createAccount = formData.get("create_account") === "on";
@@ -65,6 +66,7 @@ export async function createCustomer(formData: FormData) {
       name,
       phone,
       email,
+      postal_code: postalCode,
       address,
       notes,
       profile_id: profileId,

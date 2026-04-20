@@ -33,9 +33,11 @@ export async function createAdminOrder(formData: FormData) {
       redirect("/admin/orders/new?error=" + encodeURIComponent("顧客名は必須です"));
     }
 
+    const postalCode = (formData.get("new_customer_postal_code") as string)?.trim() || null;
+
     const { data: newCustomer, error: customerError } = await supabase
       .from("customers")
-      .insert({ name, phone, email, address, notes })
+      .insert({ name, phone, email, postal_code: postalCode, address, notes })
       .select("id")
       .single();
 
@@ -48,9 +50,10 @@ export async function createAdminOrder(formData: FormData) {
   }
 
   // ── お届け先データを取得 ──
-  const orderType       = ((formData.get("order_type") as string)?.trim() || "配達") as OrderType;
-  const deliveryName    = (formData.get("delivery_name") as string)?.trim();
-  const deliveryAddress = (formData.get("delivery_address") as string)?.trim() || null;
+  const orderType            = ((formData.get("order_type") as string)?.trim() || "配達") as OrderType;
+  const deliveryName         = (formData.get("delivery_name") as string)?.trim();
+  const deliveryPostalCode   = (formData.get("delivery_postal_code") as string)?.trim() || null;
+  const deliveryAddress      = (formData.get("delivery_address") as string)?.trim() || null;
   const deliveryDate      = (formData.get("delivery_date")       as string) || null;
   const deliveryTimeStart = (formData.get("delivery_time_start") as string) || null;
   const deliveryTimeEnd   = (formData.get("delivery_time_end")   as string) || null;
@@ -125,11 +128,12 @@ export async function createAdminOrder(formData: FormData) {
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .insert({
-      customer_id:      customerId,
-      status:           "受付",
-      order_type:       orderType,
-      delivery_name:    deliveryName,
-      delivery_address: deliveryAddress,
+      customer_id:           customerId,
+      status:                "受付",
+      order_type:            orderType,
+      delivery_name:         deliveryName,
+      delivery_postal_code:  deliveryPostalCode,
+      delivery_address:      deliveryAddress,
       delivery_date:       deliveryDate,
       delivery_time_start: deliveryTimeStart,
       delivery_time_end:   deliveryTimeEnd,

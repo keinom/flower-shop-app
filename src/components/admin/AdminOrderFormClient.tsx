@@ -14,6 +14,7 @@ interface Customer {
   name: string;
   phone: string | null;
   email: string | null;
+  postal_code: string | null;
   address: string | null;
 }
 
@@ -33,10 +34,11 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
   const [mode, setMode] = useState<"new" | "existing">(preset ? "existing" : "new");
 
   // ── 新規顧客フィールド（反映ボタン用にcontrolled）──
-  const [newName, setNewName]       = useState("");
-  const [newPhone, setNewPhone]     = useState("");
-  const [newEmail, setNewEmail]     = useState("");
-  const [newAddress, setNewAddress] = useState("");
+  const [newName, setNewName]             = useState("");
+  const [newPhone, setNewPhone]           = useState("");
+  const [newEmail, setNewEmail]           = useState("");
+  const [newPostalCode, setNewPostalCode] = useState("");
+  const [newAddress, setNewAddress]       = useState("");
 
   // ── 既存顧客検索 ──
   const [searchQuery, setSearchQuery]           = useState(preset?.name ?? "");
@@ -45,10 +47,11 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // ── お届け先フィールド（controlledで反映ボタンに対応）──
-  const [deliveryName, setDeliveryName]       = useState("");
-  const [deliveryAddress, setDeliveryAddress] = useState("");
-  const [deliveryPhone, setDeliveryPhone]     = useState("");
-  const [deliveryEmail, setDeliveryEmail]     = useState("");
+  const [deliveryName, setDeliveryName]             = useState("");
+  const [deliveryPostalCode, setDeliveryPostalCode] = useState("");
+  const [deliveryAddress, setDeliveryAddress]       = useState("");
+  const [deliveryPhone, setDeliveryPhone]           = useState("");
+  const [deliveryEmail, setDeliveryEmail]           = useState("");
 
   // ── 合計金額 ──
   const [itemsTotal, setItemsTotal] = useState(0);
@@ -96,11 +99,13 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
   function reflectCustomerInfo() {
     if (mode === "existing" && selectedCustomer) {
       setDeliveryName(selectedCustomer.name);
+      setDeliveryPostalCode(selectedCustomer.postal_code ?? "");
       setDeliveryAddress(selectedCustomer.address ?? "");
       setDeliveryPhone(selectedCustomer.phone ?? "");
       setDeliveryEmail(selectedCustomer.email ?? "");
     } else if (mode === "new") {
       setDeliveryName(newName);
+      setDeliveryPostalCode(newPostalCode);
       setDeliveryAddress(newAddress);
       setDeliveryPhone(newPhone);
       setDeliveryEmail(newEmail);
@@ -190,6 +195,19 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
                   className="input"
                 />
               </div>
+            </div>
+            <div>
+              <label className="label" htmlFor="new_customer_postal_code">郵便番号</label>
+              <input
+                id="new_customer_postal_code"
+                name="new_customer_postal_code"
+                type="text"
+                value={newPostalCode}
+                onChange={(e) => setNewPostalCode(e.target.value)}
+                placeholder="123-4567"
+                className="input"
+                maxLength={8}
+              />
             </div>
             <div>
               <label className="label" htmlFor="new_customer_address">住所</label>
@@ -284,7 +302,9 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
                     <div className="text-xs text-gray-500 space-y-1">
                       {selectedCustomer.phone && <p>📞 {selectedCustomer.phone}</p>}
                       {selectedCustomer.email && <p>✉ {selectedCustomer.email}</p>}
-                      {selectedCustomer.address && <p>📍 {selectedCustomer.address}</p>}
+                      {(selectedCustomer.postal_code || selectedCustomer.address) && (
+                        <p>📍 {selectedCustomer.postal_code ? `〒${selectedCustomer.postal_code} ` : ""}{selectedCustomer.address}</p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -323,6 +343,20 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
             onChange={(e) => setDeliveryName(e.target.value)}
             placeholder="例: 株式会社○○ 総務部"
             className="input"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="delivery_postal_code" className="label">郵便番号</label>
+          <input
+            id="delivery_postal_code"
+            name="delivery_postal_code"
+            type="text"
+            value={deliveryPostalCode}
+            onChange={(e) => setDeliveryPostalCode(e.target.value)}
+            placeholder="例: 123-4567"
+            className="input"
+            maxLength={8}
           />
         </div>
 

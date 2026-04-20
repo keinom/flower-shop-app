@@ -25,6 +25,7 @@ interface Props {
   defaultValues: {
     order_type: OrderType;
     delivery_name: string;
+    delivery_postal_code: string | null;
     delivery_address: string | null;
     delivery_date: string | null;
     delivery_time_start: string | null;
@@ -47,10 +48,11 @@ export function AdminOrderEditClient({
   defaultItems,
   defaultShipping,
 }: Props) {
-  const [deliveryName, setDeliveryName]       = useState(dv.delivery_name);
-  const [deliveryAddress, setDeliveryAddress] = useState(dv.delivery_address ?? "");
-  const [deliveryPhone, setDeliveryPhone]     = useState(dv.delivery_phone ?? "");
-  const [deliveryEmail, setDeliveryEmail]     = useState(dv.delivery_email ?? "");
+  const [deliveryName, setDeliveryName]             = useState(dv.delivery_name);
+  const [deliveryPostalCode, setDeliveryPostalCode] = useState(dv.delivery_postal_code ?? "");
+  const [deliveryAddress, setDeliveryAddress]       = useState(dv.delivery_address ?? "");
+  const [deliveryPhone, setDeliveryPhone]           = useState(dv.delivery_phone ?? "");
+  const [deliveryEmail, setDeliveryEmail]           = useState(dv.delivery_email ?? "");
 
   // ── 合計金額 ──
   const [itemsTotal, setItemsTotal] = useState(0);
@@ -84,6 +86,20 @@ export function AdminOrderEditClient({
             value={deliveryName}
             onChange={(e) => setDeliveryName(e.target.value)}
             className="input"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="delivery_postal_code" className="label">郵便番号</label>
+          <input
+            id="delivery_postal_code"
+            name="delivery_postal_code"
+            type="text"
+            value={deliveryPostalCode}
+            onChange={(e) => setDeliveryPostalCode(e.target.value)}
+            placeholder="例: 123-4567"
+            className="input"
+            maxLength={8}
           />
         </div>
 

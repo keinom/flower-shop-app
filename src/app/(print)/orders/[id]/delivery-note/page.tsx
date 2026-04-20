@@ -63,7 +63,8 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
 
   const customer = order.customers as {
     id: string; name: string;
-    phone: string | null; email: string | null; address: string | null;
+    phone: string | null; email: string | null;
+    postal_code: string | null; address: string | null;
   } | null;
 
   const hasItems  = items != null && items.length > 0;
@@ -87,8 +88,9 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
     ? `${timeStart ? timeStart.slice(0, 5) : ""}〜${timeEnd ? timeEnd.slice(0, 5) : ""}`
     : null;
 
-  const deliveryPhone = (order as { delivery_phone?: string | null }).delivery_phone;
-  const deliveryEmail = (order as { delivery_email?: string | null }).delivery_email;
+  const deliveryPhone      = (order as { delivery_phone?: string | null }).delivery_phone;
+  const deliveryEmail      = (order as { delivery_email?: string | null }).delivery_email;
+  const deliveryPostalCode = (order as { delivery_postal_code?: string | null }).delivery_postal_code;
   const orderNo = `DEC${id.slice(0, 8).toUpperCase()}`;
 
   return (
@@ -153,9 +155,11 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
             : <GiftNote
                 orderNo={orderNo} issuedAt={issuedAt}
                 senderName={customer?.name ?? "—"}
+                senderPostalCode={customer?.postal_code ?? null}
                 senderAddress={customer?.address ?? null}
                 senderPhone={customer?.phone ?? null}
                 deliveryName={order.delivery_name}
+                deliveryPostalCode={deliveryPostalCode ?? null}
                 deliveryAddress={order.delivery_address ?? ""}
                 deliveryPhone={deliveryPhone ?? null}
                 deliveryDate={deliveryDateFmt}
@@ -382,13 +386,13 @@ function StandardNote({
 // ────────────────────────────────────────────────────
 function GiftNote({
   orderNo, issuedAt,
-  senderName, senderAddress, senderPhone,
-  deliveryName, deliveryAddress, deliveryPhone,
+  senderName, senderPostalCode, senderAddress, senderPhone,
+  deliveryName, deliveryPostalCode, deliveryAddress, deliveryPhone,
   deliveryDate,
 }: {
   orderNo: string; issuedAt: string;
-  senderName: string; senderAddress: string | null; senderPhone: string | null;
-  deliveryName: string; deliveryAddress: string; deliveryPhone: string | null;
+  senderName: string; senderPostalCode: string | null; senderAddress: string | null; senderPhone: string | null;
+  deliveryName: string; deliveryPostalCode: string | null; deliveryAddress: string; deliveryPhone: string | null;
   deliveryDate: string;
 }) {
   return (
@@ -407,8 +411,9 @@ function GiftNote({
         <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>
           {senderName}<span style={{ fontSize: "9pt", fontWeight: "500", marginLeft: "3pt" }}>様</span>
         </div>
-        {senderAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{senderAddress}</div>}
-        {senderPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {senderPhone}</div>}
+        {senderPostalCode && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>〒{senderPostalCode}</div>}
+        {senderAddress    && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{senderAddress}</div>}
+        {senderPhone      && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {senderPhone}</div>}
       </div>
 
       {/* ② お届け先 */}
@@ -423,8 +428,9 @@ function GiftNote({
         <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>
           {deliveryName}<span style={{ fontSize: "9pt", fontWeight: "500", marginLeft: "3pt" }}>様</span>
         </div>
-        {deliveryAddress && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryAddress}</div>}
-        {deliveryPhone   && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {deliveryPhone}</div>}
+        {deliveryPostalCode && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>〒{deliveryPostalCode}</div>}
+        {deliveryAddress    && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryAddress}</div>}
+        {deliveryPhone      && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {deliveryPhone}</div>}
       </div>
 
       {/* ③ お届け日 */}

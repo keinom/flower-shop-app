@@ -90,17 +90,18 @@ export default async function EditOrderPage({
         taxRate={taxRate}
         today={today}
         defaultValues={{
-          order_type:       ((order as { order_type?: string }).order_type ?? "配達") as import("@/types").OrderType,
-          delivery_name:    order.delivery_name,
-          delivery_address: order.delivery_address ?? null,
-          delivery_date:       order.delivery_date ?? null,
-          delivery_time_start: (order as { delivery_time_start?: string | null }).delivery_time_start ?? null,
-          delivery_time_end:   (order as { delivery_time_end?: string | null }).delivery_time_end ?? null,
-          delivery_phone:   (order as { delivery_phone?: string | null }).delivery_phone ?? null,
-          delivery_email:   (order as { delivery_email?: string | null }).delivery_email ?? null,
-          purpose:          order.purpose          ?? null,
-          message_card:     order.message_card     ?? null,
-          remarks:          order.remarks          ?? null,
+          order_type:            ((order as { order_type?: string }).order_type ?? "配達") as import("@/types").OrderType,
+          delivery_name:         order.delivery_name,
+          delivery_postal_code:  (order as { delivery_postal_code?: string | null }).delivery_postal_code ?? null,
+          delivery_address:      order.delivery_address ?? null,
+          delivery_date:         order.delivery_date ?? null,
+          delivery_time_start:   (order as { delivery_time_start?: string | null }).delivery_time_start ?? null,
+          delivery_time_end:     (order as { delivery_time_end?: string | null }).delivery_time_end ?? null,
+          delivery_phone:        (order as { delivery_phone?: string | null }).delivery_phone ?? null,
+          delivery_email:        (order as { delivery_email?: string | null }).delivery_email ?? null,
+          purpose:               order.purpose          ?? null,
+          message_card:          order.message_card     ?? null,
+          remarks:               order.remarks          ?? null,
         }}
         defaultItems={
           regularItems?.map((item) => ({
