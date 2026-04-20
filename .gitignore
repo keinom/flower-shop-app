@@ -37,3 +37,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 移行データ（顧客情報等を含むため Git 管理対象外）
+/data/
