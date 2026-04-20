@@ -8,6 +8,7 @@ import { OrderTypeSelector } from "@/components/ui/OrderTypeSelector";
 import { createAdminOrder } from "@/app/admin/orders/new/actions";
 import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
 import { OrderTotalBar } from "@/components/admin/OrderTotalBar";
+import { PostalCodeInput } from "@/components/ui/PostalCodeInput";
 
 interface Customer {
   id: string;
@@ -198,15 +199,12 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
             </div>
             <div>
               <label className="label" htmlFor="new_customer_postal_code">郵便番号</label>
-              <input
+              <PostalCodeInput
                 id="new_customer_postal_code"
                 name="new_customer_postal_code"
-                type="text"
                 value={newPostalCode}
-                onChange={(e) => setNewPostalCode(e.target.value)}
-                placeholder="123-4567"
-                className="input"
-                maxLength={8}
+                onChange={setNewPostalCode}
+                onAddressFound={(addr) => setNewAddress(addr)}
               />
             </div>
             <div>
@@ -348,15 +346,12 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
 
         <div>
           <label htmlFor="delivery_postal_code" className="label">郵便番号</label>
-          <input
+          <PostalCodeInput
             id="delivery_postal_code"
             name="delivery_postal_code"
-            type="text"
             value={deliveryPostalCode}
-            onChange={(e) => setDeliveryPostalCode(e.target.value)}
-            placeholder="例: 123-4567"
-            className="input"
-            maxLength={8}
+            onChange={setDeliveryPostalCode}
+            onAddressFound={(addr) => setDeliveryAddress(addr)}
           />
         </div>
 

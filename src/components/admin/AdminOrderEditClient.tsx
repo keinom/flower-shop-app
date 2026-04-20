@@ -10,6 +10,7 @@ import { ShippingFeeSelector } from "@/components/admin/ShippingFeeSelector";
 import { OrderTotalBar } from "@/components/admin/OrderTotalBar";
 import { updateAdminOrder } from "@/app/admin/orders/[id]/edit/actions";
 import type { OrderType } from "@/types";
+import { PostalCodeInput } from "@/components/ui/PostalCodeInput";
 
 interface OrderItem {
   product_name: string;
@@ -91,15 +92,12 @@ export function AdminOrderEditClient({
 
         <div>
           <label htmlFor="delivery_postal_code" className="label">郵便番号</label>
-          <input
+          <PostalCodeInput
             id="delivery_postal_code"
             name="delivery_postal_code"
-            type="text"
             value={deliveryPostalCode}
-            onChange={(e) => setDeliveryPostalCode(e.target.value)}
-            placeholder="例: 123-4567"
-            className="input"
-            maxLength={8}
+            onChange={setDeliveryPostalCode}
+            onAddressFound={(addr) => setDeliveryAddress(addr)}
           />
         </div>
 
@@ -111,6 +109,7 @@ export function AdminOrderEditClient({
             type="text"
             value={deliveryAddress}
             onChange={(e) => setDeliveryAddress(e.target.value)}
+            placeholder="例: 東京都千代田区1-1-1 ○○ビル1F"
             className="input"
           />
         </div>

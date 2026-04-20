@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createCustomer } from "../actions";
+import { PostalCodeAutoFill } from "@/components/ui/PostalCodeAutoFill";
 
 interface NewCustomerPageProps {
   searchParams: Promise<{ error?: string }>;
@@ -65,28 +66,11 @@ export default async function NewCustomerPage({ searchParams }: NewCustomerPageP
             </div>
           </div>
 
-          <div>
-            <label htmlFor="postal_code" className="label">郵便番号</label>
-            <input
-              id="postal_code"
-              name="postal_code"
-              type="text"
-              placeholder="例: 123-4567"
-              className="input"
-              maxLength={8}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="address" className="label">住所</label>
-            <input
-              id="address"
-              name="address"
-              type="text"
-              placeholder="例: 東京都千代田区1-1-1"
-              className="input"
-            />
-          </div>
+          <PostalCodeAutoFill
+            postalCodeName="postal_code"
+            addressName="address"
+            addressPlaceholder="例: 東京都千代田区1-1-1 ○○ビル3F"
+          />
 
           <div>
             <label htmlFor="notes" className="label">備考</label>
