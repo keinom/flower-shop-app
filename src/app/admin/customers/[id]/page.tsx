@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { MonthPillsScroller } from "@/components/admin/MonthPillsScroller";
 import { issueAccount } from "../actions";
 import type { OrderStatus } from "@/types";
 import type { Database } from "@/types/database";
@@ -29,26 +30,47 @@ export default async function CustomerDetailPage({
 
   if (!customer) notFound();
 
-  // 注文履歴: 旧データ含め数千件/顧客に達するため、Supabase のデフォルト1000件制限を外す
-  const { data: orders } = await supabase
-    .from("orders")
-    .select("id, status, product_name, quantity, delivery_date, created_at, total_amount")
-    .eq("customer_id", id)
-    .order("created_at", { ascending: false })
-    .range(0, 9999);
+  // 注文履歴: 旧データ含め数千件/顧客に達するため、ページング取得で
+  // PostgREST のサーバ側 max-rows (1000) キャップを回避する
+  type OrderRow = {
+    id: string;
+    status: string;
+    product_name: string | null;
+    quantity: number;
+    delivery_date: string | null;
+    created_at: string;
+    total_amount: number | null;
+  };
+  async function fetchAllOrders(): Promise<OrderRow[]> {
+    const PAGE = 1000;
+    const all: OrderRow[] = [];
+    for (let offset = 0; ; offset += PAGE) {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("id, status, product_name, quantity, delivery_date, created_at, total_amount")
+        .eq("customer_id", id)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + PAGE - 1);
+      if (error || !data) break;
+      all.push(...(data as OrderRow[]));
+      if (data.length < PAGE) break;
+    }
+    return all;
+  }
+  const orders = await fetchAllOrders();
 
   const hasAccount = !!customer.profile_id;
 
   // ── 月ナビゲーション用データ作成 ──
+  // 昇順（古い→新しい）で並べ、矢印方向 ← = 過去 / → = 未来 に揃える
   const allMonths: string[] = orders
-    ? [...new Set(orders.map((o) => o.created_at.slice(0, 7)))]
-        .sort()
-        .reverse()
+    ? [...new Set(orders.map((o) => o.created_at.slice(0, 7)))].sort()
     : [];
 
-  // 選択中の月（デフォルトは最新月）
+  // 選択中の月（デフォルトは最新月 = 末尾）
+  const latestMonth = allMonths[allMonths.length - 1] ?? "";
   const selectedMonth =
-    sp.month && allMonths.includes(sp.month) ? sp.month : (allMonths[0] ?? "");
+    sp.month && allMonths.includes(sp.month) ? sp.month : latestMonth;
 
   // 選択月の注文を抽出
   const monthOrders = orders?.filter((o) =>
@@ -73,10 +95,10 @@ export default async function CustomerDetailPage({
     0
   );
 
-  // prev / next 月
+  // prev / next 月（昇順配列ベース: prev = 過去 = 左、 next = 未来 = 右）
   const currentIndex = allMonths.indexOf(selectedMonth);
-  const prevMonth = currentIndex < allMonths.length - 1 ? allMonths[currentIndex + 1] : null;
-  const nextMonth = currentIndex > 0 ? allMonths[currentIndex - 1] : null;
+  const prevMonth = currentIndex > 0 ? allMonths[currentIndex - 1] : null;
+  const nextMonth = currentIndex >= 0 && currentIndex < allMonths.length - 1 ? allMonths[currentIndex + 1] : null;
 
   // 表示用 "YYYY年M月" フォーマット
   function formatMonth(ym: string) {
@@ -236,22 +258,13 @@ export default async function CustomerDetailPage({
                 </Link>
               </div>
 
-              {/* 全月リスト（スクロール可能） */}
-              <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
-                {allMonths.map((ym) => (
-                  <Link
-                    key={ym}
-                    href={`/admin/customers/${id}?month=${ym}`}
-                    className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                      ym === selectedMonth
-                        ? "bg-brand-600 text-white border-brand-600"
-                        : "bg-white text-gray-600 border-gray-300 hover:border-brand-400"
-                    }`}
-                  >
-                    {formatMonth(ym)}
-                  </Link>
-                ))}
-              </div>
+              {/* 全月リスト（スクロール可能・選択月にオートスクロール） */}
+              <MonthPillsScroller
+                months={allMonths}
+                selectedMonth={selectedMonth}
+                buildHref={(ym) => `/admin/customers/${id}?month=${ym}`}
+                formatMonth={formatMonth}
+              />
             </div>
 
             {/* ── 月合計 ── */}
@@ -300,38 +313,44 @@ export default async function CustomerDetailPage({
                         )}
                       </div>
 
-                      {/* その日の注文 */}
-                      <table className="table w-full">
+                      {/* その日の注文（列幅を固定してガタつきを防ぐ） */}
+                      <table className="w-full table-fixed text-sm">
+                        <colgroup>
+                          <col />
+                          <col className="w-28" />
+                          <col className="w-20" />
+                          <col className="w-16" />
+                        </colgroup>
                         <tbody className="divide-y divide-gray-50">
                           {dayOrders.map((order) => (
                             <tr key={order.id} className="tr-hover">
-                              <td className="td">
-                                <p className="font-medium text-sm text-gray-900">
+                              <td className="px-4 py-2 min-w-0">
+                                <p className="font-medium text-gray-900 truncate">
                                   {order.product_name ?? `${order.quantity}点`}
                                 </p>
-                                <p className="text-xs text-gray-400 mt-0.5">
+                                <p className="text-xs text-gray-400 mt-0.5 truncate">
                                   お届け希望日:{" "}
                                   {order.delivery_date
                                     ? new Date(order.delivery_date).toLocaleDateString("ja-JP")
                                     : "未定"}
                                 </p>
                               </td>
-                              <td className="td text-right">
+                              <td className="px-4 py-2 text-right tabular-nums">
                                 {(order as { total_amount?: number | null }).total_amount != null ? (
-                                  <span className="text-sm font-semibold text-gray-700">
+                                  <span className="font-semibold text-gray-700">
                                     ¥{(order as { total_amount: number }).total_amount.toLocaleString("ja-JP")}
                                   </span>
                                 ) : (
                                   <span className="text-xs text-gray-400">—</span>
                                 )}
                               </td>
-                              <td className="td">
+                              <td className="px-2 py-2">
                                 <StatusBadge status={order.status as OrderStatus} size="sm" />
                               </td>
-                              <td className="td text-right">
+                              <td className="px-4 py-2 text-right">
                                 <Link
                                   href={`/admin/orders/${order.id}`}
-                                  className="text-sm text-brand-600 hover:underline"
+                                  className="text-brand-600 hover:underline"
                                 >
                                   詳細
                                 </Link>
