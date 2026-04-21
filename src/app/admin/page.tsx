@@ -5,10 +5,10 @@ import { OrderTypeBadge } from "@/components/ui/OrderTypeBadge";
 import type { OrderStatus, OrderType } from "@/types";
 import { ORDER_STATUSES } from "@/lib/constants";
 
-// 配達完了・キャンセル・履歴を除いたアクティブステータス
+// 完了・キャンセル・履歴を除いたアクティブステータス
 // （履歴は移行した過去データ用ステータスなのでダッシュボードには出さない）
 const ACTIVE_STATUSES = ORDER_STATUSES.filter(
-  (s) => s !== "配達完了" && s !== "キャンセル" && s !== "履歴"
+  (s) => s !== "完了" && s !== "キャンセル" && s !== "履歴"
 );
 
 function tokyoToday(): string {
@@ -26,7 +26,7 @@ export default async function AdminDashboard() {
   const supabase = await createClient();
   const today = tokyoToday();
 
-  // アクティブな全注文（配達完了・キャンセル除外）
+  // アクティブな全注文（完了・キャンセル除外）
   const { data: activeOrders } = await supabase
     .from("orders")
     .select(
@@ -34,7 +34,7 @@ export default async function AdminDashboard() {
        product_name, quantity, delivery_date, delivery_name,
        purpose, total_amount, customers(id, name)`
     )
-    .not("status", "eq", "配達完了")
+    .not("status", "eq", "完了")
     .not("status", "eq", "キャンセル")
     .not("status", "eq", "履歴")
     .order("created_at", { ascending: false });
@@ -86,7 +86,7 @@ export default async function AdminDashboard() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-sm font-semibold text-gray-800">対応中の注文</h2>
-            <p className="text-xs text-gray-400 mt-0.5">配達完了・キャンセルを除く全注文</p>
+            <p className="text-xs text-gray-400 mt-0.5">完了・キャンセルを除く全注文</p>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-2xl font-bold text-brand-700">
