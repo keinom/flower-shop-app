@@ -47,16 +47,24 @@ export async function updateInvoiceStatus(formData: FormData) {
 
   if (orderIds.length > 0) {
     if (newStatus === "paid") {
-      // 入金済みにする → 注文を「代済み」に
+      // 入金済みにする → 注文を「代済み」＋支払方法「振込」に
+      // （請求書経由で入金された = 振込入金 を自動反映）
       await supabase
         .from("orders")
-        .update({ payment_status: "代済み" } as never)
+        .update({
+          payment_status: "代済み",
+          payment_method: "振込",
+          payment_plan:   null,
+        } as never)
         .in("id", orderIds);
     } else if (currentStatus === "paid") {
-      // 入金済みから戻す → 注文を「代未」に戻す
+      // 入金済みから戻す → 注文を「代未」に戻し、自動設定した支払方法もクリア
       await supabase
         .from("orders")
-        .update({ payment_status: "代未" } as never)
+        .update({
+          payment_status: "代未",
+          payment_method: null,
+        } as never)
         .in("id", orderIds);
     }
   }

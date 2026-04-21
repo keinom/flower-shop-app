@@ -240,10 +240,48 @@ export default async function InvoiceDetailPage({ params, searchParams }: Props)
               </span>
             </div>
 
-            <form action={updateInvoiceStatus} className="space-y-2">
-              <input type="hidden" name="invoice_id" value={inv.id} />
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">変更後のステータス</label>
+            {/* クイックアクション（ワークフローに沿った1クリック遷移） */}
+            {inv.status === "draft" && (
+              <form action={updateInvoiceStatus}>
+                <input type="hidden" name="invoice_id" value={inv.id} />
+                <input type="hidden" name="new_status" value="issued" />
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+                >
+                  請求書を発行する
+                </button>
+              </form>
+            )}
+            {(inv.status === "issued" || inv.status === "sent") && (
+              <form action={updateInvoiceStatus}>
+                <input type="hidden" name="invoice_id" value={inv.id} />
+                <input type="hidden" name="new_status" value="paid" />
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-lg text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
+                >
+                  入金済みにする
+                </button>
+                <p className="mt-2 text-xs text-gray-500 leading-relaxed">
+                  紐付く注文の支払いを「代済み（振込）」に自動更新します
+                </p>
+              </form>
+            )}
+            {inv.status === "paid" && (
+              <div className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2">
+                ✓ 入金確認済み<br />
+                <span className="text-gray-600">紐付く注文は「代済み（振込）」に設定されています</span>
+              </div>
+            )}
+
+            {/* 詳細: 任意のステータスに変更 */}
+            <details className="text-xs">
+              <summary className="cursor-pointer text-gray-500 hover:text-gray-700 select-none">
+                その他のステータスに変更
+              </summary>
+              <form action={updateInvoiceStatus} className="space-y-2 mt-2">
+                <input type="hidden" name="invoice_id" value={inv.id} />
                 <select
                   name="new_status"
                   defaultValue={inv.status}
@@ -253,14 +291,14 @@ export default async function InvoiceDetailPage({ params, searchParams }: Props)
                     <option key={s} value={s}>{STATUS_LABELS[s]}</option>
                   ))}
                 </select>
-              </div>
-              <button
-                type="submit"
-                className="w-full py-2 rounded-lg text-sm font-semibold bg-brand-600 hover:bg-brand-700 text-white transition-colors"
-              >
-                更新する
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  className="w-full py-2 rounded-lg text-sm font-semibold bg-gray-600 hover:bg-gray-700 text-white transition-colors"
+                >
+                  変更する
+                </button>
+              </form>
+            </details>
           </div>
 
           {/* 下書き削除 */}
