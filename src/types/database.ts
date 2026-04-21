@@ -15,7 +15,8 @@ export type OrderStatus =
   | "配達準備完了"
   | "配達中"
   | "配達完了"
-  | "キャンセル";
+  | "キャンセル"
+  | "履歴";
 
 export type ShiftPreferenceType = "available" | "off";
 export type ShiftTimeSlot       = "AM" | "PM" | "FULL";

@@ -12,6 +12,7 @@ export const ORDER_STATUSES: OrderStatus[] = [
   "配達中",
   "配達完了",
   "キャンセル",
+  "履歴",
 ];
 
 /**
@@ -29,6 +30,7 @@ export const ORDER_STATUS_COLORS: Record<
   配達中:       { bg: "bg-violet-100",  text: "text-violet-800", border: "border-violet-200" },
   配達完了:     { bg: "bg-emerald-100", text: "text-emerald-800",border: "border-emerald-200"},
   キャンセル:   { bg: "bg-gray-100",    text: "text-gray-500",   border: "border-gray-200"   },
+  履歴:         { bg: "bg-slate-100",   text: "text-slate-600",  border: "border-slate-200"  },
 };
 
 /**

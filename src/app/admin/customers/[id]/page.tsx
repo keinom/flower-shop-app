@@ -29,11 +29,13 @@ export default async function CustomerDetailPage({
 
   if (!customer) notFound();
 
+  // 注文履歴: 旧データ含め数千件/顧客に達するため、Supabase のデフォルト1000件制限を外す
   const { data: orders } = await supabase
     .from("orders")
     .select("id, status, product_name, quantity, delivery_date, created_at, total_amount")
     .eq("customer_id", id)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(0, 9999);
 
   const hasAccount = !!customer.profile_id;
 
