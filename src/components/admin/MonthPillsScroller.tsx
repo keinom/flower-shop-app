@@ -3,23 +3,28 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 
+export interface MonthPillItem {
+  ym: string;
+  label: string;
+  href: string;
+}
+
 interface MonthPillsScrollerProps {
-  months: string[];
+  items: MonthPillItem[];
   selectedMonth: string;
-  buildHref: (month: string) => string;
-  formatMonth: (ym: string) => string;
 }
 
 /**
- * 月ラベルの横スクロールピル。
- * - months は 昇順（古い→新しい）で並ぶ
+ * 月ラベルの横スクロールピル（Client Component）。
+ * - items は 昇順（古い→新しい）で並ぶ
  * - 初期描画時に selectedMonth を可視領域にスクロール（通常は右端付近）
+ *
+ * ※ Server→Client 境界を越える props は serializable である必要があるため、
+ *    関数（buildHref / formatMonth 等）は受け取らず、整形済みデータを渡す。
  */
 export function MonthPillsScroller({
-  months,
+  items,
   selectedMonth,
-  buildHref,
-  formatMonth,
 }: MonthPillsScrollerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const selectedRef = useRef<HTMLAnchorElement>(null);
@@ -32,20 +37,20 @@ export function MonthPillsScroller({
 
   return (
     <div ref={containerRef} className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
-      {months.map((ym) => {
-        const isSelected = ym === selectedMonth;
+      {items.map((it) => {
+        const isSelected = it.ym === selectedMonth;
         return (
           <Link
-            key={ym}
+            key={it.ym}
             ref={isSelected ? selectedRef : null}
-            href={buildHref(ym)}
+            href={it.href}
             className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
               isSelected
                 ? "bg-brand-600 text-white border-brand-600"
                 : "bg-white text-gray-600 border-gray-300 hover:border-brand-400"
             }`}
           >
-            {formatMonth(ym)}
+            {it.label}
           </Link>
         );
       })}

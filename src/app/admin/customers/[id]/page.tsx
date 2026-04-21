@@ -258,12 +258,15 @@ export default async function CustomerDetailPage({
                 </Link>
               </div>
 
-              {/* 全月リスト（スクロール可能・選択月にオートスクロール） */}
+              {/* 全月リスト（スクロール可能・選択月にオートスクロール）
+                  Client Component との境界を跨ぐため、関数ではなく整形済みデータを渡す */}
               <MonthPillsScroller
-                months={allMonths}
+                items={allMonths.map((ym) => ({
+                  ym,
+                  label: formatMonth(ym),
+                  href: `/admin/customers/${id}?month=${ym}`,
+                }))}
                 selectedMonth={selectedMonth}
-                buildHref={(ym) => `/admin/customers/${id}?month=${ym}`}
-                formatMonth={formatMonth}
               />
             </div>
 
