@@ -5,9 +5,10 @@ import { OrderTypeBadge } from "@/components/ui/OrderTypeBadge";
 import type { OrderStatus, OrderType } from "@/types";
 import { ORDER_STATUSES } from "@/lib/constants";
 
-// 配達完了・キャンセルを除いたアクティブステータス
+// 配達完了・キャンセル・履歴を除いたアクティブステータス
+// （履歴は移行した過去データ用ステータスなのでダッシュボードには出さない）
 const ACTIVE_STATUSES = ORDER_STATUSES.filter(
-  (s) => s !== "配達完了" && s !== "キャンセル"
+  (s) => s !== "配達完了" && s !== "キャンセル" && s !== "履歴"
 );
 
 function tokyoToday(): string {
@@ -35,6 +36,7 @@ export default async function AdminDashboard() {
     )
     .not("status", "eq", "配達完了")
     .not("status", "eq", "キャンセル")
+    .not("status", "eq", "履歴")
     .order("created_at", { ascending: false });
 
   const orders = activeOrders ?? [];
@@ -53,6 +55,7 @@ export default async function AdminDashboard() {
              customers(id, name)`)
     .eq("payment_status" as never, "代未")
     .not("status", "eq", "キャンセル")
+    .not("status", "eq", "履歴")
     .order("delivery_date", { ascending: true });
 
   type UnpaidOrder = {
