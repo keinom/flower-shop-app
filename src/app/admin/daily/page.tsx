@@ -74,6 +74,7 @@ export default async function DailyPage({ searchParams }: DailyPageProps) {
     .select("id, status, order_type, product_name, quantity, delivery_name, delivery_address, delivery_phone, delivery_date, delivery_time_start, delivery_time_end, total_amount, customers(id, name)")
     .in("delivery_date", datesToFetch)
     .not("status", "eq", "キャンセル")
+    .not("status", "eq", "履歴")
     .order("delivery_time_start", { ascending: true, nullsFirst: false })
     .order("created_at",          { ascending: true });
 
@@ -150,8 +151,9 @@ function DaySingleFull({
   const timelineOrders = orders.filter((o) => o.order_type !== "発送");
   const shippingOrders = orders.filter((o) => o.order_type === "発送");
 
-  // ステータス別件数
-  const statusCounts = ORDER_STATUSES.reduce(
+  // ステータス別件数（履歴は移行データ用ステータスなので日報には出さない）
+  const DISPLAY_STATUSES = ORDER_STATUSES.filter((s) => s !== "履歴");
+  const statusCounts = DISPLAY_STATUSES.reduce(
     (acc, s) => { acc[s] = orders.filter((o) => o.status === s).length; return acc; },
     {} as Record<OrderStatus, number>
   );
@@ -168,7 +170,7 @@ function DaySingleFull({
           </span>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-8">
-          {ORDER_STATUSES.map((status) => (
+          {DISPLAY_STATUSES.map((status) => (
             <Link
               key={status}
               href={`/admin/orders?status=${encodeURIComponent(status)}&delivery_from=${dateStr}&delivery_to=${dateStr}&searched=1`}
