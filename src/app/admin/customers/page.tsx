@@ -75,17 +75,21 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
   })();
 
   // ── 注文件数マップ ──
-  const { data: orderCounts } = await supabase
-    .from("orders")
-    .select("customer_id");
-
-  const countMap = (orderCounts ?? []).reduce(
-    (acc, o) => {
-      acc[o.customer_id] = (acc[o.customer_id] ?? 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>
-  );
+  // 旧実装は orders を全取得して JS で集計していたが、
+  // PostgREST のサーバ側 max-rows=1000 に引っかかり、
+  // 移行した大量データがある顧客が軒並み「0 件」表示になっていた。
+  // DB 側の集計ビュー customer_order_counts を表示中の顧客 ID に絞って参照する。
+  const displayedIds = filtered.map((c) => c.id);
+  const countMap: Record<string, number> = {};
+  if (displayedIds.length > 0) {
+    const { data: counts } = await supabase
+      .from("customer_order_counts" as never)
+      .select("customer_id, order_count")
+      .in("customer_id", displayedIds);
+    for (const row of (counts ?? []) as Array<{ customer_id: string; order_count: number }>) {
+      countMap[row.customer_id] = row.order_count;
+    }
+  }
 
   const searched = p.searched === "1";
 
