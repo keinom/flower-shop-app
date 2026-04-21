@@ -49,14 +49,27 @@ export default async function OrderSlipPage() {
         * { box-sizing: border-box; }
 
         @media print {
-          @page  { size: A5 portrait; margin: 8mm; }
-          html, body { margin: 0; padding: 0; background: white !important; }
+          /* A5 縦（148×210mm）、余白は最小限。ブラウザ側「ヘッダーとフッター」はOFF推奨 */
+          @page { size: A5 portrait; margin: 6mm; }
+          html, body {
+            margin: 0;
+            padding: 0;
+            background: white !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
           .slip-wrapper { padding: 0 !important; background: none !important; }
+          /* 印刷時はページを物理寸法で固定し、絶対に 1 枚に収める */
           .slip-page {
-            width: 100% !important;
-            min-height: unset !important;
+            width: 136mm !important;   /* 148mm - 6mm*2 */
+            height: 198mm !important;  /* 210mm - 6mm*2 */
+            min-height: 0 !important;
             padding: 0 !important;
+            margin: 0 !important;
             box-shadow: none !important;
+            overflow: hidden !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
         }
 
@@ -72,9 +85,11 @@ export default async function OrderSlipPage() {
           .slip-page {
             background: white;
             box-shadow: 0 8px 40px rgba(0,0,0,0.22);
-            width: 148mm;
-            min-height: 210mm;
-            padding: 8mm;
+            /* プレビューも印刷時と同じ物理寸法にそろえる（枠内に収まるか確認しやすい） */
+            width: 136mm;
+            height: 198mm;
+            padding: 0;
+            overflow: hidden;
           }
         }
 
@@ -282,19 +297,19 @@ export default async function OrderSlipPage() {
               </tr>
 
               {/* ── 行8: 品名 ── */}
-              <tr style={{ height: "36mm" }}>
+              <tr style={{ height: "33mm" }}>
                 <td colSpan={2} style={vLabel()}>品名</td>
                 <td colSpan={10} style={cell()} />
               </tr>
 
               {/* ── 行9: 花入 ── */}
-              <tr style={{ height: "36mm" }}>
+              <tr style={{ height: "33mm" }}>
                 <td colSpan={2} style={vLabel()}>花入</td>
                 <td colSpan={10} style={cell()} />
               </tr>
 
               {/* ── 行10: 備考 ── */}
-              <tr style={{ height: "36mm" }}>
+              <tr style={{ height: "33mm" }}>
                 <td colSpan={2} style={vLabel()}>備考</td>
                 <td colSpan={10} style={cell()} />
               </tr>
