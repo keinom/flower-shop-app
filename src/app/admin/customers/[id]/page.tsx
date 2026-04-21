@@ -109,11 +109,17 @@ export default async function CustomerDetailPage({
   return (
     <div className="space-y-6 max-w-3xl">
       {/* ヘッダー */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <Link href="/admin/customers" className="text-sm text-gray-500 hover:text-gray-700">
           ← 顧客一覧
         </Link>
         <h1 className="text-xl font-bold text-gray-900">{customer.name}</h1>
+        <Link
+          href={`/admin/orders/new?customer_id=${id}`}
+          className="ml-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold shadow-sm transition-colors"
+        >
+          + 注文を作成
+        </Link>
       </div>
 
       {sp.created && (
@@ -213,16 +219,10 @@ export default async function CustomerDetailPage({
 
       {/* 注文履歴 */}
       <div className="card">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+        <div className="px-5 py-4 border-b border-gray-200">
           <h2 className="text-sm font-semibold text-gray-700">
             注文履歴（全{orders?.length ?? 0}件）
           </h2>
-          <Link
-            href={`/admin/orders/new?customer_id=${id}`}
-            className="text-xs text-brand-600 hover:underline"
-          >
-            + 注文を作成
-          </Link>
         </div>
 
         {allMonths.length === 0 ? (
