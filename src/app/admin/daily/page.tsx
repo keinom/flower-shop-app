@@ -87,10 +87,20 @@ export default async function DailyPage({ searchParams }: DailyPageProps) {
 
   return (
     <div className="space-y-5">
-      {/* ── 行1: タイトル ＋ 表示切替 ── */}
+      {/* ── 行1: タイトル ＋ 表示切替 ＋ 印刷 ── */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">日報</h1>
-        <DailyViewToggle currentView={view} currentDate={baseDate} />
+        <div className="flex items-center gap-3">
+          <DailyViewToggle currentView={view} currentDate={baseDate} />
+          <Link
+            href={`/print/daily?date=${baseDate}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
+          >
+            🖨 印刷
+          </Link>
+        </div>
       </div>
 
       {/* ── 行2: 日付ナビ（前日 ← 日付 → 翌日） ── */}
