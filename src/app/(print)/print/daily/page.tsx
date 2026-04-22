@@ -6,6 +6,13 @@ interface DailyPrintPageProps {
   searchParams: Promise<{ date?: string }>;
 }
 
+type CustomerInfo = {
+  id: string;
+  name: string;
+  phone: string | null;
+  address: string | null;
+};
+
 type OrderRow = {
   id: string;
   status: string;
@@ -19,7 +26,7 @@ type OrderRow = {
   delivery_time_start: string | null;
   delivery_time_end: string | null;
   total_amount: number | null;
-  customers: { id: string; name: string } | null;
+  customers: CustomerInfo | null;
 };
 
 function getTodayJST(): string {
@@ -40,7 +47,7 @@ function formatTimeRange(start: string | null, end: string | null): string {
   return `${formatTime(start)}〜${formatTime(end)}`;
 }
 
-// 種別の表示順（白黒印刷用：色なし）
+// 種別の表示順
 const TYPE_CONFIG: { type: string; label: string }[] = [
   { type: "生け込み", label: "生け込み" },
   { type: "配達",    label: "配 達"   },
@@ -63,7 +70,7 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
 
   const { data: rawOrders } = await supabase
     .from("orders")
-    .select("id, status, order_type, product_name, quantity, delivery_name, delivery_address, delivery_phone, delivery_date, delivery_time_start, delivery_time_end, total_amount, customers(id, name)")
+    .select("id, status, order_type, product_name, quantity, delivery_name, delivery_address, delivery_phone, delivery_date, delivery_time_start, delivery_time_end, total_amount, customers(id, name, phone, address)")
     .eq("delivery_date", date)
     .not("status", "eq", "キャンセル")
     .not("status", "eq", "履歴")
@@ -102,7 +109,6 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
           @page { size: A4 portrait; margin: 10mm; }
           html, body {
             background: white !important;
-            /* 白黒印刷でもグレー背景が出るよう exact にする */
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }
@@ -139,9 +145,7 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
         .rpt-date  { font-size: 11pt; font-weight: bold; flex: 1; }
 
         /* ── 種別セクション ── */
-        .section { margin-bottom: 9pt; }
-        /* page-break はテーブルが長い場合に備えて section 単位で avoid */
-        .section { break-inside: avoid; page-break-inside: avoid; }
+        .section { margin-bottom: 9pt; break-inside: avoid; page-break-inside: avoid; }
 
         /* 白抜きセクションヘッダー（罫線のみ） */
         .section-head {
@@ -165,7 +169,7 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
           font-size: 8.5pt;
         }
         .orders-table th {
-          background: #d4d4d4;   /* 白黒でもグレーとして印刷される */
+          background: #d4d4d4;
           border: 0.75pt solid #000;
           padding: 2.5pt 4pt;
           text-align: left;
@@ -179,27 +183,24 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
           vertical-align: top;
           line-height: 1.5;
         }
-        /* 奇数行：白 / 偶数行：薄いグレー（白黒印刷で交互に読みやすく） */
         .orders-table tbody tr:nth-child(even) td {
           background: #f0f0f0;
         }
 
         /* 列幅 */
-        .col-time    { width: 13%; white-space: nowrap; }
-        .col-dest    { width: 22%; }
-        .col-contact { width: 29%; }
-        .col-product { width: 24%; }
-        .col-amount  { width: 12%; text-align: right; white-space: nowrap; }
+        .col-time      { width: 11%; white-space: nowrap; }
+        .col-sender    { width: 22%; }
+        .col-recipient { width: 25%; }
+        .col-product   { width: 28%; }
+        .col-amount    { width: 14%; text-align: right; white-space: nowrap; }
 
         /* セル内スタイル */
-        .time-val  { font-size: 9pt; font-weight: bold; }
-        .time-none { font-size: 8pt; color: #666; }
-        .name-main { font-size: 9pt; font-weight: bold; }
-        .name-sub  { font-size: 7.5pt; color: #555; margin-top: 1pt; }
-        .name-from { font-size: 7.5pt; color: #555; margin-top: 1pt; }
-        .addr-line { font-size: 7.5pt; }
-        .tel-line  { font-size: 7.5pt; margin-top: 1pt; }
-        .amount-val { font-size: 9pt; font-weight: bold; }
+        .time-val    { font-size: 9pt; font-weight: bold; }
+        .time-none   { font-size: 8pt; color: #666; }
+        .party-name  { font-size: 9pt; font-weight: bold; }
+        .party-addr  { font-size: 7.5pt; margin-top: 1pt; }
+        .party-tel   { font-size: 7.5pt; margin-top: 1pt; }
+        .amount-val  { font-size: 9pt; font-weight: bold; }
       `}</style>
 
       <div className="print-wrapper">
@@ -231,15 +232,15 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
                 <thead>
                   <tr>
                     <th className="col-time">時刻</th>
-                    <th className="col-dest">届け先</th>
-                    <th className="col-contact">住所・電話</th>
+                    <th className="col-sender">送り主</th>
+                    <th className="col-recipient">お届け先</th>
                     <th className="col-product">商品</th>
                     <th className="col-amount">金額（税込）</th>
                   </tr>
                 </thead>
                 <tbody>
                   {grp.orders.map((order) => {
-                    const customer = order.customers as { id: string; name: string } | null;
+                    const customer = order.customers as CustomerInfo | null;
                     const isSelf = customer && order.delivery_name.trim() === customer.name.trim();
                     const timeStr = formatTimeRange(order.delivery_time_start, order.delivery_time_end);
                     const hasTime = order.delivery_time_start || order.delivery_time_end;
@@ -253,30 +254,34 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
                             : <span className="time-none">時間未定</span>}
                         </td>
 
-                        {/* 届け先 */}
-                        <td className="col-dest">
+                        {/* 送り主（注文元顧客） */}
+                        <td className="col-sender">
                           {isSelf ? (
-                            <div className="name-main">{customer?.name}</div>
-                          ) : (
+                            // 自社用：送り主欄は空
+                            <span style={{ color: "#bbb", fontSize: "7.5pt" }}>—</span>
+                          ) : customer ? (
                             <>
-                              <div className="name-main">→ {order.delivery_name}</div>
-                              {customer && (
-                                <div className="name-from">注文：{customer.name}</div>
+                              <div className="party-name">{customer.name}</div>
+                              {customer.phone && (
+                                <div className="party-tel">☎ {customer.phone}</div>
+                              )}
+                              {customer.address && (
+                                <div className="party-addr">{customer.address}</div>
                               )}
                             </>
+                          ) : (
+                            <span style={{ color: "#bbb", fontSize: "7.5pt" }}>—</span>
                           )}
                         </td>
 
-                        {/* 住所・電話 */}
-                        <td className="col-contact">
-                          {order.delivery_address && (
-                            <div className="addr-line">{order.delivery_address}</div>
-                          )}
+                        {/* お届け先 */}
+                        <td className="col-recipient">
+                          <div className="party-name">{order.delivery_name}</div>
                           {order.delivery_phone && (
-                            <div className="tel-line">☎ {order.delivery_phone}</div>
+                            <div className="party-tel">☎ {order.delivery_phone}</div>
                           )}
-                          {!order.delivery_address && !order.delivery_phone && (
-                            <span style={{ color: "#999", fontSize: "7.5pt" }}>—</span>
+                          {order.delivery_address && (
+                            <div className="party-addr">{order.delivery_address}</div>
                           )}
                         </td>
 
@@ -302,7 +307,6 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
               </table>
             </div>
           ))}
-
 
         </div>
       </div>
