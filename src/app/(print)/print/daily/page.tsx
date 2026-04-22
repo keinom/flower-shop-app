@@ -91,11 +91,6 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
 
   const FONT = '"Hiragino Sans", "Yu Gothic", "Meiryo", "MS Gothic", sans-serif';
 
-  // 種別別件数（サマリ用）
-  const typeCounts = TYPE_CONFIG
-    .map((c) => ({ label: c.label.replace(/\s/g, ""), count: orders.filter((o) => (o.order_type ?? "配達") === c.type).length }))
-    .filter((x) => x.count > 0);
-
   return (
     <>
       <PrintBar title={`📋 日報 ${dateLabel}`} />
@@ -142,31 +137,25 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
         }
         .rpt-title { font-size: 14pt; font-weight: bold; letter-spacing: 0.15em; }
         .rpt-date  { font-size: 11pt; font-weight: bold; flex: 1; }
-        .rpt-count { font-size: 9pt; white-space: nowrap; }
 
         /* ── 種別セクション ── */
         .section { margin-bottom: 9pt; }
         /* page-break はテーブルが長い場合に備えて section 単位で avoid */
         .section { break-inside: avoid; page-break-inside: avoid; }
 
-        /* 黒地・白文字のセクションヘッダー（白黒印刷で種別が明確に分かる） */
+        /* 白抜きセクションヘッダー（罫線のみ） */
         .section-head {
-          background: #000;
-          color: #fff;
+          border-top: 1.5pt solid #000;
+          border-bottom: 1pt solid #000;
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          padding: 3pt 6pt;
+          padding: 2.5pt 4pt;
           margin-bottom: 0;
         }
         .section-head-label {
           font-size: 10pt;
           font-weight: bold;
           letter-spacing: 0.2em;
-        }
-        .section-head-count {
-          font-size: 9pt;
-          font-weight: normal;
         }
 
         /* ── 注文テーブル ── */
@@ -207,34 +196,10 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
         .time-none { font-size: 8pt; color: #666; }
         .name-main { font-size: 9pt; font-weight: bold; }
         .name-sub  { font-size: 7.5pt; color: #555; margin-top: 1pt; }
+        .name-from { font-size: 7.5pt; color: #555; margin-top: 1pt; }
         .addr-line { font-size: 7.5pt; }
         .tel-line  { font-size: 7.5pt; margin-top: 1pt; }
         .amount-val { font-size: 9pt; font-weight: bold; }
-        .amount-tax { font-size: 6.5pt; font-weight: normal; display: block; color: #555; }
-
-        /* ── サマリ行（件数のみ、金額なし） ── */
-        .summary {
-          margin-top: 8pt;
-          border-top: 1.5pt solid #000;
-          padding-top: 4pt;
-          display: flex;
-          gap: 16pt;
-          justify-content: flex-end;
-          font-size: 9pt;
-        }
-        .summary-item { display: flex; flex-direction: column; align-items: flex-end; gap: 1pt; }
-        .summary-label { font-size: 7pt; color: #555; }
-        .summary-value { font-size: 11pt; font-weight: bold; }
-
-        /* ── フッター ── */
-        .rpt-footer {
-          margin-top: 8pt;
-          border-top: 0.5pt solid #aaa;
-          padding-top: 3pt;
-          font-size: 7pt;
-          color: #777;
-          text-align: right;
-        }
       `}</style>
 
       <div className="print-wrapper">
@@ -244,7 +209,6 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
           <div className="rpt-header">
             <span className="rpt-title">日　報</span>
             <span className="rpt-date">{dateLabel}</span>
-            <span className="rpt-count">合計 {orders.length} 件</span>
           </div>
 
           {/* ── 注文なし ── */}
@@ -258,10 +222,9 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
           {groups.map((grp) => (
             <div key={grp.type} className="section">
 
-              {/* 黒帯ヘッダー */}
+              {/* セクションヘッダー */}
               <div className="section-head">
                 <span className="section-head-label">◆ {grp.label}</span>
-                <span className="section-head-count">{grp.orders.length} 件</span>
               </div>
 
               <table className="orders-table">
@@ -296,9 +259,9 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
                             <div className="name-main">{customer?.name}</div>
                           ) : (
                             <>
-                              <div className="name-main">{order.delivery_name}</div>
+                              <div className="name-main">→ {order.delivery_name}</div>
                               {customer && (
-                                <div className="name-sub">注文元：{customer.name}</div>
+                                <div className="name-from">注文：{customer.name}</div>
                               )}
                             </>
                           )}
@@ -322,15 +285,12 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
                           {order.product_name ?? `${order.quantity}点`}
                         </td>
 
-                        {/* 金額（税込表示） */}
+                        {/* 金額 */}
                         <td className="col-amount">
                           {order.total_amount != null && order.total_amount > 0 ? (
-                            <>
-                              <span className="amount-val">
-                                ¥{order.total_amount.toLocaleString("ja-JP")}
-                              </span>
-                              <span className="amount-tax">税込</span>
-                            </>
+                            <span className="amount-val">
+                              ¥{order.total_amount.toLocaleString("ja-JP")}
+                            </span>
                           ) : (
                             <span style={{ color: "#999" }}>—</span>
                           )}
@@ -343,26 +303,6 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
             </div>
           ))}
 
-          {/* ── サマリ（件数のみ） ── */}
-          {orders.length > 0 && (
-            <div className="summary">
-              {typeCounts.map((tc) => (
-                <div key={tc.label} className="summary-item">
-                  <span className="summary-label">{tc.label}</span>
-                  <span className="summary-value">{tc.count} 件</span>
-                </div>
-              ))}
-              <div className="summary-item">
-                <span className="summary-label">合計</span>
-                <span className="summary-value">{orders.length} 件</span>
-              </div>
-            </div>
-          )}
-
-          {/* ── フッター ── */}
-          <div className="rpt-footer">
-            印刷日時：{new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}
-          </div>
 
         </div>
       </div>
