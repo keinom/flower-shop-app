@@ -85,6 +85,53 @@ export async function createCustomer(formData: FormData) {
 }
 
 /**
+ * 既存の顧客情報を更新する
+ */
+export async function updateCustomer(formData: FormData) {
+  const supabase = await createClient();
+
+  const id = (formData.get("id") as string)?.trim();
+  if (!id) {
+    redirect("/admin/customers?error=顧客IDが指定されていません");
+  }
+
+  const name = (formData.get("name") as string)?.trim();
+  const phone = (formData.get("phone") as string)?.trim() || null;
+  const email = (formData.get("email") as string)?.trim() || null;
+  const postalCode = (formData.get("postal_code") as string)?.trim() || null;
+  const address = (formData.get("address") as string)?.trim() || null;
+  const notes = (formData.get("notes") as string)?.trim() || null;
+
+  if (!name) {
+    redirect(`/admin/customers/${id}/edit?error=${encodeURIComponent("顧客名は必須です")}`);
+  }
+
+  const { error: updateError } = await supabase
+    .from("customers")
+    .update({
+      name,
+      phone,
+      email,
+      postal_code: postalCode,
+      address,
+      notes,
+    })
+    .eq("id", id);
+
+  if (updateError) {
+    redirect(
+      `/admin/customers/${id}/edit?error=${encodeURIComponent("顧客情報の更新に失敗しました")}`
+    );
+  }
+
+  revalidatePath(`/admin/customers/${id}`);
+  revalidatePath("/admin/customers");
+  redirect(
+    `/admin/customers/${id}?success=${encodeURIComponent("顧客情報を更新しました")}`
+  );
+}
+
+/**
  * 既存の顧客にログインアカウントを発行する
  */
 export async function issueAccount(formData: FormData) {

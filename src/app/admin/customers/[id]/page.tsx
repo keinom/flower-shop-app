@@ -115,8 +115,14 @@ export default async function CustomerDetailPage({
         </Link>
         <h1 className="text-xl font-bold text-gray-900">{customer.name}</h1>
         <Link
+          href={`/admin/customers/${id}/edit`}
+          className="ml-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
+        >
+          編集
+        </Link>
+        <Link
           href={`/admin/orders/new?customer_id=${id}`}
-          className="ml-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold shadow-sm transition-colors"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold shadow-sm transition-colors"
         >
           + 注文を作成
         </Link>
