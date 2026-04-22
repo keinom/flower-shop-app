@@ -162,7 +162,7 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
           letter-spacing: 0.2em;
         }
 
-        /* ── 注文テーブル ── */
+        /* ── 共通テーブルスタイル ── */
         .orders-table {
           width: 100%;
           border-collapse: collapse;
@@ -187,12 +187,17 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
           background: #f0f0f0;
         }
 
-        /* 列幅 */
-        .col-time      { width: 11%; white-space: nowrap; }
-        .col-sender    { width: 22%; }
-        .col-recipient { width: 25%; }
-        .col-product   { width: 28%; }
-        .col-amount    { width: 14%; text-align: right; white-space: nowrap; }
+        /* ── 生け込みテーブル列幅（3列構成） ── */
+        .col-time        { width: 11%; white-space: nowrap; }
+        .col-venue       { width: 42%; }          /* 生け込み先 */
+        .col-product-ik  { width: 33%; }          /* 商品（生け込み） */
+        .col-amount-ik   { width: 14%; text-align: right; white-space: nowrap; }
+
+        /* ── 配達等テーブル列幅（4列構成） ── */
+        .col-sender      { width: 22%; }
+        .col-recipient   { width: 25%; }
+        .col-product     { width: 28%; }
+        .col-amount      { width: 14%; text-align: right; white-space: nowrap; }
 
         /* セル内スタイル */
         .time-val    { font-size: 9pt; font-weight: bold; }
@@ -220,93 +225,145 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
           )}
 
           {/* ── 種別グループ ── */}
-          {groups.map((grp) => (
-            <div key={grp.type} className="section">
+          {groups.map((grp) => {
+            const isIkekomi = grp.type === "生け込み";
+            return (
+              <div key={grp.type} className="section">
 
-              {/* セクションヘッダー */}
-              <div className="section-head">
-                <span className="section-head-label">◆ {grp.label}</span>
-              </div>
+                {/* セクションヘッダー */}
+                <div className="section-head">
+                  <span className="section-head-label">◆ {grp.label}</span>
+                </div>
 
-              <table className="orders-table">
-                <thead>
-                  <tr>
-                    <th className="col-time">時刻</th>
-                    <th className="col-sender">送り主</th>
-                    <th className="col-recipient">お届け先</th>
-                    <th className="col-product">商品</th>
-                    <th className="col-amount">金額（税込）</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {grp.orders.map((order) => {
-                    const customer = order.customers as CustomerInfo | null;
-                    const isSelf = customer && order.delivery_name.trim() === customer.name.trim();
-                    const timeStr = formatTimeRange(order.delivery_time_start, order.delivery_time_end);
-                    const hasTime = order.delivery_time_start || order.delivery_time_end;
-
-                    return (
-                      <tr key={order.id}>
-                        {/* 時刻 */}
-                        <td className="col-time">
-                          {hasTime
-                            ? <span className="time-val">{timeStr}</span>
-                            : <span className="time-none">時間未定</span>}
-                        </td>
-
-                        {/* 送り主（注文元顧客） */}
-                        <td className="col-sender">
-                          {isSelf ? (
-                            // 自社用：送り主欄は空
-                            <span style={{ color: "#bbb", fontSize: "7.5pt" }}>—</span>
-                          ) : customer ? (
-                            <>
-                              <div className="party-name">{customer.name}</div>
-                              {customer.phone && (
-                                <div className="party-tel">☎ {customer.phone}</div>
-                              )}
-                              {customer.address && (
-                                <div className="party-addr">{customer.address}</div>
-                              )}
-                            </>
-                          ) : (
-                            <span style={{ color: "#bbb", fontSize: "7.5pt" }}>—</span>
-                          )}
-                        </td>
-
-                        {/* お届け先 */}
-                        <td className="col-recipient">
-                          <div className="party-name">{order.delivery_name}</div>
-                          {order.delivery_phone && (
-                            <div className="party-tel">☎ {order.delivery_phone}</div>
-                          )}
-                          {order.delivery_address && (
-                            <div className="party-addr">{order.delivery_address}</div>
-                          )}
-                        </td>
-
-                        {/* 商品 */}
-                        <td className="col-product">
-                          {order.product_name ?? `${order.quantity}点`}
-                        </td>
-
-                        {/* 金額 */}
-                        <td className="col-amount">
-                          {order.total_amount != null && order.total_amount > 0 ? (
-                            <span className="amount-val">
-                              ¥{order.total_amount.toLocaleString("ja-JP")}
-                            </span>
-                          ) : (
-                            <span style={{ color: "#999" }}>—</span>
-                          )}
-                        </td>
+                {isIkekomi ? (
+                  /* ── 生け込みテーブル：「生け込み先」1列 ── */
+                  <table className="orders-table">
+                    <thead>
+                      <tr>
+                        <th className="col-time">時刻</th>
+                        <th className="col-venue">生け込み先</th>
+                        <th className="col-product-ik">商品</th>
+                        <th className="col-amount-ik">金額（税込）</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ))}
+                    </thead>
+                    <tbody>
+                      {grp.orders.map((order) => {
+                        const timeStr = formatTimeRange(order.delivery_time_start, order.delivery_time_end);
+                        const hasTime = order.delivery_time_start || order.delivery_time_end;
+                        return (
+                          <tr key={order.id}>
+                            <td className="col-time">
+                              {hasTime
+                                ? <span className="time-val">{timeStr}</span>
+                                : <span className="time-none">時間未定</span>}
+                            </td>
+                            <td className="col-venue">
+                              <div className="party-name">{order.delivery_name}</div>
+                              {order.delivery_phone && (
+                                <div className="party-tel">☎ {order.delivery_phone}</div>
+                              )}
+                              {order.delivery_address && (
+                                <div className="party-addr">{order.delivery_address}</div>
+                              )}
+                            </td>
+                            <td className="col-product-ik">
+                              {order.product_name ?? `${order.quantity}点`}
+                            </td>
+                            <td className="col-amount-ik">
+                              {order.total_amount != null && order.total_amount > 0 ? (
+                                <span className="amount-val">
+                                  ¥{order.total_amount.toLocaleString("ja-JP")}
+                                </span>
+                              ) : (
+                                <span style={{ color: "#999" }}>—</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                ) : (
+                  /* ── 配達・来店・発送テーブル：「送り主」+「お届け先」2列 ── */
+                  <table className="orders-table">
+                    <thead>
+                      <tr>
+                        <th className="col-time">時刻</th>
+                        <th className="col-sender">送り主</th>
+                        <th className="col-recipient">お届け先</th>
+                        <th className="col-product">商品</th>
+                        <th className="col-amount">金額（税込）</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {grp.orders.map((order) => {
+                        const customer = order.customers as CustomerInfo | null;
+                        const isSelf = customer && order.delivery_name.trim() === customer.name.trim();
+                        const timeStr = formatTimeRange(order.delivery_time_start, order.delivery_time_end);
+                        const hasTime = order.delivery_time_start || order.delivery_time_end;
+                        return (
+                          <tr key={order.id}>
+                            <td className="col-time">
+                              {hasTime
+                                ? <span className="time-val">{timeStr}</span>
+                                : <span className="time-none">時間未定</span>}
+                            </td>
+
+                            {/* 送り主 */}
+                            <td className="col-sender">
+                              {isSelf ? (
+                                <span style={{ color: "#bbb", fontSize: "7.5pt" }}>—</span>
+                              ) : customer ? (
+                                <>
+                                  <div className="party-name">{customer.name}</div>
+                                  {customer.phone && (
+                                    <div className="party-tel">☎ {customer.phone}</div>
+                                  )}
+                                  {customer.address && (
+                                    <div className="party-addr">{customer.address}</div>
+                                  )}
+                                </>
+                              ) : (
+                                <span style={{ color: "#bbb", fontSize: "7.5pt" }}>—</span>
+                              )}
+                            </td>
+
+                            {/* お届け先 */}
+                            <td className="col-recipient">
+                              <div className="party-name">{order.delivery_name}</div>
+                              {order.delivery_phone && (
+                                <div className="party-tel">☎ {order.delivery_phone}</div>
+                              )}
+                              {order.delivery_address && (
+                                <div className="party-addr">{order.delivery_address}</div>
+                              )}
+                            </td>
+
+                            {/* 商品 */}
+                            <td className="col-product">
+                              {order.product_name ?? `${order.quantity}点`}
+                            </td>
+
+                            {/* 金額 */}
+                            <td className="col-amount">
+                              {order.total_amount != null && order.total_amount > 0 ? (
+                                <span className="amount-val">
+                                  ¥{order.total_amount.toLocaleString("ja-JP")}
+                                </span>
+                              ) : (
+                                <span style={{ color: "#999" }}>—</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+
+              </div>
+            );
+          })}
 
         </div>
       </div>
