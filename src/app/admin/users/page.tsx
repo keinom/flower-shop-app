@@ -118,7 +118,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                     </span>
                   </td>
                   <td className="td text-gray-500 text-xs">
-                    {new Date(staff.created_at).toLocaleDateString("ja-JP")}
+                    {new Date(staff.created_at).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" })}
                   </td>
                   <td className="td">
                     {staff.id !== currentUser?.id && (

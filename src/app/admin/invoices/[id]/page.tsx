@@ -141,25 +141,25 @@ export default async function InvoiceDetailPage({ params, searchParams }: Props)
                 </div>
                 <div>
                   <dt className="text-xs text-gray-500">作成日</dt>
-                  <dd className="mt-0.5">{new Date(inv.created_at).toLocaleDateString("ja-JP")}</dd>
+                  <dd className="mt-0.5">{new Date(inv.created_at).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" })}</dd>
                 </div>
                 {inv.issued_at && (
                   <div>
                     <dt className="text-xs text-gray-500">発行日</dt>
-                    <dd className="mt-0.5">{new Date(inv.issued_at).toLocaleDateString("ja-JP")}</dd>
+                    <dd className="mt-0.5">{new Date(inv.issued_at).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" })}</dd>
                   </div>
                 )}
                 {inv.sent_at && (
                   <div>
                     <dt className="text-xs text-gray-500">送付日</dt>
-                    <dd className="mt-0.5">{new Date(inv.sent_at).toLocaleDateString("ja-JP")}</dd>
+                    <dd className="mt-0.5">{new Date(inv.sent_at).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" })}</dd>
                   </div>
                 )}
                 {inv.due_date && (
                   <div>
                     <dt className="text-xs text-gray-500">支払期限</dt>
                     <dd className={`mt-0.5 font-semibold ${new Date(inv.due_date) < new Date() && inv.status !== "paid" ? "text-red-600" : ""}`}>
-                      {new Date(inv.due_date).toLocaleDateString("ja-JP")}
+                      {new Date(inv.due_date).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" })}
                     </dd>
                   </div>
                 )}

@@ -171,12 +171,12 @@ export default async function InvoicesPage({ searchParams }: InvoicesPageProps) 
                     ¥{(inv.total_amount ?? 0).toLocaleString("ja-JP")}
                   </td>
                   <td className="td text-sm text-gray-500 whitespace-nowrap">
-                    {inv.issued_at ? new Date(inv.issued_at).toLocaleDateString("ja-JP") : "—"}
+                    {inv.issued_at ? new Date(inv.issued_at).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" }) : "—"}
                   </td>
                   <td className="td text-sm text-gray-500 whitespace-nowrap">
                     {inv.due_date
                       ? <span className={new Date(inv.due_date) < new Date() && inv.status !== "paid" ? "text-red-600 font-semibold" : ""}>
-                          {new Date(inv.due_date).toLocaleDateString("ja-JP")}
+                          {new Date(inv.due_date).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" })}
                         </span>
                       : "—"}
                   </td>

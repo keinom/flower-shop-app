@@ -104,7 +104,7 @@ export default async function CustomerOrderDetailPage({
           <div className="text-right">
             <p className="text-xs text-gray-500">注文日</p>
             <p className="text-sm text-gray-700">
-              {new Date(order.created_at).toLocaleDateString("ja-JP", {
+              {new Date(order.created_at).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
                 year: "numeric",
                 month: "long",
                 day: "numeric",
@@ -134,7 +134,7 @@ export default async function CustomerOrderDetailPage({
             value={
               order.delivery_date
                 ? <>
-                    {new Date(order.delivery_date).toLocaleDateString("ja-JP", {
+                    {new Date(order.delivery_date).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
                       year: "numeric", month: "long", day: "numeric", weekday: "short",
                     })}
                     {formatDeliveryTime(
@@ -286,7 +286,7 @@ export default async function CustomerOrderDetailPage({
                     <p className="text-gray-600 text-xs mt-1">{log.note}</p>
                   )}
                   <p className="text-xs text-gray-400 mt-0.5">
-                    {new Date(log.created_at).toLocaleString("ja-JP")}
+                    {new Date(log.created_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}
                   </p>
                 </div>
               </li>

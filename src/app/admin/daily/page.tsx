@@ -448,7 +448,7 @@ function DayColumn({
   const isTomorrow = dateStr === shiftDate(today, 1);
   const dayLabel   = isToday ? "今日" : isTomorrow ? "明日" : "";
 
-  const dateLabel = new Date(dateStr + "T00:00:00").toLocaleDateString("ja-JP", {
+  const dateLabel = new Date(dateStr + "T00:00:00").toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
     year: "numeric", month: "long", day: "numeric", weekday: "short",
   });
 

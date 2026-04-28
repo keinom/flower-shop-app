@@ -177,14 +177,14 @@ export default async function RecurringTemplateDetailPage({ params, searchParams
           <div className="text-sm space-y-2">
             <p className="font-medium text-brand-800">{description}</p>
             <p className="text-gray-500">
-              開始日: {new Date(template.start_date).toLocaleDateString("ja-JP")}
+              開始日: {new Date(template.start_date).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" })}
               {template.end_date && (
-                <> ／ 終了日: {new Date(template.end_date).toLocaleDateString("ja-JP")}</>
+                <> ／ 終了日: {new Date(template.end_date).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" })}</>
               )}
             </p>
             {template.last_generated_date && (
               <p className="text-xs text-gray-400">
-                最終生成日: {new Date(template.last_generated_date).toLocaleDateString("ja-JP")}
+                最終生成日: {new Date(template.last_generated_date).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" })}
               </p>
             )}
           </div>
@@ -195,7 +195,7 @@ export default async function RecurringTemplateDetailPage({ params, searchParams
                 {nextOccurrences.map((d, i) => (
                   <li key={i} className="flex items-center gap-2 text-xs text-brand-800">
                     <span className="w-1.5 h-1.5 rounded-full bg-brand-500 flex-shrink-0" />
-                    {d.toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric", weekday: "short" })}
+                    {d.toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "long", day: "numeric", weekday: "short" })}
                   </li>
                 ))}
               </ul>
@@ -348,7 +348,7 @@ export default async function RecurringTemplateDetailPage({ params, searchParams
                   <tr key={order.id}>
                     <td className="td text-gray-700">
                       {order.delivery_date
-                        ? new Date(order.delivery_date).toLocaleDateString("ja-JP", {
+                        ? new Date(order.delivery_date).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
                             month: "short",
                             day: "numeric",
                             weekday: "short",

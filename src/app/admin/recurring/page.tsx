@@ -88,7 +88,7 @@ export default async function RecurringOrdersPage() {
                       {nextDate && (
                         <span>
                           次回:{" "}
-                          {nextDate.toLocaleDateString("ja-JP", {
+                          {nextDate.toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
                             year: "numeric",
                             month: "short",
                             day: "numeric",

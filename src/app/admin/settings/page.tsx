@@ -111,7 +111,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                     <span className="text-gray-500 ml-2 text-xs">{h.note}</span>
                   )}
                   <p className="text-xs text-gray-400 mt-0.5">
-                    {new Date(h.created_at).toLocaleString("ja-JP")}
+                    {new Date(h.created_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}
                   </p>
                 </div>
               </li>

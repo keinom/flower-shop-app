@@ -77,11 +77,11 @@ export default async function InvoicePrintPage({ params }: Props) {
   const invoiceItems = (items ?? []) as unknown as ItemRow[];
 
   const issuedDateFmt = inv.issued_at
-    ? new Date(inv.issued_at).toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" })
-    : new Date(inv.created_at).toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
+    ? new Date(inv.issued_at).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "long", day: "numeric" })
+    : new Date(inv.created_at).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "long", day: "numeric" });
 
   const dueDateFmt = inv.due_date
-    ? new Date(inv.due_date).toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" })
+    ? new Date(inv.due_date).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "long", day: "numeric" })
     : null;
 
   const isOverdue = inv.due_date && new Date(inv.due_date) < new Date() && inv.status !== "paid";
@@ -95,7 +95,7 @@ export default async function InvoicePrintPage({ params }: Props) {
     const firstDelivery = invoiceItems[0].orders?.delivery_date;
     if (firstDelivery) {
       const d = new Date(firstDelivery);
-      targetPeriodLabel = d.toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" }) + "のお届け分";
+      targetPeriodLabel = d.toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "long", day: "numeric" }) + "のお届け分";
     }
   }
 
@@ -306,7 +306,7 @@ export default async function InvoicePrintPage({ params }: Props) {
                         }}
                       >
                         {group.deliveryDate
-                          ? `お届け日：${new Date(group.deliveryDate).toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" })}`
+                          ? `お届け日：${new Date(group.deliveryDate).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "long", day: "numeric" })}`
                           : "お届け日：—"}
                       </td>
                     </tr>,

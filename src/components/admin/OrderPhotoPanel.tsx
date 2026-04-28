@@ -152,9 +152,9 @@ export function OrderPhotoPanel({ orderId, photos }: Props) {
                   ✕
                 </button>
                 <p className="text-xs text-gray-400 mt-1 truncate px-0.5" title={photo.file_name}>
-                  {new Date(photo.created_at).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })}
+                  {new Date(photo.created_at).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo", month: "numeric", day: "numeric" })}
                   {" "}
-                  {new Date(photo.created_at).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}
+                  {new Date(photo.created_at).toLocaleTimeString("ja-JP", { timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit" })}
                 </p>
               </div>
             ))}

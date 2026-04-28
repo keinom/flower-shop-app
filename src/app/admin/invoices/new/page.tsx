@@ -256,10 +256,10 @@ export default function NewInvoicePage() {
                             {order.product_name ?? "商品"}
                           </p>
                           <p className="text-xs text-gray-500">
-                            注文日: {new Date(order.created_at).toLocaleDateString("ja-JP")}
+                            注文日: {new Date(order.created_at).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" })}
                             {order.delivery_date && (
                               <span className="ml-2">
-                                お届け: {new Date(order.delivery_date).toLocaleDateString("ja-JP")}
+                                お届け: {new Date(order.delivery_date).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" })}
                               </span>
                             )}
                             {order.payment_plan && (

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { CustomerSearchForm } from "@/components/admin/CustomerSearchForm";
+import { formatJstDate, toJstStartOfDay, toJstEndOfDay } from "@/lib/date";
 
 interface SearchParams {
   name?: string;
@@ -49,12 +50,12 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
     query = query.ilike("address", `%${p.q.trim()}%`);
   }
 
-  // 登録日 From〜To
+  // 登録日 From〜To (JST)
   if (p.created_from?.trim()) {
-    query = query.gte("created_at", `${p.created_from.trim()}T00:00:00`);
+    query = query.gte("created_at", toJstStartOfDay(p.created_from.trim()));
   }
   if (p.created_to?.trim()) {
-    query = query.lte("created_at", `${p.created_to.trim()}T23:59:59`);
+    query = query.lte("created_at", toJstEndOfDay(p.created_to.trim()));
   }
 
   const { data: customers, error } = await query;
@@ -175,7 +176,7 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
                         </Link>
                       </td>
                       <td className="td text-gray-500 text-xs whitespace-nowrap">
-                        {new Date(customer.created_at).toLocaleDateString("ja-JP")}
+                        {formatJstDate(customer.created_at)}
                       </td>
                       <td className="td font-medium text-sm">{customer.name}</td>
                       <td className="td text-gray-600 text-sm">{customer.email ?? "—"}</td>

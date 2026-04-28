@@ -6,6 +6,7 @@ import { MonthPillsScroller } from "@/components/admin/MonthPillsScroller";
 import { issueAccount } from "../actions";
 import type { OrderStatus } from "@/types";
 import type { Database } from "@/types/database";
+import { formatJstDate, jstDateString, jstYearMonthString } from "@/lib/date";
 
 type CustomerRow = Database["public"]["Tables"]["customers"]["Row"] & { postal_code?: string | null };
 
@@ -64,7 +65,7 @@ export default async function CustomerDetailPage({
   // ── 月ナビゲーション用データ作成 ──
   // 昇順（古い→新しい）で並べ、矢印方向 ← = 過去 / → = 未来 に揃える
   const allMonths: string[] = orders
-    ? [...new Set(orders.map((o) => o.created_at.slice(0, 7)))].sort()
+    ? [...new Set(orders.map((o) => jstYearMonthString(o.created_at)))].sort()
     : [];
 
   // 選択中の月（デフォルトは最新月 = 末尾）
@@ -74,13 +75,13 @@ export default async function CustomerDetailPage({
 
   // 選択月の注文を抽出
   const monthOrders = orders?.filter((o) =>
-    o.created_at.startsWith(selectedMonth)
+    jstYearMonthString(o.created_at) === selectedMonth
   ) ?? [];
 
   // 注文日ごとにグループ化（YYYY-MM-DD → orders[]）
   const byDate = monthOrders.reduce<Record<string, typeof monthOrders>>(
     (acc, order) => {
-      const date = order.created_at.slice(0, 10);
+      const date = jstDateString(order.created_at);
       if (!acc[date]) acc[date] = [];
       acc[date].push(order);
       return acc;
@@ -308,7 +309,7 @@ export default async function CustomerDetailPage({
                       {/* 日付ヘッダー */}
                       <div className="flex items-center justify-between px-5 py-2 bg-gray-50">
                         <span className="text-xs font-semibold text-gray-600">
-                          {new Date(date + "T00:00:00").toLocaleDateString("ja-JP", {
+                          {new Date(date + "T00:00:00").toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
                             year: "numeric",
                             month: "long",
                             day: "numeric",
@@ -340,7 +341,7 @@ export default async function CustomerDetailPage({
                                 <p className="text-xs text-gray-400 mt-0.5 truncate">
                                   お届け希望日:{" "}
                                   {order.delivery_date
-                                    ? new Date(order.delivery_date).toLocaleDateString("ja-JP")
+                                    ? formatJstDate(order.delivery_date)
                                     : "未定"}
                                 </p>
                               </td>

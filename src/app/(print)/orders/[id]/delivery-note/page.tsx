@@ -85,11 +85,11 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
   const taxAmt    = Math.round(totalExcl * taxRate / 100);
   const totalIncl = totalExcl + taxAmt;
 
-  const issuedAt = new Date().toLocaleDateString("ja-JP", {
+  const issuedAt = new Date().toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
     year: "numeric", month: "long", day: "numeric", weekday: "short",
   });
   const deliveryDateFmt = resolvedOrder!.delivery_date
-    ? new Date(resolvedOrder!.delivery_date).toLocaleDateString("ja-JP", {
+    ? new Date(resolvedOrder!.delivery_date).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
         year: "numeric", month: "long", day: "numeric", weekday: "short",
       })
     : "未定";

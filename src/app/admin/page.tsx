@@ -4,6 +4,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { OrderTypeBadge } from "@/components/ui/OrderTypeBadge";
 import type { OrderStatus, OrderType } from "@/types";
 import { ORDER_STATUSES } from "@/lib/constants";
+import { formatJstDate, formatJstTime, jstDateString, todayJst } from "@/lib/date";
 
 // 完了・キャンセル・履歴を除いたアクティブステータス
 // （履歴は移行した過去データ用ステータスなのでダッシュボードには出さない）
@@ -11,20 +12,9 @@ const ACTIVE_STATUSES = ORDER_STATUSES.filter(
   (s) => s !== "完了" && s !== "キャンセル" && s !== "履歴"
 );
 
-function tokyoToday(): string {
-  return new Date()
-    .toLocaleDateString("ja-JP", {
-      timeZone: "Asia/Tokyo",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    })
-    .replace(/\//g, "-");
-}
-
 export default async function AdminDashboard() {
   const supabase = await createClient();
-  const today = tokyoToday();
+  const today = todayJst();
 
   // アクティブな全注文（完了・キャンセル除外）
   const { data: activeOrders } = await supabase
@@ -42,7 +32,7 @@ export default async function AdminDashboard() {
   const orders = activeOrders ?? [];
 
   // 今日の新着注文（本日 created_at）
-  const todayOrders = orders.filter((o) => o.created_at.startsWith(today));
+  const todayOrders = orders.filter((o) => jstDateString(o.created_at) === today);
 
   // 受付中（要対応）
   const pendingOrders = orders.filter((o) => o.status === "受付");
@@ -174,10 +164,7 @@ export default async function AdminDashboard() {
                         <span className="text-sm font-semibold text-gray-900">—</span>
                       )}
                       <span className="text-xs text-gray-400">
-                        {new Date(order.created_at).toLocaleTimeString("ja-JP", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {formatJstTime(order.created_at)}
                       </span>
                     </div>
                     <p className="text-xs text-gray-500 mt-0.5">
@@ -186,6 +173,7 @@ export default async function AdminDashboard() {
                         <span className="ml-2 text-gray-400">
                           お届け:{" "}
                           {new Date(order.delivery_date).toLocaleDateString("ja-JP", {
+                            timeZone: "Asia/Tokyo",
                             month: "numeric",
                             day: "numeric",
                           })}
@@ -271,6 +259,7 @@ export default async function AdminDashboard() {
                         <span className="ml-2 text-gray-400">
                           お届け:{" "}
                           {new Date(order.delivery_date).toLocaleDateString("ja-JP", {
+                            timeZone: "Asia/Tokyo",
                             month: "numeric",
                             day: "numeric",
                           })}

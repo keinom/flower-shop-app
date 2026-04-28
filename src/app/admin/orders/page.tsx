@@ -5,6 +5,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { OrderTypeBadge } from "@/components/ui/OrderTypeBadge";
 import { OrderSearchForm } from "@/components/admin/OrderSearchForm";
 import type { OrderStatus, OrderType } from "@/types";
+import { formatJstDate, toJstStartOfDay, toJstEndOfDay } from "@/lib/date";
 
 interface SearchParams {
   q?: string;
@@ -90,12 +91,12 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
     query = query.lte("delivery_date", p.delivery_to.trim());
   }
 
-  // 注文日 From〜To
+  // 注文日 From〜To (JST)
   if (p.created_from?.trim()) {
-    query = query.gte("created_at", `${p.created_from.trim()}T00:00:00`);
+    query = query.gte("created_at", toJstStartOfDay(p.created_from.trim()));
   }
   if (p.created_to?.trim()) {
-    query = query.lte("created_at", `${p.created_to.trim()}T23:59:59`);
+    query = query.lte("created_at", toJstEndOfDay(p.created_to.trim()));
   }
 
   // 合計金額 From〜To
@@ -203,7 +204,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                           </Link>
                         </td>
                         <td className="td text-gray-500 text-xs whitespace-nowrap">
-                          {new Date(order.created_at).toLocaleDateString("ja-JP")}
+                          {formatJstDate(order.created_at)}
                         </td>
                         <td className="td">
                           {customer ? (
@@ -233,7 +234,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                         </td>
                         <td className="td text-sm whitespace-nowrap">
                           {order.delivery_date
-                            ? new Date(order.delivery_date).toLocaleDateString("ja-JP")
+                            ? formatJstDate(order.delivery_date)
                             : "—"}
                         </td>
                         <td className="td text-right text-sm whitespace-nowrap">

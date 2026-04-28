@@ -16,7 +16,7 @@ export function DashboardDateNav({ currentDate, prevDate, nextDate, todayDate }:
 
   const fmt = (d: string) => {
     const dt = new Date(`${d}T00:00:00`);
-    return dt.toLocaleDateString("ja-JP", {
+    return dt.toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
       year: "numeric", month: "long", day: "numeric", weekday: "short",
     });
   };

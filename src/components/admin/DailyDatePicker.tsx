@@ -31,7 +31,7 @@ export function DailyDatePicker({ currentDate, view = "1", todayDate }: Props) {
   }, [open]);
 
   const isToday = currentDate === todayDate;
-  const formatted = new Date(`${currentDate}T00:00:00`).toLocaleDateString("ja-JP", {
+  const formatted = new Date(`${currentDate}T00:00:00`).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
     year: "numeric", month: "long", day: "numeric", weekday: "short",
   });
 

@@ -299,7 +299,7 @@ export default async function FudaListPage({ searchParams }: Props) {
                           confidence={doc.ocr_confidence}
                         />
                         <span className="text-xs text-gray-400">
-                          {new Date(doc.created_at).toLocaleDateString("ja-JP", {
+                          {new Date(doc.created_at).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
                             month: "2-digit",
                             day:   "2-digit",
                           })}

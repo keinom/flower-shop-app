@@ -153,7 +153,7 @@ export default async function CustomerTopPage({ searchParams }: CustomerTopPageP
                     </span>
                   )}
                   {order.delivery_date
-                    ? `お届け希望日: ${new Date(order.delivery_date).toLocaleDateString("ja-JP", {
+                    ? `お届け希望日: ${new Date(order.delivery_date).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
                         year: "numeric",
                         month: "long",
                         day: "numeric",
@@ -163,7 +163,7 @@ export default async function CustomerTopPage({ searchParams }: CustomerTopPageP
               </div>
               <div className="flex items-center gap-3 ml-4 flex-shrink-0">
                 <p className="text-xs text-gray-400">
-                  {new Date(order.created_at).toLocaleDateString("ja-JP")}
+                  {new Date(order.created_at).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" })}
                 </p>
                 <span className="text-gray-400 text-sm">›</span>
               </div>

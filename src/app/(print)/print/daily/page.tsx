@@ -92,7 +92,7 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
     groups.push({ type: "その他", label: "その他", orders: otherOrders });
   }
 
-  const dateLabel = new Date(date + "T00:00:00").toLocaleDateString("ja-JP", {
+  const dateLabel = new Date(date + "T00:00:00").toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
     year: "numeric", month: "long", day: "numeric", weekday: "long",
   });
 

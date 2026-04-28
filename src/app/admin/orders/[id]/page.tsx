@@ -8,6 +8,7 @@ import { updateOrderStatus } from "./actions";
 import { OrderPhotoPanel } from "@/components/admin/OrderPhotoPanel";
 import { PaymentPanel } from "@/components/admin/PaymentPanel";
 import type { OrderStatus, OrderType } from "@/types";
+import { formatJstDate, formatJstDateTime } from "@/lib/date";
 
 interface OrderDetailPageProps {
   params: Promise<{ id: string }>;
@@ -136,7 +137,7 @@ export default async function OrderDetailPage({
                   ) : "—"}
                 </InfoRow>
                 <InfoRow label="注文日">
-                  {new Date(order.created_at).toLocaleDateString("ja-JP")}
+                  {formatJstDate(order.created_at)}
                 </InfoRow>
                 <InfoRow label="商品名">{order.product_name ?? "—"}</InfoRow>
                 <InfoRow label="数量">{order.quantity} 点</InfoRow>
@@ -175,6 +176,7 @@ export default async function OrderDetailPage({
                   {order.delivery_date ? (
                     <>
                       {new Date(order.delivery_date).toLocaleDateString("ja-JP", {
+                        timeZone: "Asia/Tokyo",
                         year: "numeric", month: "long", day: "numeric", weekday: "short",
                       })}
                       {formatDeliveryTime(
@@ -309,7 +311,7 @@ export default async function OrderDetailPage({
                         </div>
                         {log.note && <p className="text-gray-600 mt-0.5">{log.note}</p>}
                         <p className="text-xs text-gray-400 mt-0.5">
-                          {new Date(log.created_at).toLocaleString("ja-JP")} / {changedBy}
+                          {formatJstDateTime(log.created_at)} / {changedBy}
                         </p>
                       </div>
                     </li>
