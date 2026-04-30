@@ -31,6 +31,12 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const p = await searchParams;
   const supabase = await createClient();
 
+  // 詳細から戻る用に現在の検索条件を query string に
+  const currentQuery = new URLSearchParams(
+    Object.entries(p).filter(([, v]) => v != null && v !== "") as [string, string][],
+  ).toString();
+  const detailQuery = currentQuery ? `?from=${encodeURIComponent(currentQuery)}` : "";
+
   // ── 顧客名フィルタ: 先にcustomer_idの候補を取得 ──
   let customerIdFilter: string[] | null = null;
   if (p.customer_name?.trim()) {
@@ -197,7 +203,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                       <tr key={order.id} className="tr-hover">
                         <td className="td">
                           <Link
-                            href={`/admin/orders/${order.id}`}
+                            href={`/admin/orders/${order.id}${detailQuery}`}
                             className="text-sm text-brand-600 hover:underline whitespace-nowrap font-medium"
                           >
                             詳細

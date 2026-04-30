@@ -12,7 +12,7 @@ import { formatJstDate, formatJstDateTime } from "@/lib/date";
 
 interface OrderDetailPageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; success?: string; created?: string }>;
+  searchParams: Promise<{ error?: string; success?: string; created?: string; from?: string }>;
 }
 
 export default async function OrderDetailPage({
@@ -64,7 +64,10 @@ export default async function OrderDetailPage({
     <div className="space-y-5">
       {/* ─── ヘッダー ─── */}
       <div className="flex items-center gap-3 flex-wrap">
-        <Link href="/admin/orders" className="text-sm text-gray-500 hover:text-gray-700">
+        <Link
+          href={sp.from ? `/admin/orders?${decodeURIComponent(sp.from)}` : "/admin/orders"}
+          className="text-sm text-gray-500 hover:text-gray-700"
+        >
           ← 注文検索
         </Link>
         <h1 className="text-xl font-bold text-gray-900">注文詳細</h1>
