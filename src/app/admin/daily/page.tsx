@@ -41,9 +41,11 @@ type OrderRow = {
   delivery_address: string | null;
   delivery_phone: string | null;
   order_type: string | null;
-  delivery_date: string;
+  delivery_date: string | null;
   delivery_time_start: string | null;
   delivery_time_end: string | null;
+  shipping_date: string | null;
+  shipping_deadline: string | null;
   total_amount: number | null;
   customers: { id: string; name: string } | null;
 };
@@ -68,19 +70,33 @@ export default async function DailyPage({ searchParams }: DailyPageProps) {
   const supabase = await createClient();
 
   const datesToFetch = view === "2" ? [baseDate, date2] : [baseDate];
+  const SELECT_FIELDS = "id, status, order_type, product_name, quantity, delivery_name, delivery_address, delivery_phone, delivery_date, delivery_time_start, delivery_time_end, shipping_date, shipping_deadline, total_amount, customers(id, name)";
 
-  const { data: allOrders } = await supabase
-    .from("orders")
-    .select("id, status, order_type, product_name, quantity, delivery_name, delivery_address, delivery_phone, delivery_date, delivery_time_start, delivery_time_end, total_amount, customers(id, name)")
-    .in("delivery_date", datesToFetch)
-    .not("status", "eq", "キャンセル")
-    .not("status", "eq", "履歴")
-    .order("delivery_time_start", { ascending: true, nullsFirst: false })
-    .order("created_at",          { ascending: true });
+  // 非発送注文は delivery_date、発送注文は shipping_date でフィルタ
+  const [{ data: nonShipping }, { data: shipping }] = await Promise.all([
+    supabase.from("orders").select(SELECT_FIELDS)
+      .in("delivery_date", datesToFetch)
+      .neq("order_type", "発送")
+      .not("status", "eq", "キャンセル").not("status", "eq", "履歴")
+      .order("delivery_time_start", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: true }),
+    supabase.from("orders").select(SELECT_FIELDS)
+      .in("shipping_date", datesToFetch)
+      .eq("order_type", "発送")
+      .not("status", "eq", "キャンセル").not("status", "eq", "履歴")
+      .order("shipping_deadline", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: true }),
+  ]);
 
-  const orders1 = (allOrders ?? []).filter((o: any) => o.delivery_date === baseDate) as unknown as OrderRow[];
+  const orders1 = [
+    ...(nonShipping ?? []).filter((o: any) => o.delivery_date === baseDate),
+    ...(shipping   ?? []).filter((o: any) => o.shipping_date  === baseDate),
+  ] as unknown as OrderRow[];
   const orders2 = view === "2"
-    ? (allOrders ?? []).filter((o: any) => o.delivery_date === date2) as unknown as OrderRow[]
+    ? [
+        ...(nonShipping ?? []).filter((o: any) => o.delivery_date === date2),
+        ...(shipping   ?? []).filter((o: any) => o.shipping_date  === date2),
+      ] as unknown as OrderRow[]
     : [];
 
   const linkClass = "px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white hover:bg-gray-50 transition-colors";
@@ -259,11 +275,35 @@ function ShippingCard({ order, index }: { order: OrderRow; index: number }) {
   const isSelfDelivery =
     customer && order.delivery_name.trim() === customer.name.trim();
 
+  const deadlineStr = order.shipping_deadline ? order.shipping_deadline.slice(0, 5) : null;
+  const arrivalLabel = order.delivery_date
+    ? new Date(order.delivery_date + "T00:00:00").toLocaleDateString("ja-JP", {
+        timeZone: "Asia/Tokyo", month: "long", day: "numeric", weekday: "short",
+      })
+    : null;
+
   return (
     <div
       className="px-5 py-4 hover:bg-violet-50/50 transition-colors"
       style={{ borderLeft: "4px solid #a78bfa" }}
     >
+      {/* 発送締め切り・到着日バー */}
+      <div className="flex items-center gap-3 mb-3 flex-wrap">
+        {deadlineStr && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-base font-bold bg-red-50 text-red-700 border border-red-100">
+            🕐 {deadlineStr} までに発送
+          </span>
+        )}
+        {arrivalLabel && (
+          <span className="text-sm text-gray-500">
+            到着日: <span className="font-medium text-gray-700">{arrivalLabel}</span>
+          </span>
+        )}
+        {!deadlineStr && !arrivalLabel && (
+          <span className="text-sm text-gray-400">発送日時未設定</span>
+        )}
+      </div>
+
       <div className="flex items-start justify-between gap-3">
         {/* 左：届け先情報 */}
         <div className="flex-1 min-w-0 space-y-1.5">

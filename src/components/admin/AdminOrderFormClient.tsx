@@ -54,6 +54,9 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
   const [deliveryPhone, setDeliveryPhone]           = useState("");
   const [deliveryEmail, setDeliveryEmail]           = useState("");
 
+  // ── 注文種別 ──
+  const [orderType, setOrderType] = useState<import("@/types").OrderType>("配達");
+
   // ── 合計金額 ──
   const [itemsTotal, setItemsTotal] = useState(0);
   const [shippingFee, setShippingFee] = useState(0);
@@ -128,7 +131,7 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
         <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">
           注文種別 <span className="text-red-500">*</span>
         </h2>
-        <OrderTypeSelector />
+        <OrderTypeSelector onChange={setOrderType} />
       </section>
 
       {/* ══════════════════════════════════════════
@@ -397,8 +400,44 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
           </div>
         </div>
 
+        {/* 発送注文: 発送日・締め切り時刻 */}
+        {orderType === "発送" && (
+          <div className="border border-violet-200 rounded-lg p-4 bg-violet-50 space-y-3">
+            <p className="text-sm font-semibold text-violet-800">📦 発送管理</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="shipping_date" className="label">
+                  発送日
+                  <span className="text-gray-500 text-xs font-normal ml-1">（日報で管理する日付）</span>
+                </label>
+                <input
+                  id="shipping_date"
+                  name="shipping_date"
+                  type="date"
+                  min={today}
+                  className="input"
+                />
+              </div>
+              <div>
+                <label htmlFor="shipping_deadline" className="label">
+                  発送締め切り時刻
+                  <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
+                </label>
+                <input
+                  id="shipping_deadline"
+                  name="shipping_deadline"
+                  type="time"
+                  className="input"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         <div>
-          <label htmlFor="delivery_date" className="label">お届け希望日</label>
+          <label htmlFor="delivery_date" className="label">
+            {orderType === "発送" ? "到着日（お届け希望日）" : "お届け希望日"}
+          </label>
           <input
             id="delivery_date"
             name="delivery_date"
@@ -407,13 +446,15 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
             className="input"
           />
         </div>
-        <div>
-          <p className="label">
-            希望時間帯
-            <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
-          </p>
-          <DeliveryTimeInput />
-        </div>
+        {orderType !== "発送" && (
+          <div>
+            <p className="label">
+              希望時間帯
+              <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
+            </p>
+            <DeliveryTimeInput />
+          </div>
+        )}
       </section>
 
       {/* ══════════════════════════════════════════

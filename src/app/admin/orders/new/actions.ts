@@ -59,6 +59,8 @@ export async function createAdminOrder(formData: FormData) {
   const deliveryTimeEnd   = (formData.get("delivery_time_end")   as string) || null;
   const deliveryPhone   = (formData.get("delivery_phone") as string)?.trim() || null;
   const deliveryEmail   = (formData.get("delivery_email") as string)?.trim() || null;
+  const shippingDate    = orderType === "発送" ? (formData.get("shipping_date")    as string) || null : null;
+  const shippingDeadline = orderType === "発送" ? (formData.get("shipping_deadline") as string) || null : null;
   const purpose         = (formData.get("purpose") as string)?.trim() || null;
   const messageCard     = (formData.get("message_card") as string)?.trim() || null;
   const remarks         = (formData.get("remarks") as string)?.trim() || null;
@@ -139,6 +141,8 @@ export async function createAdminOrder(formData: FormData) {
       delivery_time_end:   deliveryTimeEnd,
       delivery_phone:      deliveryPhone,
       delivery_email:   deliveryEmail,
+      shipping_date:    shippingDate,
+      shipping_deadline: shippingDeadline,
       product_name:     summaryProductName,
       quantity:         totalQuantity,
       purpose,

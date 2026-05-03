@@ -114,6 +114,8 @@ export interface Database {
           remarks: string | null;
           total_amount: number | null;
           recurring_template_id: string | null;
+          shipping_date: string | null;
+          shipping_deadline: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -137,6 +139,8 @@ export interface Database {
           remarks?: string | null;
           total_amount?: number | null;
           recurring_template_id?: string | null;
+          shipping_date?: string | null;
+          shipping_deadline?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -160,6 +164,8 @@ export interface Database {
           remarks?: string | null;
           total_amount?: number | null;
           recurring_template_id?: string | null;
+          shipping_date?: string | null;
+          shipping_deadline?: string | null;
           created_at?: string;
           updated_at?: string;
         };
