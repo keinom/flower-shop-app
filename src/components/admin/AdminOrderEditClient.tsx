@@ -36,6 +36,8 @@ interface Props {
     purpose: string | null;
     message_card: string | null;
     remarks: string | null;
+    shipping_date: string | null;
+    shipping_deadline: string | null;
   };
   defaultItems: OrderItem[];
   defaultShipping?: { carrier: string; size: number; feeTaxInc: number };
@@ -49,6 +51,7 @@ export function AdminOrderEditClient({
   defaultItems,
   defaultShipping,
 }: Props) {
+  const [orderType, setOrderType] = useState<OrderType>(dv.order_type);
   const [deliveryName, setDeliveryName]             = useState(dv.delivery_name);
   const [deliveryPostalCode, setDeliveryPostalCode] = useState(dv.delivery_postal_code ?? "");
   const [deliveryAddress, setDeliveryAddress]       = useState(dv.delivery_address ?? "");
@@ -68,7 +71,7 @@ export function AdminOrderEditClient({
         <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">
           注文種別 <span className="text-red-500">*</span>
         </h2>
-        <OrderTypeSelector defaultValue={dv.order_type} />
+        <OrderTypeSelector defaultValue={dv.order_type} onChange={setOrderType} />
       </section>
 
       {/* ══ お届け先情報 ══ */}
@@ -139,8 +142,45 @@ export function AdminOrderEditClient({
           </div>
         </div>
 
+        {/* 発送注文: 発送日・締め切り時刻 */}
+        {orderType === "発送" && (
+          <div className="border border-violet-200 rounded-lg p-4 bg-violet-50 space-y-3">
+            <p className="text-sm font-semibold text-violet-800">📦 発送管理</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="shipping_date" className="label">
+                  発送日
+                  <span className="text-gray-500 text-xs font-normal ml-1">（日報で管理する日付）</span>
+                </label>
+                <input
+                  id="shipping_date"
+                  name="shipping_date"
+                  type="date"
+                  defaultValue={dv.shipping_date ?? ""}
+                  className="input"
+                />
+              </div>
+              <div>
+                <label htmlFor="shipping_deadline" className="label">
+                  発送締め切り時刻
+                  <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
+                </label>
+                <input
+                  id="shipping_deadline"
+                  name="shipping_deadline"
+                  type="time"
+                  defaultValue={dv.shipping_deadline?.slice(0, 5) ?? ""}
+                  className="input"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         <div>
-          <label htmlFor="delivery_date" className="label">お届け希望日</label>
+          <label htmlFor="delivery_date" className="label">
+            {orderType === "発送" ? "到着日（お届け希望日）" : "お届け希望日"}
+          </label>
           <input
             id="delivery_date"
             name="delivery_date"
@@ -149,16 +189,18 @@ export function AdminOrderEditClient({
             className="input"
           />
         </div>
-        <div>
-          <p className="label">
-            希望時間帯
-            <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
-          </p>
-          <DeliveryTimeInput
-            defaultStart={dv.delivery_time_start}
-            defaultEnd={dv.delivery_time_end}
-          />
-        </div>
+        {orderType !== "発送" && (
+          <div>
+            <p className="label">
+              希望時間帯
+              <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
+            </p>
+            <DeliveryTimeInput
+              defaultStart={dv.delivery_time_start}
+              defaultEnd={dv.delivery_time_end}
+            />
+          </div>
+        )}
       </section>
 
       {/* ══ 商品情報 ══ */}

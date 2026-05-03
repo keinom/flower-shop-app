@@ -175,27 +175,59 @@ export default async function OrderDetailPage({
                 <InfoRow label="メールアドレス">
                   {(order as { delivery_email?: string | null }).delivery_email ?? "—"}
                 </InfoRow>
-                <InfoRow label="お届け希望日">
-                  {order.delivery_date ? (
-                    <>
-                      {new Date(order.delivery_date).toLocaleDateString("ja-JP", {
-                        timeZone: "Asia/Tokyo",
-                        year: "numeric", month: "long", day: "numeric", weekday: "short",
-                      })}
-                      {formatDeliveryTime(
-                        (order as { delivery_time_start?: string | null }).delivery_time_start ?? null,
-                        (order as { delivery_time_end?: string | null }).delivery_time_end ?? null
-                      ) && (
-                        <span className="ml-2 text-sm text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
-                          {formatDeliveryTime(
-                            (order as { delivery_time_start?: string | null }).delivery_time_start ?? null,
-                            (order as { delivery_time_end?: string | null }).delivery_time_end ?? null
-                          )}
+
+                {/* 発送注文の場合は発送日・締め切り・到着日を表示 */}
+                {(order as { order_type?: string }).order_type === "発送" ? (
+                  <>
+                    <InfoRow label="発送日">
+                      {(order as { shipping_date?: string | null }).shipping_date ? (
+                        <span className="font-semibold text-violet-700">
+                          {new Date((order as { shipping_date: string }).shipping_date).toLocaleDateString("ja-JP", {
+                            timeZone: "Asia/Tokyo",
+                            year: "numeric", month: "long", day: "numeric", weekday: "short",
+                          })}
                         </span>
-                      )}
-                    </>
-                  ) : "—"}
-                </InfoRow>
+                      ) : "—"}
+                    </InfoRow>
+                    <InfoRow label="発送締め切り">
+                      {(order as { shipping_deadline?: string | null }).shipping_deadline ? (
+                        <span className="font-semibold text-red-600">
+                          {((order as { shipping_deadline: string }).shipping_deadline).slice(0, 5)} まで
+                        </span>
+                      ) : "—"}
+                    </InfoRow>
+                    <InfoRow label="到着日">
+                      {order.delivery_date ? (
+                        new Date(order.delivery_date).toLocaleDateString("ja-JP", {
+                          timeZone: "Asia/Tokyo",
+                          year: "numeric", month: "long", day: "numeric", weekday: "short",
+                        })
+                      ) : "—"}
+                    </InfoRow>
+                  </>
+                ) : (
+                  <InfoRow label="お届け希望日">
+                    {order.delivery_date ? (
+                      <>
+                        {new Date(order.delivery_date).toLocaleDateString("ja-JP", {
+                          timeZone: "Asia/Tokyo",
+                          year: "numeric", month: "long", day: "numeric", weekday: "short",
+                        })}
+                        {formatDeliveryTime(
+                          (order as { delivery_time_start?: string | null }).delivery_time_start ?? null,
+                          (order as { delivery_time_end?: string | null }).delivery_time_end ?? null
+                        ) && (
+                          <span className="ml-2 text-sm text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
+                            {formatDeliveryTime(
+                              (order as { delivery_time_start?: string | null }).delivery_time_start ?? null,
+                              (order as { delivery_time_end?: string | null }).delivery_time_end ?? null
+                            )}
+                          </span>
+                        )}
+                      </>
+                    ) : "—"}
+                  </InfoRow>
+                )}
               </dl>
             </div>
           </div>

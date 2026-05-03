@@ -7,11 +7,13 @@ import { ORDER_TYPES, ORDER_TYPE_ICONS, ORDER_TYPE_COLORS } from "@/lib/constant
 interface OrderTypeSelectorProps {
   defaultValue?: OrderType;
   name?: string;
+  onChange?: (type: OrderType) => void;
 }
 
 export function OrderTypeSelector({
   defaultValue = "配達",
   name = "order_type",
+  onChange,
 }: OrderTypeSelectorProps) {
   const [selected, setSelected] = useState<OrderType>(defaultValue);
 
@@ -26,7 +28,7 @@ export function OrderTypeSelector({
             <button
               key={type}
               type="button"
-              onClick={() => setSelected(type)}
+              onClick={() => { setSelected(type); onChange?.(type); }}
               className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border-2 transition-all font-medium text-sm ${
                 isSelected
                   ? `${colors.bg} ${colors.text} ${colors.border} shadow-sm`

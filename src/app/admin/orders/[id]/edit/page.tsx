@@ -102,6 +102,8 @@ export default async function EditOrderPage({
           purpose:               order.purpose          ?? null,
           message_card:          order.message_card     ?? null,
           remarks:               order.remarks          ?? null,
+          shipping_date:         (order as { shipping_date?: string | null }).shipping_date ?? null,
+          shipping_deadline:     (order as { shipping_deadline?: string | null }).shipping_deadline ?? null,
         }}
         defaultItems={
           regularItems?.map((item) => ({

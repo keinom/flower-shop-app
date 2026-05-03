@@ -22,9 +22,11 @@ type OrderRow = {
   delivery_address: string | null;
   delivery_phone: string | null;
   order_type: string | null;
-  delivery_date: string;
+  delivery_date: string | null;
   delivery_time_start: string | null;
   delivery_time_end: string | null;
+  shipping_date: string | null;
+  shipping_deadline: string | null;
   total_amount: number | null;
   customers: CustomerInfo | null;
 };
@@ -68,16 +70,22 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
 
   const date = sp.date ?? getTodayJST();
 
-  const { data: rawOrders } = await supabase
-    .from("orders")
-    .select("id, status, order_type, product_name, quantity, delivery_name, delivery_address, delivery_phone, delivery_date, delivery_time_start, delivery_time_end, total_amount, customers(id, name, phone, address)")
-    .eq("delivery_date", date)
-    .not("status", "eq", "キャンセル")
-    .not("status", "eq", "履歴")
-    .order("delivery_time_start", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: true });
+  const SELECT_FIELDS = "id, status, order_type, product_name, quantity, delivery_name, delivery_address, delivery_phone, delivery_date, delivery_time_start, delivery_time_end, shipping_date, shipping_deadline, total_amount, customers(id, name, phone, address)";
 
-  const orders = (rawOrders ?? []) as unknown as OrderRow[];
+  const [{ data: nonShipping }, { data: shippingOrders }] = await Promise.all([
+    supabase.from("orders").select(SELECT_FIELDS)
+      .eq("delivery_date", date).neq("order_type", "発送")
+      .not("status", "eq", "キャンセル").not("status", "eq", "履歴")
+      .order("delivery_time_start", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: true }),
+    supabase.from("orders").select(SELECT_FIELDS)
+      .eq("shipping_date", date).eq("order_type", "発送")
+      .not("status", "eq", "キャンセル").not("status", "eq", "履歴")
+      .order("shipping_deadline", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: true }),
+  ]);
+
+  const orders = [...(nonShipping ?? []), ...(shippingOrders ?? [])] as unknown as OrderRow[];
 
   // 種別グループ化（TYPE_ORDER順）
   const groups: { type: string; label: string; orders: OrderRow[] }[] = [];
@@ -199,6 +207,14 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
         .col-product     { width: 28%; }
         .col-amount      { width: 14%; text-align: right; white-space: nowrap; }
 
+        /* ── 発送テーブル列幅 ── */
+        .col-deadline    { width: 13%; white-space: nowrap; }
+        .col-arrival     { width: 13%; white-space: nowrap; }
+        .col-ship-sender    { width: 20%; }
+        .col-ship-recipient { width: 22%; }
+        .col-ship-product   { width: 21%; }
+        .col-ship-amount    { width: 11%; text-align: right; white-space: nowrap; }
+
         /* セル内スタイル */
         .time-val    { font-size: 9pt; font-weight: bold; }
         .time-none   { font-size: 8pt; color: #666; }
@@ -235,7 +251,74 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
                   <span className="section-head-label">◆ {grp.label}</span>
                 </div>
 
-                {isIkekomi ? (
+                {grp.type === "発送" ? (
+                  /* ── 発送テーブル：発送締め切り・到着日付き ── */
+                  <table className="orders-table">
+                    <thead>
+                      <tr>
+                        <th className="col-deadline">発送締め切り</th>
+                        <th className="col-arrival">到着日</th>
+                        <th className="col-ship-sender">注文元</th>
+                        <th className="col-ship-recipient">お届け先</th>
+                        <th className="col-ship-product">商品</th>
+                        <th className="col-ship-amount">金額（税込）</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {grp.orders.map((order) => {
+                        const customer = order.customers as CustomerInfo | null;
+                        const isSelf = customer && order.delivery_name.trim() === customer.name.trim();
+                        const deadlineStr = order.shipping_deadline ? order.shipping_deadline.slice(0, 5) : null;
+                        const arrivalStr = order.delivery_date
+                          ? new Date(order.delivery_date + "T00:00:00").toLocaleDateString("ja-JP", {
+                              timeZone: "Asia/Tokyo", month: "numeric", day: "numeric", weekday: "short",
+                            })
+                          : null;
+                        return (
+                          <tr key={order.id}>
+                            <td className="col-deadline">
+                              {deadlineStr
+                                ? <span className="time-val" style={{ color: "#c00" }}>{deadlineStr}まで</span>
+                                : <span className="time-none">—</span>}
+                            </td>
+                            <td className="col-arrival">
+                              {arrivalStr
+                                ? <span style={{ fontSize: "8pt" }}>{arrivalStr}</span>
+                                : <span className="time-none">—</span>}
+                            </td>
+                            <td className="col-ship-sender">
+                              {isSelf ? (
+                                <span style={{ color: "#bbb", fontSize: "7.5pt" }}>—</span>
+                              ) : customer ? (
+                                <>
+                                  <div className="party-name">{customer.name}</div>
+                                  {customer.phone && <div className="party-tel">☎ {customer.phone}</div>}
+                                </>
+                              ) : (
+                                <span style={{ color: "#bbb", fontSize: "7.5pt" }}>—</span>
+                              )}
+                            </td>
+                            <td className="col-ship-recipient">
+                              <div className="party-name">{order.delivery_name}</div>
+                              {order.delivery_phone && <div className="party-tel">☎ {order.delivery_phone}</div>}
+                              {order.delivery_address && <div className="party-addr">{order.delivery_address}</div>}
+                            </td>
+                            <td className="col-ship-product">
+                              {order.product_name ?? `${order.quantity}点`}
+                            </td>
+                            <td className="col-ship-amount">
+                              {order.total_amount != null && order.total_amount > 0 ? (
+                                <span className="amount-val">¥{order.total_amount.toLocaleString("ja-JP")}</span>
+                              ) : (
+                                <span style={{ color: "#999" }}>—</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                ) : isIkekomi ? (
                   /* ── 生け込みテーブル：「生け込み先」1列 ── */
                   <table className="orders-table">
                     <thead>
