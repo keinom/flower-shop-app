@@ -20,7 +20,7 @@ export default async function RecurringTemplateEditPage({
   // Load template
   const { data: template, error: templateError } = await supabase
     .from("recurring_order_templates")
-    .select("*, customers(id, name, phone, email, address)")
+    .select("*, customers(id, name, phone, email, postal_code, address)")
     .eq("id", id)
     .single();
 
@@ -39,7 +39,7 @@ export default async function RecurringTemplateEditPage({
   // Load all customers for the search dropdown
   const { data: customers } = await supabase
     .from("customers")
-    .select("id, name, phone, email, address")
+    .select("id, name, phone, email, postal_code, address")
     .order("name", { ascending: true });
 
   // Load current tax rate

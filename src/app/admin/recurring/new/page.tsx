@@ -14,7 +14,7 @@ export default async function NewRecurringTemplatePage({ searchParams }: Props) 
 
   const { data: customers } = await supabase
     .from("customers")
-    .select("id, name, phone, email, address")
+    .select("id, name, phone, email, postal_code, address")
     .order("name", { ascending: true });
 
   const { data: taxSetting } = await supabase
