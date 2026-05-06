@@ -24,43 +24,36 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
   const p = await searchParams;
   const supabase = await createClient();
 
-  // ── メインクエリ ──
-  // 移行データ + 流用分離で 1000 件超えるため、PostgREST の max-rows 上限まで広げる
-  let query = supabase
-    .from("customers")
-    .select("id, name, phone, email, address, created_at, profiles(display_name)")
-    .order("created_at", { ascending: false })
-    .limit(1000);
-
-  // 顧客名
-  if (p.name?.trim()) {
-    query = query.ilike("name", `%${p.name.trim()}%`);
+  // ── メインクエリ (ページング対応) ──
+  // 移行データ + 流用分離で総顧客数が 1000 件を超えるため、PostgREST max-rows=1000
+  // を回避するためページごとにクエリを作り直して連結取得する。
+  type CustomerRow = {
+    id: string; name: string; phone: string | null; email: string | null;
+    address: string | null; created_at: string;
+    profiles: { display_name: string | null } | null;
+  };
+  function buildCustomerQuery() {
+    let q = supabase
+      .from("customers")
+      .select("id, name, phone, email, address, created_at, profiles(display_name)")
+      .order("created_at", { ascending: false });
+    if (p.name?.trim())  q = q.ilike("name", `%${p.name.trim()}%`);
+    if (p.phone?.trim()) q = q.ilike("phone", `%${p.phone.trim()}%`);
+    if (p.email?.trim()) q = q.ilike("email", `%${p.email.trim()}%`);
+    if (p.q?.trim())     q = q.ilike("address", `%${p.q.trim()}%`);
+    if (p.created_from?.trim()) q = q.gte("created_at", toJstStartOfDay(p.created_from.trim()));
+    if (p.created_to?.trim())   q = q.lte("created_at", toJstEndOfDay(p.created_to.trim()));
+    return q;
   }
-
-  // 電話番号
-  if (p.phone?.trim()) {
-    query = query.ilike("phone", `%${p.phone.trim()}%`);
+  const customers: CustomerRow[] = [];
+  let error: unknown = null;
+  for (let offset = 0; ; offset += 1000) {
+    const pageQuery = await buildCustomerQuery().range(offset, offset + 999);
+    if (pageQuery.error) { error = pageQuery.error; break; }
+    if (!pageQuery.data || pageQuery.data.length === 0) break;
+    customers.push(...(pageQuery.data as CustomerRow[]));
+    if (pageQuery.data.length < 1000) break;
   }
-
-  // メールアドレス
-  if (p.email?.trim()) {
-    query = query.ilike("email", `%${p.email.trim()}%`);
-  }
-
-  // キーワード（住所など）
-  if (p.q?.trim()) {
-    query = query.ilike("address", `%${p.q.trim()}%`);
-  }
-
-  // 登録日 From〜To (JST)
-  if (p.created_from?.trim()) {
-    query = query.gte("created_at", toJstStartOfDay(p.created_from.trim()));
-  }
-  if (p.created_to?.trim()) {
-    query = query.lte("created_at", toJstEndOfDay(p.created_to.trim()));
-  }
-
-  const { data: customers, error } = await query;
 
   // ── アカウントフィルタ（クライアント側で絞り込み） ──
   const filtered = (() => {

@@ -10,10 +10,19 @@ export default async function NewAdminOrderPage({ searchParams }: NewAdminOrderP
   const sp = await searchParams;
   const supabase = await createClient();
 
-  const { data: customers } = await supabase
-    .from("customers")
-    .select("id, name, phone, email, postal_code, address")
-    .order("name", { ascending: true });
+  // PostgREST max-rows=1000 を超える顧客を取りこぼさないよう、ページング取得
+  type Customer = { id: string; name: string; phone: string | null; email: string | null; postal_code: string | null; address: string | null };
+  const customers: Customer[] = [];
+  for (let offset = 0; ; offset += 1000) {
+    const { data, error } = await supabase
+      .from("customers")
+      .select("id, name, phone, email, postal_code, address")
+      .order("name", { ascending: true })
+      .range(offset, offset + 999);
+    if (error || !data || data.length === 0) break;
+    customers.push(...data);
+    if (data.length < 1000) break;
+  }
 
   // 現在の消費税率を取得
   const { data: taxSetting } = await supabase
@@ -41,7 +50,7 @@ export default async function NewAdminOrderPage({ searchParams }: NewAdminOrderP
         </div>
       )}
 
-      <AdminOrderFormClient customers={customers ?? []} today={today} taxRate={taxRate} presetCustomerId={sp.customer_id} />
+      <AdminOrderFormClient customers={customers} today={today} taxRate={taxRate} presetCustomerId={sp.customer_id} />
     </div>
   );
 }
