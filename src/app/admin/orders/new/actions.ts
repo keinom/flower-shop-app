@@ -76,7 +76,7 @@ export async function createAdminOrder(formData: FormData) {
   const itemDescriptions = formData.getAll("item_description")  as string[];
   const itemTaxRates     = formData.getAll("item_tax_rate")     as string[];
 
-  if (itemProductNames.length === 0 || itemProductNames.every((n) => !n.trim())) {
+  if (itemProductNames.length === 0) {
     redirect("/admin/orders/new?error=" + encodeURIComponent("商品を1つ以上入力してください"));
   }
 
@@ -94,10 +94,11 @@ export async function createAdminOrder(formData: FormData) {
         tax_rate:     isNaN(taxRate) ? 10 : taxRate,
       };
     })
-    .filter((item) => item.product_name !== "");
+    // 商品名・説明・単価がすべて空 (＋数量1) の完全空行のみ除外
+    .filter((item) => !(item.product_name === "" && !item.description && item.unit_price === 0));
 
   if (orderItems.length === 0) {
-    redirect("/admin/orders/new?error=" + encodeURIComponent("商品名を入力してください"));
+    redirect("/admin/orders/new?error=" + encodeURIComponent("商品を1つ以上入力してください"));
   }
 
   // ── 配送料明細を追加（任意）──

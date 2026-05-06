@@ -102,13 +102,12 @@ export default async function NewOrderPage({ searchParams }: NewOrderPageProps) 
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2 sm:col-span-1">
               <label htmlFor="product_name" className="label">
-                商品名 <span className="text-red-500">*</span>
+                商品名 <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
               </label>
               <input
                 id="product_name"
                 name="product_name"
                 type="text"
-                required
                 placeholder="例: スタンド花（2段）、花束、アレンジメント"
                 className="input"
               />

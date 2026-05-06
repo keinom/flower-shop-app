@@ -119,14 +119,13 @@ export function OrderItemsInput({ taxRate, defaultItems, onTotalChange }: Props)
             {/* 商品名 */}
             <div>
               <label className="label">
-                商品名 <span className="text-red-500">*</span>
+                商品名 <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
               </label>
               <input
                 type="text"
                 name="item_product_name"
                 value={item.product_name}
                 onChange={(e) => updateItem(index, "product_name", e.target.value)}
-                required
                 placeholder="例: スタンド花（2段）、花束"
                 className="input"
               />
