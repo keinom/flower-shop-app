@@ -82,15 +82,19 @@ export function AdminOrderEditClient({
           <label htmlFor="delivery_name" className="label">
             お届け先名 <span className="text-red-500">*</span>
           </label>
-          <input
+          <textarea
             id="delivery_name"
             name="delivery_name"
-            type="text"
             required
             value={deliveryName}
             onChange={(e) => setDeliveryName(e.target.value)}
             className="input"
+            rows={1}
+            style={{ resize: "vertical", minHeight: "2.5rem" }}
           />
+          <p className="text-xs text-gray-400 mt-1">
+            組織宛で納品書を複数行表示したい場合は、改行（Enter）で区切れます。
+          </p>
         </div>
 
         <div>

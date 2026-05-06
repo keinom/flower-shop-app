@@ -134,7 +134,11 @@ export default async function OrderDetailPage({
               <dl className="space-y-3 text-sm">
                 <InfoRow label="顧客名">
                   {customer ? (
-                    <Link href={`/admin/customers/${customer.id}`} className="text-brand-700 hover:underline">
+                    <Link
+                      href={`/admin/customers/${customer.id}`}
+                      className="text-brand-700 hover:underline"
+                      style={{ whiteSpace: "pre-line" }}
+                    >
                       {customer.name}
                     </Link>
                   ) : "—"}
@@ -151,7 +155,9 @@ export default async function OrderDetailPage({
             <div className="card p-5 space-y-4">
               <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">お届け情報</h2>
               <dl className="space-y-3 text-sm">
-                <InfoRow label="お届け先名">{order.delivery_name}</InfoRow>
+                <InfoRow label="お届け先名">
+                  <span style={{ whiteSpace: "pre-line" }}>{order.delivery_name}</span>
+                </InfoRow>
                 <InfoRow label="郵便番号">
                   {(order as { delivery_postal_code?: string | null }).delivery_postal_code
                     ? `〒${(order as { delivery_postal_code: string }).delivery_postal_code}`

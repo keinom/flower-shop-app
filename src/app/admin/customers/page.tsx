@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { CustomerSearchForm } from "@/components/admin/CustomerSearchForm";
 import { formatJstDate, toJstStartOfDay, toJstEndOfDay } from "@/lib/date";
+import { oneLineName } from "@/lib/name";
 
 interface SearchParams {
   name?: string;
@@ -178,7 +179,7 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
                       <td className="td text-gray-500 text-xs whitespace-nowrap">
                         {formatJstDate(customer.created_at)}
                       </td>
-                      <td className="td font-medium text-sm">{customer.name}</td>
+                      <td className="td font-medium text-sm">{oneLineName(customer.name)}</td>
                       <td className="td text-gray-600 text-sm">{customer.email ?? "—"}</td>
                       <td className="td text-gray-600 text-sm whitespace-nowrap">{customer.phone ?? "—"}</td>
                       <td className="td text-center text-sm">

@@ -6,6 +6,7 @@ import { OrderTypeBadge } from "@/components/ui/OrderTypeBadge";
 import { OrderSearchForm } from "@/components/admin/OrderSearchForm";
 import type { OrderStatus, OrderType } from "@/types";
 import { formatJstDate, toJstStartOfDay, toJstEndOfDay } from "@/lib/date";
+import { oneLineName } from "@/lib/name";
 
 interface SearchParams {
   q?: string;
@@ -218,7 +219,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                               href={`/admin/customers/${customer.id}`}
                               className="text-brand-700 hover:underline text-sm"
                             >
-                              {customer.name}
+                              {oneLineName(customer.name)}
                             </Link>
                           ) : (
                             "—"
@@ -236,7 +237,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                           <StatusBadge status={order.status as OrderStatus} size="sm" />
                         </td>
                         <td className="td text-sm text-gray-600">
-                          {(order as { delivery_name?: string }).delivery_name ?? "—"}
+                          {oneLineName((order as { delivery_name?: string }).delivery_name) || "—"}
                         </td>
                         <td className="td text-sm whitespace-nowrap">
                           {order.delivery_date

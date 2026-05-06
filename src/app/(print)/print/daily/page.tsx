@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PrintBar } from "@/components/ui/PrintBar";
+import { oneLineName } from "@/lib/name";
 
 interface DailyPrintPageProps {
   searchParams: Promise<{ date?: string }>;
@@ -291,7 +292,7 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
                                 <span style={{ color: "#bbb", fontSize: "7.5pt" }}>—</span>
                               ) : customer ? (
                                 <>
-                                  <div className="party-name">{customer.name}</div>
+                                  <div className="party-name">{oneLineName(customer.name)}</div>
                                   {customer.phone && <div className="party-tel">☎ {customer.phone}</div>}
                                 </>
                               ) : (
@@ -299,7 +300,7 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
                               )}
                             </td>
                             <td className="col-ship-recipient">
-                              <div className="party-name">{order.delivery_name}</div>
+                              <div className="party-name">{oneLineName(order.delivery_name)}</div>
                               {order.delivery_phone && <div className="party-tel">☎ {order.delivery_phone}</div>}
                               {order.delivery_address && <div className="party-addr">{order.delivery_address}</div>}
                             </td>
@@ -341,7 +342,7 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
                                 : <span className="time-none">時間未定</span>}
                             </td>
                             <td className="col-venue">
-                              <div className="party-name">{order.delivery_name}</div>
+                              <div className="party-name">{oneLineName(order.delivery_name)}</div>
                               {order.delivery_phone && (
                                 <div className="party-tel">☎ {order.delivery_phone}</div>
                               )}
@@ -398,7 +399,7 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
                                 <span style={{ color: "#bbb", fontSize: "7.5pt" }}>—</span>
                               ) : customer ? (
                                 <>
-                                  <div className="party-name">{customer.name}</div>
+                                  <div className="party-name">{oneLineName(customer.name)}</div>
                                   {customer.phone && (
                                     <div className="party-tel">☎ {customer.phone}</div>
                                   )}
@@ -413,7 +414,7 @@ export default async function DailyPrintPage({ searchParams }: DailyPrintPagePro
 
                             {/* お届け先 */}
                             <td className="col-recipient">
-                              <div className="party-name">{order.delivery_name}</div>
+                              <div className="party-name">{oneLineName(order.delivery_name)}</div>
                               {order.delivery_phone && (
                                 <div className="party-tel">☎ {order.delivery_phone}</div>
                               )}
