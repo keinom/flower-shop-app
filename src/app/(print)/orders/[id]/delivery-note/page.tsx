@@ -184,38 +184,34 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
 function NoteHeader({ title }: { title: string }) {
   return (
     <div style={{ marginBottom: "10pt" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        {/* 左: タイトル */}
-        <div>
-          <div style={{
-            fontSize: "20pt",
-            fontWeight: "700",
-            letterSpacing: "0.3em",
-            color: GRAY1,
-            lineHeight: 1,
-          }}>
-            {title}
-          </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "20pt" }}>
+        {/* 左: タイトル（縦中央寄せ） */}
+        <div style={{
+          fontSize: "20pt",
+          fontWeight: "700",
+          letterSpacing: "0.3em",
+          color: GRAY1,
+          lineHeight: 1,
+        }}>
+          {title}
         </div>
 
-        {/* 右: ロゴ + 店舗情報 */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "3pt" }}>
+        {/* 右: ロゴ + 住所のみ（連絡先はフッターへ） */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4pt" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo.png"
             alt={SHOP_NAME}
-            style={{ height: "32pt", width: "auto", objectFit: "contain", objectPosition: "right center" }}
+            style={{ height: "30pt", width: "auto", objectFit: "contain", objectPosition: "right center" }}
           />
-          <div style={{ fontSize: "7pt", color: GRAY3, lineHeight: 1.6, marginTop: "1pt", textAlign: "right" }}>
-            <div>{SHOP_ADDRESS}</div>
-            <div>TEL {SHOP_TEL}　FAX {SHOP_FAX}</div>
-            <div>{SHOP_EMAIL}</div>
+          <div style={{ fontSize: "7.5pt", color: GRAY3, lineHeight: 1.5, textAlign: "right" }}>
+            {SHOP_ADDRESS}
           </div>
         </div>
       </div>
 
       {/* 区切り線: 2本 */}
-      <div style={{ marginTop: "7pt", borderTop: `2px solid ${GOLD}` }} />
+      <div style={{ marginTop: "8pt", borderTop: `2px solid ${GOLD}` }} />
       <div style={{ marginTop: "1.5pt", borderTop: `0.5px solid ${RULE}` }} />
     </div>
   );
@@ -375,7 +371,17 @@ function StandardNote({
 
       {/* フッター */}
       <div style={{ marginTop: "auto", paddingTop: "8pt" }}>
-        <div style={{ borderTop: `0.5px solid ${RULE}`, paddingTop: "3pt" }} />
+        <div style={{ borderTop: `0.5px solid ${RULE}` }} />
+        <div style={{
+          fontSize: "7.5pt",
+          color: GRAY3,
+          lineHeight: 1.6,
+          letterSpacing: "0.04em",
+          textAlign: "center",
+          marginTop: "6pt",
+        }}>
+          TEL {SHOP_TEL}　FAX {SHOP_FAX}　{SHOP_EMAIL}
+        </div>
       </div>
     </div>
   );
@@ -455,18 +461,28 @@ function GiftNote({
         )}
       </div>
 
-      {/* フッター: メッセージ */}
+      {/* フッター: メッセージ + 連絡先 */}
       <div style={{ marginTop: "auto" }}>
         <div style={{ borderTop: `1px solid ${RULE}`, marginBottom: "8pt" }} />
         <div style={{
           fontSize: "8pt",
           color: GRAY3,
-          lineHeight: 2,
+          lineHeight: 1.8,
           letterSpacing: "0.08em",
           textAlign: "center",
           fontStyle: "italic",
         }}>
           お花のご注文やご相談など、どうぞいつでもお気軽にお問い合わせくださいませ。
+        </div>
+        <div style={{
+          fontSize: "7.5pt",
+          color: GRAY3,
+          lineHeight: 1.6,
+          letterSpacing: "0.04em",
+          textAlign: "center",
+          marginTop: "4pt",
+        }}>
+          TEL {SHOP_TEL}　FAX {SHOP_FAX}　{SHOP_EMAIL}
         </div>
         <div style={{ borderTop: `0.5px solid ${RULE}`, marginTop: "8pt" }} />
       </div>
