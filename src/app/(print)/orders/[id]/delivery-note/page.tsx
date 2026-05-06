@@ -110,13 +110,18 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
 
         @media print {
           @page { size: A5 landscape; margin: 0; }
-          html, body { margin: 0; padding: 0; background: white !important; }
+          html, body { margin: 0; padding: 0; background: white !important; overflow: hidden; }
           .dn-page {
             margin: 0 !important;
             padding: 12mm 14mm !important;
             box-shadow: none !important;
             width: 210mm !important;
+            page-break-after: avoid !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
+          /* 念のため2ページ目以降を非表示 (auto-zoom 不発時の保険) */
+          .dn-page + * { display: none !important; }
         }
         @media screen {
           body { background: #e8e3dc; }
@@ -132,6 +137,18 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
             background: white;
             box-shadow: 0 8px 40px rgba(0,0,0,0.18);
             padding: 12mm 14mm;
+          }
+          /* スクリーン上で A5 越えを警告 */
+          .dn-page.overflow-warning::after {
+            content: "⚠ コンテンツが A5 を超過しています";
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
           }
         }
       `}</style>
@@ -279,12 +296,12 @@ function StandardNote({
       <div style={{
         border: `1px solid #ddd8ce`,
         borderRadius: "3pt",
-        padding: "8pt 14pt",
+        padding: "6pt 12pt",
         backgroundColor: "white",
-        marginBottom: "10pt",
+        marginBottom: "8pt",
       }}>
-        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>お届け先</div>
-        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, whiteSpace: "pre-line" }}>
+        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "3pt" }}>お届け先</div>
+        <div style={{ fontSize: "12pt", fontWeight: "700", lineHeight: 1.25, whiteSpace: "pre-line" }}>
           {deliveryName}<span style={{ fontSize: "9pt", fontWeight: "500", marginLeft: "3pt" }}>様</span>
         </div>
       </div>
@@ -407,43 +424,43 @@ function GiftNote({
       <div style={{
         border: `1px solid #ddd8ce`,
         borderRadius: "3pt",
-        padding: "8pt 14pt",
+        padding: "6pt 12pt",
         backgroundColor: "white",
-        marginBottom: "6pt",
+        marginBottom: "4pt",
       }}>
-        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>贈り主</div>
-        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt", whiteSpace: "pre-line" }}>
+        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "3pt" }}>贈り主</div>
+        <div style={{ fontSize: "12pt", fontWeight: "700", lineHeight: 1.25, marginBottom: "3pt", whiteSpace: "pre-line" }}>
           {senderName}<span style={{ fontSize: "9pt", fontWeight: "500", marginLeft: "3pt" }}>様</span>
         </div>
-        {senderPostalCode && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>〒{senderPostalCode}</div>}
-        {senderAddress    && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{senderAddress}</div>}
-        {senderPhone      && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {senderPhone}</div>}
+        {senderPostalCode && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>〒{senderPostalCode}</div>}
+        {senderAddress    && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>{senderAddress}</div>}
+        {senderPhone      && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>電話番号 {senderPhone}</div>}
       </div>
 
       {/* ② お届け先 */}
       <div style={{
         border: `1px solid #ddd8ce`,
         borderRadius: "3pt",
-        padding: "8pt 14pt",
+        padding: "6pt 12pt",
         backgroundColor: "white",
-        marginBottom: "6pt",
+        marginBottom: "4pt",
       }}>
-        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>お届け先</div>
-        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt", whiteSpace: "pre-line" }}>
+        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "3pt" }}>お届け先</div>
+        <div style={{ fontSize: "12pt", fontWeight: "700", lineHeight: 1.25, marginBottom: "3pt", whiteSpace: "pre-line" }}>
           {deliveryName}<span style={{ fontSize: "9pt", fontWeight: "500", marginLeft: "3pt" }}>様</span>
         </div>
-        {deliveryPostalCode && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>〒{deliveryPostalCode}</div>}
-        {deliveryAddress    && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryAddress}</div>}
-        {deliveryPhone      && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {deliveryPhone}</div>}
+        {deliveryPostalCode && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>〒{deliveryPostalCode}</div>}
+        {deliveryAddress    && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>{deliveryAddress}</div>}
+        {deliveryPhone      && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>電話番号 {deliveryPhone}</div>}
       </div>
 
       {/* ③ お届け日 + 商品名 */}
       <div style={{
         border: `1px solid #ddd8ce`,
         borderRadius: "3pt",
-        padding: "5pt 14pt",
+        padding: "4pt 12pt",
         backgroundColor: "#fdfcfa",
-        marginBottom: "6pt",
+        marginBottom: "4pt",
         display: "flex",
         alignItems: "center",
         gap: "14pt",
