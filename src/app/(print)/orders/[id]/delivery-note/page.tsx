@@ -85,9 +85,6 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
   const taxAmt    = Math.round(totalExcl * taxRate / 100);
   const totalIncl = totalExcl + taxAmt;
 
-  const issuedAt = new Date().toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
-    year: "numeric", month: "long", day: "numeric", weekday: "short",
-  });
   const deliveryDateFmt = resolvedOrder!.delivery_date
     ? new Date(resolvedOrder!.delivery_date).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
         year: "numeric", month: "long", day: "numeric", weekday: "short",
@@ -103,7 +100,6 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
   const deliveryPhone      = (resolvedOrder! as { delivery_phone?: string | null }).delivery_phone;
   const deliveryEmail      = (resolvedOrder! as { delivery_email?: string | null }).delivery_email;
   const deliveryPostalCode = (resolvedOrder! as { delivery_postal_code?: string | null }).delivery_postal_code;
-  const orderNo = `DEC${id.slice(0, 8).toUpperCase()}`;
 
   return (
     <>
@@ -156,7 +152,6 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
         >
           {type === "standard"
             ? <StandardNote
-                orderNo={orderNo} issuedAt={issuedAt}
                 deliveryName={resolvedOrder!.delivery_name}
                 items={items ?? []}
                 productName={resolvedOrder!.product_name ?? ""}
@@ -165,7 +160,6 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
                 hasItems={hasItems}
               />
             : <GiftNote
-                orderNo={orderNo} issuedAt={issuedAt}
                 senderName={customer?.name ?? "—"}
                 senderPostalCode={customer?.postal_code ?? null}
                 senderAddress={customer?.address ?? null}
@@ -187,11 +181,11 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
 // ────────────────────────────────────────────────────
 // 共通: ヘッダー
 // ────────────────────────────────────────────────────
-function NoteHeader({ title, orderNo, issuedAt }: { title: string; orderNo: string; issuedAt: string }) {
+function NoteHeader({ title }: { title: string }) {
   return (
     <div style={{ marginBottom: "10pt" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        {/* 左: タイトル + 発行情報 */}
+        {/* 左: タイトル */}
         <div>
           <div style={{
             fontSize: "20pt",
@@ -199,13 +193,8 @@ function NoteHeader({ title, orderNo, issuedAt }: { title: string; orderNo: stri
             letterSpacing: "0.3em",
             color: GRAY1,
             lineHeight: 1,
-            marginBottom: "5pt",
           }}>
             {title}
-          </div>
-          <div style={{ fontSize: "7.5pt", color: GRAY3, lineHeight: 1.8 }}>
-            <div>発行日：{issuedAt}</div>
-            <div style={{ letterSpacing: "0.02em" }}>No. {orderNo}</div>
           </div>
         </div>
 
@@ -275,13 +264,11 @@ function InfoBox({
 // 自社宛 納品書
 // ────────────────────────────────────────────────────
 function StandardNote({
-  orderNo, issuedAt,
   deliveryName,
   items, productName, quantity,
   totalExcl, taxRate, taxAmt, totalIncl,
   hasItems,
 }: {
-  orderNo: string; issuedAt: string;
   deliveryName: string;
   items: { id: string; product_name: string; description: string | null; quantity: number; unit_price: number; tax_rate: number }[];
   productName: string; quantity: number;
@@ -290,7 +277,7 @@ function StandardNote({
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <NoteHeader title="納　品　書" orderNo={orderNo} issuedAt={issuedAt} />
+      <NoteHeader title="納　品　書" />
 
       {/* お届け先 */}
       <div style={{
@@ -398,19 +385,17 @@ function StandardNote({
 // ギフト用 納品書
 // ────────────────────────────────────────────────────
 function GiftNote({
-  orderNo, issuedAt,
   senderName, senderPostalCode, senderAddress, senderPhone,
   deliveryName, deliveryPostalCode, deliveryAddress, deliveryPhone,
   deliveryDate, productName,
 }: {
-  orderNo: string; issuedAt: string;
   senderName: string; senderPostalCode: string | null; senderAddress: string | null; senderPhone: string | null;
   deliveryName: string; deliveryPostalCode: string | null; deliveryAddress: string; deliveryPhone: string | null;
   deliveryDate: string; productName: string;
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <NoteHeader title="納　品　書" orderNo={orderNo} issuedAt={issuedAt} />
+      <NoteHeader title="納　品　書" />
 
       {/* ① 贈り主 */}
       <div style={{
