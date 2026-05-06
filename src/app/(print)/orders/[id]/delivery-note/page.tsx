@@ -175,6 +175,7 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
                 deliveryAddress={resolvedOrder!.delivery_address ?? ""}
                 deliveryPhone={deliveryPhone ?? null}
                 deliveryDate={deliveryDateFmt}
+                productName={resolvedOrder!.product_name ?? ""}
               />
           }
         </div>
@@ -400,12 +401,12 @@ function GiftNote({
   orderNo, issuedAt,
   senderName, senderPostalCode, senderAddress, senderPhone,
   deliveryName, deliveryPostalCode, deliveryAddress, deliveryPhone,
-  deliveryDate,
+  deliveryDate, productName,
 }: {
   orderNo: string; issuedAt: string;
   senderName: string; senderPostalCode: string | null; senderAddress: string | null; senderPhone: string | null;
   deliveryName: string; deliveryPostalCode: string | null; deliveryAddress: string; deliveryPhone: string | null;
-  deliveryDate: string;
+  deliveryDate: string; productName: string;
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
@@ -445,20 +446,28 @@ function GiftNote({
         {senderPhone      && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {senderPhone}</div>}
       </div>
 
-      {/* ③ お届け日 */}
+      {/* ③ お届け日 + 商品名 */}
       <div style={{
         border: `1px solid #ddd8ce`,
         borderRadius: "3pt",
         padding: "5pt 14pt",
         backgroundColor: "#fdfcfa",
         marginBottom: "6pt",
-        display: "inline-flex",
+        display: "flex",
         alignItems: "center",
         gap: "14pt",
-        alignSelf: "flex-start",
+        flexWrap: "wrap",
       }}>
-        <span style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", whiteSpace: "nowrap" }}>お届け日</span>
-        <span style={{ fontSize: "10pt", fontWeight: "600", color: GRAY1 }}>{deliveryDate}</span>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "14pt" }}>
+          <span style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", whiteSpace: "nowrap" }}>お届け日</span>
+          <span style={{ fontSize: "10pt", fontWeight: "600", color: GRAY1, whiteSpace: "nowrap" }}>{deliveryDate}</span>
+        </div>
+        {productName && (
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "14pt", paddingLeft: "14pt", borderLeft: `1px solid ${RULE}` }}>
+            <span style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", whiteSpace: "nowrap" }}>商品名</span>
+            <span style={{ fontSize: "10pt", fontWeight: "600", color: GRAY1 }}>{productName}</span>
+          </div>
+        )}
       </div>
 
       {/* フッター: メッセージ */}

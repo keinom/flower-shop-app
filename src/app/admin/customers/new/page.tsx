@@ -33,14 +33,18 @@ export default async function NewCustomerPage({ searchParams }: NewCustomerPageP
             <label htmlFor="name" className="label">
               顧客名 <span className="text-red-500">*</span>
             </label>
-            <input
+            <textarea
               id="name"
               name="name"
-              type="text"
               required
-              placeholder="例: 株式会社○○ / 田中 花子"
+              placeholder="例: 株式会社○○ / 田中 花子&#10;組織で複数行表示したい場合は改行で区切ってください"
               className="input"
+              rows={1}
+              style={{ resize: "vertical", minHeight: "2.5rem" }}
             />
+            <p className="text-xs text-gray-400 mt-1">
+              組織顧客で納品書を複数行表示したい場合は、改行（Enter）で区切れます。
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
