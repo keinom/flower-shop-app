@@ -25,11 +25,12 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
   const supabase = await createClient();
 
   // ── メインクエリ ──
+  // 移行データ + 流用分離で 1000 件超えるため、PostgREST の max-rows 上限まで広げる
   let query = supabase
     .from("customers")
     .select("id, name, phone, email, address, created_at, profiles(display_name)")
     .order("created_at", { ascending: false })
-    .limit(200);
+    .limit(1000);
 
   // 顧客名
   if (p.name?.trim()) {
