@@ -18,9 +18,10 @@ export function DeleteTemplateButton({ templateId }: Props) {
       <input type="hidden" name="template_id" value={templateId} />
       <button
         type="submit"
-        className="text-xs font-medium px-3 py-1.5 rounded-md border bg-red-50 text-red-600 border-red-200 hover:bg-red-100 transition-colors"
+        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-red-300 bg-red-50 text-red-700 hover:bg-red-100 text-sm font-semibold transition-colors"
       >
-        🗑 削除
+        <span>🗑</span>
+        <span>削除</span>
       </button>
     </form>
   );

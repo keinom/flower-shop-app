@@ -106,33 +106,44 @@ export default async function RecurringTemplateDetailPage({ params, searchParams
           </div>
           <p className="text-sm text-gray-500 mt-0.5">{description}</p>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap items-center">
+          {/* メインアクション: 今すぐ生成 */}
           <form action={runManualGeneration}>
             <input type="hidden" name="template_id" value={template.id} />
-            <button type="submit" className="btn-secondary text-xs">
-              🔄 今すぐ生成（30日分）
+            <button
+              type="submit"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold shadow-sm transition-colors"
+            >
+              <span>🔄</span>
+              <span>今すぐ生成（30日分）</span>
             </button>
           </form>
+
+          {/* セカンダリアクション群 */}
           <Link
             href={`/admin/recurring/${template.id}/edit`}
-            className="text-xs font-medium px-3 py-1.5 rounded-md border bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 text-sm font-semibold transition-colors"
           >
-            ✏️ 編集
+            <span>✏️</span>
+            <span>編集</span>
           </Link>
+
           <form action={toggleTemplateActive}>
             <input type="hidden" name="template_id" value={template.id} />
             <input type="hidden" name="is_active" value={String(template.is_active)} />
             <button
               type="submit"
-              className={`text-xs font-medium px-3 py-1.5 rounded-md border transition-colors ${
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border text-sm font-semibold transition-colors ${
                 template.is_active
-                  ? "bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100"
-                  : "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                  ? "bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100"
+                  : "bg-green-50 text-green-700 border-green-300 hover:bg-green-100"
               }`}
             >
-              {template.is_active ? "⏸ 停止" : "▶ 再開"}
+              <span>{template.is_active ? "⏸" : "▶"}</span>
+              <span>{template.is_active ? "停止" : "再開"}</span>
             </button>
           </form>
+
           <DeleteTemplateButton templateId={template.id} />
         </div>
       </div>
