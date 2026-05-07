@@ -11,6 +11,7 @@ import { OrderTotalBar } from "@/components/admin/OrderTotalBar";
 import { updateAdminOrder } from "@/app/admin/orders/[id]/edit/actions";
 import type { OrderType } from "@/types";
 import { PostalCodeInput } from "@/components/ui/PostalCodeInput";
+import { preventEnterSubmit } from "@/lib/formKeyboard";
 
 interface OrderItem {
   product_name: string;
@@ -63,7 +64,7 @@ export function AdminOrderEditClient({
   const [shippingFee, setShippingFee] = useState(0);
 
   return (
-    <form action={updateAdminOrder} className="space-y-5">
+    <form action={updateAdminOrder} className="space-y-5" onKeyDown={preventEnterSubmit}>
       <input type="hidden" name="order_id" value={orderId} />
 
       {/* ══ 注文種別 ══ */}

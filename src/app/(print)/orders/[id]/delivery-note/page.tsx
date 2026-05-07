@@ -420,24 +420,7 @@ function GiftNote({
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <NoteHeader title="納　品　書" />
 
-      {/* ① 贈り主 */}
-      <div style={{
-        border: `1px solid #ddd8ce`,
-        borderRadius: "3pt",
-        padding: "6pt 12pt",
-        backgroundColor: "white",
-        marginBottom: "4pt",
-      }}>
-        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "3pt" }}>贈り主</div>
-        <div style={{ fontSize: "12pt", fontWeight: "700", lineHeight: 1.25, marginBottom: "3pt", whiteSpace: "pre-line" }}>
-          {senderName}<span style={{ fontSize: "9pt", fontWeight: "500", marginLeft: "3pt" }}>様</span>
-        </div>
-        {senderPostalCode && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>〒{senderPostalCode}</div>}
-        {senderAddress    && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>{senderAddress}</div>}
-        {senderPhone      && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>電話番号 {senderPhone}</div>}
-      </div>
-
-      {/* ② お届け先 */}
+      {/* ① お届け先（必ず上に） */}
       <div style={{
         border: `1px solid #ddd8ce`,
         borderRadius: "3pt",
@@ -452,6 +435,23 @@ function GiftNote({
         {deliveryPostalCode && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>〒{deliveryPostalCode}</div>}
         {deliveryAddress    && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>{deliveryAddress}</div>}
         {deliveryPhone      && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>電話番号 {deliveryPhone}</div>}
+      </div>
+
+      {/* ② 贈り主 */}
+      <div style={{
+        border: `1px solid #ddd8ce`,
+        borderRadius: "3pt",
+        padding: "6pt 12pt",
+        backgroundColor: "white",
+        marginBottom: "4pt",
+      }}>
+        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "3pt" }}>贈り主</div>
+        <div style={{ fontSize: "12pt", fontWeight: "700", lineHeight: 1.25, marginBottom: "3pt", whiteSpace: "pre-line" }}>
+          {senderName}<span style={{ fontSize: "9pt", fontWeight: "500", marginLeft: "3pt" }}>様</span>
+        </div>
+        {senderPostalCode && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>〒{senderPostalCode}</div>}
+        {senderAddress    && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>{senderAddress}</div>}
+        {senderPhone      && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>電話番号 {senderPhone}</div>}
       </div>
 
       {/* ③ お届け日 + 商品名 */}

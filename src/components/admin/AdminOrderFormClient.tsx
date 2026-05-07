@@ -9,6 +9,7 @@ import { createAdminOrder } from "@/app/admin/orders/new/actions";
 import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
 import { OrderTotalBar } from "@/components/admin/OrderTotalBar";
 import { PostalCodeInput } from "@/components/ui/PostalCodeInput";
+import { preventEnterSubmit } from "@/lib/formKeyboard";
 
 interface Customer {
   id: string;
@@ -121,7 +122,7 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
     (mode === "new" && newName.trim() !== "");
 
   return (
-    <form action={createAdminOrder} className="space-y-5">
+    <form action={createAdminOrder} className="space-y-5" onKeyDown={preventEnterSubmit}>
       <input type="hidden" name="customer_type" value={mode} />
 
       {/* ══════════════════════════════════════════

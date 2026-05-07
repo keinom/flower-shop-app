@@ -9,6 +9,7 @@ import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
 import { updateRecurringTemplate } from "./actions";
 import { ORDER_PURPOSES } from "@/lib/constants";
 import type { OrderType } from "@/types";
+import { preventEnterSubmit } from "@/lib/formKeyboard";
 
 interface Customer {
   id: string;
@@ -136,7 +137,7 @@ export function RecurringTemplateEditFormClient({
   const canReflect = selectedCustomer !== null;
 
   return (
-    <form action={updateRecurringTemplate} className="space-y-5">
+    <form action={updateRecurringTemplate} className="space-y-5" onKeyDown={preventEnterSubmit}>
       {/* hidden template id */}
       <input type="hidden" name="template_id" value={templateId} />
 

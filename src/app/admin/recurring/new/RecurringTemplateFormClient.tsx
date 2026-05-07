@@ -8,6 +8,7 @@ import { DeliveryTimeInput } from "@/components/ui/DeliveryTimeInput";
 import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
 import { createRecurringTemplate } from "./actions";
 import { ORDER_PURPOSES } from "@/lib/constants";
+import { preventEnterSubmit } from "@/lib/formKeyboard";
 
 interface Customer {
   id: string;
@@ -73,7 +74,7 @@ export function RecurringTemplateFormClient({ customers, today, taxRate }: Props
   }
 
   return (
-    <form action={createRecurringTemplate} className="space-y-5">
+    <form action={createRecurringTemplate} className="space-y-5" onKeyDown={preventEnterSubmit}>
       {/* ══════════════════════════════════════════
           管理名称
       ══════════════════════════════════════════ */}
