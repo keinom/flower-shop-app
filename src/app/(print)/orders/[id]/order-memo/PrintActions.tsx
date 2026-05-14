@@ -33,7 +33,7 @@ export function PrintActions() {
 
   return (
     <div className="print:hidden fixed top-0 left-0 right-0 z-50 bg-gray-800 text-white px-5 py-2.5 flex items-center gap-3 text-sm shadow-lg">
-      <span className="font-semibold">📝 注文メモ（内部用）</span>
+      <span className="font-semibold">📝 注文メモ</span>
 
       <div className="ml-auto flex items-center gap-3">
         <button
