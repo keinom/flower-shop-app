@@ -5,7 +5,12 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { OrderType } from "@/types";
 
-export async function createOrder(formData: FormData) {
+export type CreateOrderState = { error?: string };
+
+export async function createOrder(
+  _prevState: CreateOrderState,
+  formData: FormData
+): Promise<CreateOrderState> {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -19,7 +24,7 @@ export async function createOrder(formData: FormData) {
     .single();
 
   if (!customer) {
-    redirect("/customer/orders/new?error=" + encodeURIComponent("顧客情報が見つかりません。管理者にお問い合わせください。"));
+    return { error: "顧客情報が見つかりません。管理者にお問い合わせください。" };
   }
 
   // フォームデータを取得
@@ -54,7 +59,7 @@ export async function createOrder(formData: FormData) {
   }
 
   if (errors.length > 0) {
-    redirect("/customer/orders/new?error=" + encodeURIComponent(errors.join("、")));
+    return { error: errors.join("、") };
   }
 
   // 注文を挿入
@@ -79,7 +84,7 @@ export async function createOrder(formData: FormData) {
     .single();
 
   if (insertError || !order) {
-    redirect("/customer/orders/new?error=" + encodeURIComponent("注文の登録に失敗しました。もう一度お試しください。"));
+    return { error: "注文の登録に失敗しました。もう一度お試しください。" };
   }
 
   revalidatePath("/customer");

@@ -5,7 +5,12 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { OrderType } from "@/types";
 
-export async function createAdminOrder(formData: FormData) {
+export type CreateAdminOrderState = { error?: string };
+
+export async function createAdminOrder(
+  _prevState: CreateAdminOrderState,
+  formData: FormData
+): Promise<CreateAdminOrderState> {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -18,7 +23,7 @@ export async function createAdminOrder(formData: FormData) {
     // ── 既存顧客 ──
     const selectedId = (formData.get("customer_id") as string)?.trim();
     if (!selectedId) {
-      redirect("/admin/orders/new?error=" + encodeURIComponent("顧客を選択してください"));
+      return { error: "顧客を選択してください" };
     }
     customerId = selectedId;
   } else {
@@ -30,7 +35,7 @@ export async function createAdminOrder(formData: FormData) {
     const notes   = (formData.get("new_customer_notes") as string)?.trim() || null;
 
     if (!name) {
-      redirect("/admin/orders/new?error=" + encodeURIComponent("顧客名は必須です"));
+      return { error: "顧客名は必須です" };
     }
 
     const postalCode = (formData.get("new_customer_postal_code") as string)?.trim() || null;
@@ -42,7 +47,7 @@ export async function createAdminOrder(formData: FormData) {
       .single();
 
     if (customerError || !newCustomer) {
-      redirect("/admin/orders/new?error=" + encodeURIComponent("顧客の作成に失敗しました"));
+      return { error: "顧客の作成に失敗しました" };
     }
 
     customerId = newCustomer.id;
@@ -66,7 +71,7 @@ export async function createAdminOrder(formData: FormData) {
   const remarks         = (formData.get("remarks") as string)?.trim() || null;
 
   if (!deliveryName) {
-    redirect("/admin/orders/new?error=" + encodeURIComponent("お届け先名は必須です"));
+    return { error: "お届け先名は必須です" };
   }
 
   // ── 商品明細を取得 ──
@@ -77,7 +82,7 @@ export async function createAdminOrder(formData: FormData) {
   const itemTaxRates     = formData.getAll("item_tax_rate")     as string[];
 
   if (itemProductNames.length === 0) {
-    redirect("/admin/orders/new?error=" + encodeURIComponent("商品を1つ以上入力してください"));
+    return { error: "商品を1つ以上入力してください" };
   }
 
   const orderItems = itemProductNames
@@ -98,7 +103,7 @@ export async function createAdminOrder(formData: FormData) {
     .filter((item) => !(item.product_name === "" && !item.description && item.unit_price === 0));
 
   if (orderItems.length === 0) {
-    redirect("/admin/orders/new?error=" + encodeURIComponent("商品を1つ以上入力してください"));
+    return { error: "商品を1つ以上入力してください" };
   }
 
   // ── 配送料明細を追加（任意）──
@@ -155,7 +160,7 @@ export async function createAdminOrder(formData: FormData) {
     .single();
 
   if (orderError || !order) {
-    redirect("/admin/orders/new?error=" + encodeURIComponent("注文の登録に失敗しました"));
+    return { error: "注文の登録に失敗しました" };
   }
 
   // ── 商品明細を挿入 ──
