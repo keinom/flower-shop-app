@@ -10,6 +10,7 @@ import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
 import { OrderTotalBar } from "@/components/admin/OrderTotalBar";
 import { PostalCodeInput } from "@/components/ui/PostalCodeInput";
 import { preventEnterSubmit } from "@/lib/formKeyboard";
+import { DeliverySuggestionInput, type DeliverySuggestion } from "@/components/admin/DeliverySuggestionInput";
 
 const INITIAL_STATE: CreateAdminOrderState = {};
 
@@ -125,6 +126,14 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
   const canReflect =
     (mode === "existing" && selectedCustomer !== null) ||
     (mode === "new" && newName.trim() !== "");
+
+  // 過去のお届け先 / 顧客 サジェスト選択時の自動入力
+  function handleDeliverySuggestionSelect(s: DeliverySuggestion) {
+    if (s.postal_code) setDeliveryPostalCode(s.postal_code);
+    if (s.address)     setDeliveryAddress(s.address);
+    if (s.phone)       setDeliveryPhone(s.phone);
+    if (s.email)       setDeliveryEmail(s.email);
+  }
 
   return (
     <form action={formAction} className="space-y-5" onKeyDown={preventEnterSubmit}>
@@ -347,20 +356,14 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
           <label htmlFor="delivery_name" className="label">
             お届け先名 <span className="text-red-500">*</span>
           </label>
-          <textarea
+          <DeliverySuggestionInput
             id="delivery_name"
             name="delivery_name"
             required
             value={deliveryName}
-            onChange={(e) => setDeliveryName(e.target.value)}
-            placeholder="例: 株式会社○○ 総務部&#10;組織で複数行表示したい場合は改行で区切ってください"
-            className="input"
-            rows={1}
-            style={{ resize: "vertical", minHeight: "2.5rem" }}
+            onChange={setDeliveryName}
+            onSelectSuggestion={handleDeliverySuggestionSelect}
           />
-          <p className="text-xs text-gray-400 mt-1">
-            組織宛で納品書を複数行表示したい場合は、改行（Enter）で区切れます。
-          </p>
         </div>
 
         <div>
