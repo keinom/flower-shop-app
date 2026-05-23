@@ -110,25 +110,27 @@ export function PastDueBulkActions({ orders }: { orders: PastDueOrder[] }) {
       )}
 
       {/* 一括操作バー */}
-      <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-3 flex-wrap">
-        <label className="flex items-center gap-2 cursor-pointer select-none">
+      <div className="px-5 py-3 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center gap-3">
+        <label className="flex items-center gap-2 cursor-pointer select-none shrink-0">
           <input
             type="checkbox"
             checked={allSelected}
             onChange={toggleAll}
             className="w-4 h-4 rounded border-gray-300 text-brand-600"
           />
-          <span className="text-xs text-gray-600">
+          <span className="text-xs text-gray-600 whitespace-nowrap">
             {allSelected ? "すべて解除" : "すべて選択"}
+          </span>
+          <span className="text-xs text-gray-400 ml-1 whitespace-nowrap">
+            ({selected.size}件選択中)
           </span>
         </label>
 
-        <div className="flex items-center gap-2 ml-auto">
-          <span className="text-xs text-gray-500">{selected.size}件選択中</span>
+        <div className="flex items-center gap-2 sm:ml-auto">
           <select
             value={targetStatus}
             onChange={(e) => setTargetStatus(e.target.value as OrderStatus)}
-            className="input text-xs py-1 h-7"
+            className="input text-sm py-1.5 w-auto flex-1 sm:flex-none"
           >
             {TARGET_STATUSES.map((s) => (
               <option key={s} value={s}>{s}</option>
@@ -137,7 +139,7 @@ export function PastDueBulkActions({ orders }: { orders: PastDueOrder[] }) {
           <button
             onClick={handleBulkUpdate}
             disabled={!someSelected || isPending}
-            className="btn-primary text-xs py-1 px-3 h-7 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="btn-primary text-sm py-1.5 px-4 whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isPending ? "更新中..." : "一括変更"}
           </button>
