@@ -5,6 +5,7 @@ import { OrderTypeBadge } from "@/components/ui/OrderTypeBadge";
 import type { OrderStatus, OrderType } from "@/types";
 import { ORDER_STATUSES } from "@/lib/constants";
 import { formatJstDate, formatJstTime, jstDateString, todayJst } from "@/lib/date";
+import { PastDueBulkActions, type PastDueOrder } from "@/components/admin/PastDueBulkActions";
 
 // 完了・キャンセル・履歴を除いたアクティブステータス
 // （履歴は移行した過去データ用ステータスなのでダッシュボードには出さない）
@@ -21,7 +22,7 @@ export default async function AdminDashboard() {
     .from("orders")
     .select(
       `id, status, order_type, created_at,
-       product_name, quantity, delivery_date, delivery_name,
+       product_name, quantity, delivery_date, shipping_date, delivery_name,
        purpose, total_amount, customers(id, name)`
     )
     .not("status", "eq", "完了")
@@ -30,6 +31,14 @@ export default async function AdminDashboard() {
     .order("created_at", { ascending: false });
 
   const orders = activeOrders ?? [];
+
+  // 期日超過注文: 配達系はdelivery_date < today、発送はshipping_date < today
+  const pastDueOrders = orders.filter((o) => {
+    const refDate = o.order_type === "発送"
+      ? (o as { shipping_date?: string | null }).shipping_date
+      : o.delivery_date;
+    return refDate != null && refDate < today;
+  }) as unknown as PastDueOrder[];
 
   // 今日の新着注文（本日 created_at）
   const todayOrders = orders.filter((o) => jstDateString(o.created_at) === today);
@@ -290,7 +299,12 @@ export default async function AdminDashboard() {
           </div>
         )}
       </div>
-      {/* ─── 4. 代未（未請求） ─── */}
+      {/* ─── 4. 期日超過の注文（一括ステータス変更） ─── */}
+      {pastDueOrders.length > 0 && (
+        <PastDueBulkActions orders={pastDueOrders} />
+      )}
+
+      {/* ─── 5. 代未（未請求） ─── */}
       <div className="card">
         <div className="px-5 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50 rounded-t-xl">
           <div>
