@@ -130,7 +130,7 @@ export function PastDueBulkActions({ orders }: { orders: PastDueOrder[] }) {
           <select
             value={targetStatus}
             onChange={(e) => setTargetStatus(e.target.value as OrderStatus)}
-            className="input text-sm py-1.5 w-auto flex-1 sm:flex-none"
+            className="text-sm py-1.5 px-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15 flex-1 min-w-0 sm:flex-none sm:w-auto"
           >
             {TARGET_STATUSES.map((s) => (
               <option key={s} value={s}>{s}</option>
@@ -139,7 +139,7 @@ export function PastDueBulkActions({ orders }: { orders: PastDueOrder[] }) {
           <button
             onClick={handleBulkUpdate}
             disabled={!someSelected || isPending}
-            className="btn-primary text-sm py-1.5 px-4 whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed"
+            className="btn-primary text-sm py-1.5 px-4 whitespace-nowrap shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isPending ? "更新中..." : "一括変更"}
           </button>
