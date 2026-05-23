@@ -1,14 +1,18 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useActionState } from "react";
 import Link from "next/link";
 import { ORDER_PURPOSES } from "@/lib/constants";
 import { DeliveryTimeInput } from "@/components/ui/DeliveryTimeInput";
 import { OrderTypeSelector } from "@/components/ui/OrderTypeSelector";
-import { createAdminOrder } from "@/app/admin/orders/new/actions";
+import { createAdminOrder, type CreateAdminOrderState } from "@/app/admin/orders/new/actions";
 import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
 import { OrderTotalBar } from "@/components/admin/OrderTotalBar";
 import { PostalCodeInput } from "@/components/ui/PostalCodeInput";
+import { preventEnterSubmit } from "@/lib/formKeyboard";
+import { DeliverySuggestionInput, type DeliverySuggestion } from "@/components/admin/DeliverySuggestionInput";
+
+const INITIAL_STATE: CreateAdminOrderState = {};
 
 interface Customer {
   id: string;
@@ -60,6 +64,9 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
   // ── 合計金額 ──
   const [itemsTotal, setItemsTotal] = useState(0);
   const [shippingFee, setShippingFee] = useState(0);
+
+  // ── Server Action 状態（エラー時にフォーム入力を保持するため useActionState を使用）──
+  const [state, formAction, isPending] = useActionState(createAdminOrder, INITIAL_STATE);
 
   // サジェスト外クリックで閉じる
   useEffect(() => {
@@ -120,8 +127,22 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
     (mode === "existing" && selectedCustomer !== null) ||
     (mode === "new" && newName.trim() !== "");
 
+  // 過去のお届け先 / 顧客 サジェスト選択時の自動入力
+  function handleDeliverySuggestionSelect(s: DeliverySuggestion) {
+    if (s.postal_code) setDeliveryPostalCode(s.postal_code);
+    if (s.address)     setDeliveryAddress(s.address);
+    if (s.phone)       setDeliveryPhone(s.phone);
+    if (s.email)       setDeliveryEmail(s.email);
+  }
+
   return (
-    <form action={createAdminOrder} className="space-y-5">
+    <form action={formAction} className="space-y-5" onKeyDown={preventEnterSubmit}>
+      {state.error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
+          {state.error}
+        </div>
+      )}
+
       <input type="hidden" name="customer_type" value={mode} />
 
       {/* ══════════════════════════════════════════
@@ -335,15 +356,13 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
           <label htmlFor="delivery_name" className="label">
             お届け先名 <span className="text-red-500">*</span>
           </label>
-          <input
+          <DeliverySuggestionInput
             id="delivery_name"
             name="delivery_name"
-            type="text"
             required
             value={deliveryName}
-            onChange={(e) => setDeliveryName(e.target.value)}
-            placeholder="例: 株式会社○○ 総務部"
-            className="input"
+            onChange={setDeliveryName}
+            onSelectSuggestion={handleDeliverySuggestionSelect}
           />
         </div>
 
@@ -519,7 +538,13 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
 
       {/* ── 送信 ── */}
       <div className="flex gap-3">
-        <button type="submit" className="btn-primary px-8">注文を作成する</button>
+        <button
+          type="submit"
+          disabled={isPending}
+          className="btn-primary px-8 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {isPending ? "作成中..." : "注文を作成する"}
+        </button>
         <Link href="/admin/orders" className="btn-secondary">キャンセル</Link>
       </div>
     </form>

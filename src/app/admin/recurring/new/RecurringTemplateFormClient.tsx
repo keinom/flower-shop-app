@@ -8,12 +8,14 @@ import { DeliveryTimeInput } from "@/components/ui/DeliveryTimeInput";
 import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
 import { createRecurringTemplate } from "./actions";
 import { ORDER_PURPOSES } from "@/lib/constants";
+import { preventEnterSubmit } from "@/lib/formKeyboard";
 
 interface Customer {
   id: string;
   name: string;
   phone: string | null;
   email: string | null;
+  postal_code: string | null;
   address: string | null;
 }
 
@@ -28,6 +30,22 @@ export function RecurringTemplateFormClient({ customers, today, taxRate }: Props
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // お届け先フィールド (controlled)
+  const [deliveryName, setDeliveryName] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [deliveryPhone, setDeliveryPhone] = useState("");
+  const [deliveryEmail, setDeliveryEmail] = useState("");
+
+  function reflectCustomerInfo() {
+    if (!selectedCustomer) return;
+    setDeliveryName(selectedCustomer.name);
+    const postal = selectedCustomer.postal_code ? `〒${selectedCustomer.postal_code} ` : "";
+    setDeliveryAddress(`${postal}${selectedCustomer.address ?? ""}`.trim());
+    setDeliveryPhone(selectedCustomer.phone ?? "");
+    setDeliveryEmail(selectedCustomer.email ?? "");
+  }
+  const canReflect = selectedCustomer !== null;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -56,7 +74,7 @@ export function RecurringTemplateFormClient({ customers, today, taxRate }: Props
   }
 
   return (
-    <form action={createRecurringTemplate} className="space-y-5">
+    <form action={createRecurringTemplate} className="space-y-5" onKeyDown={preventEnterSubmit}>
       {/* ══════════════════════════════════════════
           管理名称
       ══════════════════════════════════════════ */}
@@ -180,7 +198,17 @@ export function RecurringTemplateFormClient({ customers, today, taxRate }: Props
           お届け先情報
       ══════════════════════════════════════════ */}
       <section className="card p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">お届け先情報</h2>
+        <div className="flex items-center justify-between border-b pb-2">
+          <h2 className="text-sm font-semibold text-gray-700">お届け先情報</h2>
+          <button
+            type="button"
+            onClick={reflectCustomerInfo}
+            disabled={!canReflect}
+            className="text-xs text-brand-600 hover:text-brand-800 font-medium border border-brand-200 rounded px-2.5 py-1 bg-brand-50 hover:bg-brand-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            顧客情報をそのまま反映
+          </button>
+        </div>
         <p className="text-xs text-gray-500">
           お届け日は繰り返し設定から自動生成されます。
         </p>
@@ -189,13 +217,16 @@ export function RecurringTemplateFormClient({ customers, today, taxRate }: Props
           <label htmlFor="delivery_name" className="label">
             お届け先名 <span className="text-red-500">*</span>
           </label>
-          <input
+          <textarea
             id="delivery_name"
             name="delivery_name"
-            type="text"
             required
-            placeholder="例: 株式会社○○ 総務部"
+            value={deliveryName}
+            onChange={(e) => setDeliveryName(e.target.value)}
+            placeholder="例: 株式会社○○ 総務部&#10;組織で複数行表示したい場合は改行で区切ってください"
             className="input"
+            rows={1}
+            style={{ resize: "vertical", minHeight: "2.5rem" }}
           />
         </div>
 
@@ -205,6 +236,8 @@ export function RecurringTemplateFormClient({ customers, today, taxRate }: Props
             id="delivery_address"
             name="delivery_address"
             type="text"
+            value={deliveryAddress}
+            onChange={(e) => setDeliveryAddress(e.target.value)}
             placeholder="例: 東京都千代田区1-1-1 ○○ビル1F"
             className="input"
           />
@@ -217,6 +250,8 @@ export function RecurringTemplateFormClient({ customers, today, taxRate }: Props
               id="delivery_phone"
               name="delivery_phone"
               type="tel"
+              value={deliveryPhone}
+              onChange={(e) => setDeliveryPhone(e.target.value)}
               placeholder="03-0000-0000"
               className="input"
             />
@@ -227,6 +262,8 @@ export function RecurringTemplateFormClient({ customers, today, taxRate }: Props
               id="delivery_email"
               name="delivery_email"
               type="email"
+              value={deliveryEmail}
+              onChange={(e) => setDeliveryEmail(e.target.value)}
               placeholder="example@example.com"
               className="input"
             />

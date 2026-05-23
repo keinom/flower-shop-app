@@ -93,13 +93,14 @@ export default async function CustomerEditOrderPage({
             <label htmlFor="delivery_name" className="label">
               お届け先名 <span className="text-red-500">*</span>
             </label>
-            <input
+            <textarea
               id="delivery_name"
               name="delivery_name"
-              type="text"
               required
               defaultValue={order.delivery_name}
               className="input"
+              rows={1}
+              style={{ resize: "vertical", minHeight: "2.5rem" }}
             />
           </div>
           <div>

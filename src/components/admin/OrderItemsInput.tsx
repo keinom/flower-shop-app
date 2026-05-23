@@ -119,14 +119,13 @@ export function OrderItemsInput({ taxRate, defaultItems, onTotalChange }: Props)
             {/* 商品名 */}
             <div>
               <label className="label">
-                商品名 <span className="text-red-500">*</span>
+                商品名 <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
               </label>
               <input
                 type="text"
                 name="item_product_name"
                 value={item.product_name}
                 onChange={(e) => updateItem(index, "product_name", e.target.value)}
-                required
                 placeholder="例: スタンド花（2段）、花束"
                 className="input"
               />
@@ -166,7 +165,7 @@ export function OrderItemsInput({ taxRate, defaultItems, onTotalChange }: Props)
               </div>
               <div>
                 <label className="label">
-                  単価（税抜・円） <span className="text-red-500">*</span>
+                  単価（税抜・円） <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
                 </label>
                 <input
                   type="number"
@@ -174,8 +173,7 @@ export function OrderItemsInput({ taxRate, defaultItems, onTotalChange }: Props)
                   value={item.unit_price}
                   onChange={(e) => updateItem(index, "unit_price", e.target.value)}
                   min={0}
-                  required
-                  placeholder="例: 5000"
+                  placeholder="後で入力可"
                   className="input"
                 />
               </div>
@@ -184,7 +182,7 @@ export function OrderItemsInput({ taxRate, defaultItems, onTotalChange }: Props)
                 <p className="py-2 px-3 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-md">
                   {hasPrice
                     ? `¥${incl.toLocaleString("ja-JP")}`
-                    : <span className="text-gray-400 font-normal text-xs">単価を入力</span>
+                    : <span className="text-gray-400 font-normal text-xs">未入力</span>
                   }
                 </p>
                 {hasPrice && excl !== incl && (

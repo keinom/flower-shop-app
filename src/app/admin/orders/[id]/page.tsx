@@ -85,6 +85,14 @@ export default async function OrderDetailPage({
         )}
         <div className="ml-auto flex items-center gap-2">
           <Link
+            href={`/orders/${id}/order-memo`}
+            target="_blank"
+            className="text-xs font-medium px-3 py-1.5 rounded-md border bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100 transition-colors"
+          >
+            📝 注文メモ
+          </Link>
+          <span className="h-5 w-px bg-gray-200 mx-1" aria-hidden="true" />
+          <Link
             href={`/orders/${id}/delivery-note?type=standard`}
             target="_blank"
             className="text-xs font-medium px-3 py-1.5 rounded-md border bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 transition-colors"
@@ -134,7 +142,11 @@ export default async function OrderDetailPage({
               <dl className="space-y-3 text-sm">
                 <InfoRow label="顧客名">
                   {customer ? (
-                    <Link href={`/admin/customers/${customer.id}`} className="text-brand-700 hover:underline">
+                    <Link
+                      href={`/admin/customers/${customer.id}`}
+                      className="text-brand-700 hover:underline"
+                      style={{ whiteSpace: "pre-line" }}
+                    >
                       {customer.name}
                     </Link>
                   ) : "—"}
@@ -151,7 +163,9 @@ export default async function OrderDetailPage({
             <div className="card p-5 space-y-4">
               <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">お届け情報</h2>
               <dl className="space-y-3 text-sm">
-                <InfoRow label="お届け先名">{order.delivery_name}</InfoRow>
+                <InfoRow label="お届け先名">
+                  <span style={{ whiteSpace: "pre-line" }}>{order.delivery_name}</span>
+                </InfoRow>
                 <InfoRow label="郵便番号">
                   {(order as { delivery_postal_code?: string | null }).delivery_postal_code
                     ? `〒${(order as { delivery_postal_code: string }).delivery_postal_code}`

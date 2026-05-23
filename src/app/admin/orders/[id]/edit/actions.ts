@@ -55,7 +55,7 @@ export async function updateAdminOrder(formData: FormData) {
         tax_rate:     isNaN(taxRate) ? 10 : taxRate,
       };
     })
-    .filter((item) => item.product_name !== "");
+    .filter((item) => !(item.product_name === "" && !item.description && item.unit_price === 0));
 
   if (orderItems.length === 0) {
     redirect(`/admin/orders/${orderId}/edit?error=` + encodeURIComponent("商品を1つ以上入力してください"));

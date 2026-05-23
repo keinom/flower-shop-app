@@ -85,9 +85,6 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
   const taxAmt    = Math.round(totalExcl * taxRate / 100);
   const totalIncl = totalExcl + taxAmt;
 
-  const issuedAt = new Date().toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
-    year: "numeric", month: "long", day: "numeric", weekday: "short",
-  });
   const deliveryDateFmt = resolvedOrder!.delivery_date
     ? new Date(resolvedOrder!.delivery_date).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo",
         year: "numeric", month: "long", day: "numeric", weekday: "short",
@@ -103,7 +100,6 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
   const deliveryPhone      = (resolvedOrder! as { delivery_phone?: string | null }).delivery_phone;
   const deliveryEmail      = (resolvedOrder! as { delivery_email?: string | null }).delivery_email;
   const deliveryPostalCode = (resolvedOrder! as { delivery_postal_code?: string | null }).delivery_postal_code;
-  const orderNo = `DEC${id.slice(0, 8).toUpperCase()}`;
 
   return (
     <>
@@ -114,13 +110,18 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
 
         @media print {
           @page { size: A5 landscape; margin: 0; }
-          html, body { margin: 0; padding: 0; background: white !important; }
+          html, body { margin: 0; padding: 0; background: white !important; overflow: hidden; }
           .dn-page {
             margin: 0 !important;
             padding: 12mm 14mm !important;
             box-shadow: none !important;
             width: 210mm !important;
+            page-break-after: avoid !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
+          /* 念のため2ページ目以降を非表示 (auto-zoom 不発時の保険) */
+          .dn-page + * { display: none !important; }
         }
         @media screen {
           body { background: #e8e3dc; }
@@ -136,6 +137,18 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
             background: white;
             box-shadow: 0 8px 40px rgba(0,0,0,0.18);
             padding: 12mm 14mm;
+          }
+          /* スクリーン上で A5 越えを警告 */
+          .dn-page.overflow-warning::after {
+            content: "⚠ コンテンツが A5 を超過しています";
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
           }
         }
       `}</style>
@@ -156,7 +169,6 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
         >
           {type === "standard"
             ? <StandardNote
-                orderNo={orderNo} issuedAt={issuedAt}
                 deliveryName={resolvedOrder!.delivery_name}
                 items={items ?? []}
                 productName={resolvedOrder!.product_name ?? ""}
@@ -165,7 +177,6 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
                 hasItems={hasItems}
               />
             : <GiftNote
-                orderNo={orderNo} issuedAt={issuedAt}
                 senderName={customer?.name ?? "—"}
                 senderPostalCode={customer?.postal_code ?? null}
                 senderAddress={customer?.address ?? null}
@@ -175,6 +186,7 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
                 deliveryAddress={resolvedOrder!.delivery_address ?? ""}
                 deliveryPhone={deliveryPhone ?? null}
                 deliveryDate={deliveryDateFmt}
+                productName={resolvedOrder!.product_name ?? ""}
               />
           }
         </div>
@@ -186,46 +198,37 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
 // ────────────────────────────────────────────────────
 // 共通: ヘッダー
 // ────────────────────────────────────────────────────
-function NoteHeader({ title, orderNo, issuedAt }: { title: string; orderNo: string; issuedAt: string }) {
+function NoteHeader({ title }: { title: string }) {
   return (
     <div style={{ marginBottom: "10pt" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        {/* 左: タイトル + 発行情報 */}
-        <div>
-          <div style={{
-            fontSize: "20pt",
-            fontWeight: "700",
-            letterSpacing: "0.3em",
-            color: GRAY1,
-            lineHeight: 1,
-            marginBottom: "5pt",
-          }}>
-            {title}
-          </div>
-          <div style={{ fontSize: "7.5pt", color: GRAY3, lineHeight: 1.8 }}>
-            <div>発行日：{issuedAt}</div>
-            <div style={{ letterSpacing: "0.02em" }}>No. {orderNo}</div>
-          </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "20pt" }}>
+        {/* 左: タイトル（縦中央寄せ） */}
+        <div style={{
+          fontSize: "20pt",
+          fontWeight: "700",
+          letterSpacing: "0.3em",
+          color: GRAY1,
+          lineHeight: 1,
+        }}>
+          {title}
         </div>
 
-        {/* 右: ロゴ + 店舗情報 */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "3pt" }}>
+        {/* 右: ロゴ + 住所のみ（連絡先はフッターへ） */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4pt" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo.png"
             alt={SHOP_NAME}
-            style={{ height: "32pt", width: "auto", objectFit: "contain", objectPosition: "right center" }}
+            style={{ height: "30pt", width: "auto", objectFit: "contain", objectPosition: "right center" }}
           />
-          <div style={{ fontSize: "7pt", color: GRAY3, lineHeight: 1.6, marginTop: "1pt", textAlign: "right" }}>
-            <div>{SHOP_ADDRESS}</div>
-            <div>TEL {SHOP_TEL}　FAX {SHOP_FAX}</div>
-            <div>{SHOP_EMAIL}</div>
+          <div style={{ fontSize: "7.5pt", color: GRAY3, lineHeight: 1.5, textAlign: "right" }}>
+            {SHOP_ADDRESS}
           </div>
         </div>
       </div>
 
       {/* 区切り線: 2本 */}
-      <div style={{ marginTop: "7pt", borderTop: `2px solid ${GOLD}` }} />
+      <div style={{ marginTop: "8pt", borderTop: `2px solid ${GOLD}` }} />
       <div style={{ marginTop: "1.5pt", borderTop: `0.5px solid ${RULE}` }} />
     </div>
   );
@@ -274,13 +277,11 @@ function InfoBox({
 // 自社宛 納品書
 // ────────────────────────────────────────────────────
 function StandardNote({
-  orderNo, issuedAt,
   deliveryName,
   items, productName, quantity,
   totalExcl, taxRate, taxAmt, totalIncl,
   hasItems,
 }: {
-  orderNo: string; issuedAt: string;
   deliveryName: string;
   items: { id: string; product_name: string; description: string | null; quantity: number; unit_price: number; tax_rate: number }[];
   productName: string; quantity: number;
@@ -289,18 +290,18 @@ function StandardNote({
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <NoteHeader title="納　品　書" orderNo={orderNo} issuedAt={issuedAt} />
+      <NoteHeader title="納　品　書" />
 
       {/* お届け先 */}
       <div style={{
         border: `1px solid #ddd8ce`,
         borderRadius: "3pt",
-        padding: "8pt 14pt",
+        padding: "6pt 12pt",
         backgroundColor: "white",
-        marginBottom: "10pt",
+        marginBottom: "8pt",
       }}>
-        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>お届け先</div>
-        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3 }}>
+        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "3pt" }}>お届け先</div>
+        <div style={{ fontSize: "12pt", fontWeight: "700", lineHeight: 1.25, whiteSpace: "pre-line" }}>
           {deliveryName}<span style={{ fontSize: "9pt", fontWeight: "500", marginLeft: "3pt" }}>様</span>
         </div>
       </div>
@@ -387,7 +388,17 @@ function StandardNote({
 
       {/* フッター */}
       <div style={{ marginTop: "auto", paddingTop: "8pt" }}>
-        <div style={{ borderTop: `0.5px solid ${RULE}`, paddingTop: "3pt" }} />
+        <div style={{ borderTop: `0.5px solid ${RULE}` }} />
+        <div style={{
+          fontSize: "7.5pt",
+          color: GRAY3,
+          lineHeight: 1.6,
+          letterSpacing: "0.04em",
+          textAlign: "center",
+          marginTop: "6pt",
+        }}>
+          TEL {SHOP_TEL}　FAX {SHOP_FAX}　{SHOP_EMAIL}
+        </div>
       </div>
     </div>
   );
@@ -397,82 +408,98 @@ function StandardNote({
 // ギフト用 納品書
 // ────────────────────────────────────────────────────
 function GiftNote({
-  orderNo, issuedAt,
   senderName, senderPostalCode, senderAddress, senderPhone,
   deliveryName, deliveryPostalCode, deliveryAddress, deliveryPhone,
-  deliveryDate,
+  deliveryDate, productName,
 }: {
-  orderNo: string; issuedAt: string;
   senderName: string; senderPostalCode: string | null; senderAddress: string | null; senderPhone: string | null;
   deliveryName: string; deliveryPostalCode: string | null; deliveryAddress: string; deliveryPhone: string | null;
-  deliveryDate: string;
+  deliveryDate: string; productName: string;
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <NoteHeader title="納　品　書" orderNo={orderNo} issuedAt={issuedAt} />
+      <NoteHeader title="納　品　書" />
 
-      {/* ① お届け先 */}
+      {/* ① お届け先（必ず上に） */}
       <div style={{
         border: `1px solid #ddd8ce`,
         borderRadius: "3pt",
-        padding: "8pt 14pt",
+        padding: "6pt 12pt",
         backgroundColor: "white",
-        marginBottom: "6pt",
+        marginBottom: "4pt",
       }}>
-        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>お届け先</div>
-        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>
+        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "3pt" }}>お届け先</div>
+        <div style={{ fontSize: "12pt", fontWeight: "700", lineHeight: 1.25, marginBottom: "3pt", whiteSpace: "pre-line" }}>
           {deliveryName}<span style={{ fontSize: "9pt", fontWeight: "500", marginLeft: "3pt" }}>様</span>
         </div>
-        {deliveryPostalCode && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>〒{deliveryPostalCode}</div>}
-        {deliveryAddress    && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{deliveryAddress}</div>}
-        {deliveryPhone      && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {deliveryPhone}</div>}
+        {deliveryPostalCode && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>〒{deliveryPostalCode}</div>}
+        {deliveryAddress    && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>{deliveryAddress}</div>}
+        {deliveryPhone      && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>電話番号 {deliveryPhone}</div>}
       </div>
 
       {/* ② 贈り主 */}
       <div style={{
         border: `1px solid #ddd8ce`,
         borderRadius: "3pt",
-        padding: "8pt 14pt",
+        padding: "6pt 12pt",
         backgroundColor: "white",
-        marginBottom: "6pt",
+        marginBottom: "4pt",
       }}>
-        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "5pt" }}>贈り主</div>
-        <div style={{ fontSize: "13pt", fontWeight: "700", lineHeight: 1.3, marginBottom: "4pt" }}>
+        <div style={{ fontSize: "6.5pt", fontWeight: "700", color: GRAY3, letterSpacing: "0.12em", marginBottom: "3pt" }}>贈り主</div>
+        <div style={{ fontSize: "12pt", fontWeight: "700", lineHeight: 1.25, marginBottom: "3pt", whiteSpace: "pre-line" }}>
           {senderName}<span style={{ fontSize: "9pt", fontWeight: "500", marginLeft: "3pt" }}>様</span>
         </div>
-        {senderPostalCode && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>〒{senderPostalCode}</div>}
-        {senderAddress    && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>{senderAddress}</div>}
-        {senderPhone      && <div style={{ fontSize: "10pt", color: GRAY2, lineHeight: 1.6 }}>電話番号 {senderPhone}</div>}
+        {senderPostalCode && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>〒{senderPostalCode}</div>}
+        {senderAddress    && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>{senderAddress}</div>}
+        {senderPhone      && <div style={{ fontSize: "9.5pt", color: GRAY2, lineHeight: 1.5 }}>電話番号 {senderPhone}</div>}
       </div>
 
-      {/* ③ お届け日 */}
+      {/* ③ お届け日 + 商品名 */}
       <div style={{
         border: `1px solid #ddd8ce`,
         borderRadius: "3pt",
-        padding: "5pt 14pt",
+        padding: "4pt 12pt",
         backgroundColor: "#fdfcfa",
-        marginBottom: "6pt",
-        display: "inline-flex",
+        marginBottom: "4pt",
+        display: "flex",
         alignItems: "center",
         gap: "14pt",
-        alignSelf: "flex-start",
+        flexWrap: "wrap",
       }}>
-        <span style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", whiteSpace: "nowrap" }}>お届け日</span>
-        <span style={{ fontSize: "10pt", fontWeight: "600", color: GRAY1 }}>{deliveryDate}</span>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "14pt" }}>
+          <span style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", whiteSpace: "nowrap" }}>お届け日</span>
+          <span style={{ fontSize: "10pt", fontWeight: "600", color: GRAY1, whiteSpace: "nowrap" }}>{deliveryDate}</span>
+        </div>
+        {productName && (
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "14pt", paddingLeft: "14pt", borderLeft: `1px solid ${RULE}` }}>
+            <span style={{ fontSize: "6.5pt", fontWeight: "700", color: GOLD, letterSpacing: "0.12em", whiteSpace: "nowrap" }}>商品名</span>
+            <span style={{ fontSize: "10pt", fontWeight: "600", color: GRAY1 }}>{productName}</span>
+          </div>
+        )}
       </div>
 
-      {/* フッター: メッセージ */}
+      {/* フッター: メッセージ + 連絡先 */}
       <div style={{ marginTop: "auto" }}>
         <div style={{ borderTop: `1px solid ${RULE}`, marginBottom: "8pt" }} />
         <div style={{
           fontSize: "8pt",
           color: GRAY3,
-          lineHeight: 2,
+          lineHeight: 1.8,
           letterSpacing: "0.08em",
           textAlign: "center",
           fontStyle: "italic",
         }}>
           お花のご注文やご相談など、どうぞいつでもお気軽にお問い合わせくださいませ。
+        </div>
+        <div style={{
+          fontSize: "7.5pt",
+          color: GRAY3,
+          lineHeight: 1.6,
+          letterSpacing: "0.04em",
+          textAlign: "center",
+          marginTop: "4pt",
+        }}>
+          TEL {SHOP_TEL}　FAX {SHOP_FAX}　{SHOP_EMAIL}
         </div>
         <div style={{ borderTop: `0.5px solid ${RULE}`, marginTop: "8pt" }} />
       </div>
