@@ -36,7 +36,8 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
     ? (customers.find((c) => c.id === presetCustomerId) ?? null)
     : null;
 
-  const [mode, setMode] = useState<"new" | "existing">(preset ? "existing" : "new");
+  // デフォルトは検索モード（既存顧客検索）。サジェストから「新規登録」を選ぶと "new" に切り替わる
+  const [mode, setMode] = useState<"new" | "existing">("existing");
 
   // ── 新規顧客フィールド（反映ボタン用にcontrolled）──
   const [newName, setNewName]             = useState("");
@@ -92,18 +93,33 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
 
   function selectCustomer(customer: Customer) {
     setSelectedCustomer(customer);
+    setMode("existing");
     setSearchQuery(customer.name);
     setShowSuggestions(false);
   }
 
-  function handleModeSwitch() {
-    if (mode === "new") {
-      setMode("existing");
-    } else {
-      setMode("new");
-      setSelectedCustomer(null);
-      setSearchQuery("");
-    }
+  function switchToNewCustomer() {
+    // 検索キーワードを新規顧客名にプリセット
+    setNewName(searchQuery.trim());
+    setSelectedCustomer(null);
+    setMode("new");
+    setShowSuggestions(false);
+  }
+
+  function clearCustomerSelection() {
+    setSelectedCustomer(null);
+    setSearchQuery("");
+    setMode("existing");
+  }
+
+  function backToSearch() {
+    setMode("existing");
+    setSearchQuery(newName);
+    setNewName("");
+    setNewPhone("");
+    setNewEmail("");
+    setNewPostalCode("");
+    setNewAddress("");
   }
 
   // お届け先情報に顧客情報を反映
@@ -159,28 +175,40 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
           顧客情報
       ══════════════════════════════════════════ */}
       <section className="card p-5 space-y-4">
-        <div className="flex items-center justify-between border-b pb-2">
+        <div className="border-b pb-2">
           <h2 className="text-sm font-semibold text-gray-700">
             顧客情報
-            <span className="ml-2 text-xs font-normal text-gray-400">
-              {mode === "new" ? "新規顧客" : "既存顧客"}
-            </span>
+            {mode === "existing" && selectedCustomer && (
+              <span className="ml-2 text-xs font-normal text-gray-400">既存顧客</span>
+            )}
+            {mode === "new" && (
+              <span className="ml-2 text-xs font-normal text-emerald-600">新規顧客</span>
+            )}
           </h2>
-          <button
-            type="button"
-            onClick={handleModeSwitch}
-            className="text-xs text-brand-600 hover:text-brand-800 font-medium border border-brand-200 rounded px-2.5 py-1 bg-brand-50 hover:bg-brand-100 transition-colors"
-          >
-            {mode === "new" ? "既存の顧客から選択する →" : "← 新規顧客を作成する"}
-          </button>
         </div>
+
+        {/* Server Action に渡す hidden inputs */}
+        <input
+          type="hidden"
+          name="customer_id"
+          value={selectedCustomer?.id ?? ""}
+        />
 
         {/* ── 新規顧客フォーム ── */}
         {mode === "new" && (
           <div className="space-y-3">
-            <p className="text-xs text-gray-500">
-              注文と同時に顧客を新規登録します。ログインアカウントは後から発行できます。
-            </p>
+            <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2">
+              <p className="text-xs text-emerald-700 font-medium">
+                ✨ 新規顧客として登録します
+              </p>
+              <button
+                type="button"
+                onClick={backToSearch}
+                className="text-xs text-gray-600 hover:text-gray-900 underline decoration-dotted"
+              >
+                ← 顧客検索に戻る
+              </button>
+            </div>
             <div>
               <label className="label" htmlFor="new_customer_name">
                 顧客名 <span className="text-red-500">*</span>
@@ -256,82 +284,91 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
           </div>
         )}
 
-        {/* ── 既存顧客検索 ── */}
-        {mode === "existing" && (
-          <div className="space-y-3">
-            {customers.length === 0 ? (
-              <p className="text-sm text-gray-500 py-2">
-                登録済みの顧客がいません。「新規顧客を作成する」からご登録ください。
-              </p>
-            ) : (
-              <>
-                <div ref={searchContainerRef} className="relative">
-                  <label className="label" htmlFor="customer_search">
-                    顧客を検索 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="customer_search"
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setShowSuggestions(true);
-                      if (!e.target.value) setSelectedCustomer(null);
-                    }}
-                    onFocus={() => setShowSuggestions(true)}
-                    placeholder="顧客名・電話番号・メールアドレスで検索"
-                    className="input"
-                    autoComplete="off"
-                  />
-                  {/* Server Actionに渡すhidden input */}
-                  <input
-                    type="hidden"
-                    name="customer_id"
-                    value={selectedCustomer?.id ?? ""}
-                  />
+        {/* ── 顧客検索（既存モード・未選択）── */}
+        {mode === "existing" && !selectedCustomer && (
+          <div ref={searchContainerRef} className="relative">
+            <label className="label" htmlFor="customer_search">
+              顧客を検索 <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="customer_search"
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onFocus={() => setShowSuggestions(true)}
+              placeholder="顧客名・電話番号・メールアドレスで検索 / または新規顧客名を入力"
+              className="input"
+              autoComplete="off"
+            />
 
-                  {/* サジェストドロップダウン */}
-                  {showSuggestions && (
-                    <ul className="absolute z-20 w-full bg-white border border-gray-200 rounded-md shadow-lg mt-1 max-h-56 overflow-y-auto">
-                      {filteredCustomers.length === 0 ? (
-                        <li className="px-3 py-2.5 text-sm text-gray-400">
-                          該当する顧客が見つかりません
-                        </li>
-                      ) : (
-                        filteredCustomers.map((c) => (
-                          <li
-                            key={c.id}
-                            onMouseDown={() => selectCustomer(c)}
-                            className="px-3 py-2.5 hover:bg-brand-50 cursor-pointer border-b border-gray-50 last:border-0"
-                          >
-                            <div className="font-medium text-gray-900 text-sm">{c.name}</div>
-                            {(c.phone || c.email) && (
-                              <div className="text-xs text-gray-400 mt-0.5">
-                                {[c.phone, c.email].filter(Boolean).join(" / ")}
-                              </div>
-                            )}
-                          </li>
-                        ))
+            {showSuggestions && (
+              <ul className="absolute z-20 w-full bg-white border border-gray-200 rounded-md shadow-lg mt-1 max-h-72 overflow-y-auto">
+                {filteredCustomers.length > 0 ? (
+                  filteredCustomers.map((c) => (
+                    <li
+                      key={c.id}
+                      onMouseDown={() => selectCustomer(c)}
+                      className="px-3 py-2.5 hover:bg-brand-50 cursor-pointer border-b border-gray-50"
+                    >
+                      <div className="font-medium text-gray-900 text-sm">{c.name}</div>
+                      {(c.phone || c.email) && (
+                        <div className="text-xs text-gray-400 mt-0.5">
+                          {[c.phone, c.email].filter(Boolean).join(" / ")}
+                        </div>
                       )}
-                    </ul>
-                  )}
-                </div>
-
-                {/* 選択済み顧客プレビュー */}
-                {selectedCustomer && (
-                  <div className="bg-brand-50 border border-brand-100 rounded-md p-3 text-sm space-y-1.5">
-                    <p className="font-medium text-brand-800">{selectedCustomer.name}</p>
-                    <div className="text-xs text-gray-500 space-y-1">
-                      {selectedCustomer.phone && <p>📞 {selectedCustomer.phone}</p>}
-                      {selectedCustomer.email && <p>✉ {selectedCustomer.email}</p>}
-                      {(selectedCustomer.postal_code || selectedCustomer.address) && (
-                        <p>📍 {selectedCustomer.postal_code ? `〒${selectedCustomer.postal_code} ` : ""}{selectedCustomer.address}</p>
-                      )}
-                    </div>
-                  </div>
+                    </li>
+                  ))
+                ) : (
+                  searchQuery.trim() === "" && (
+                    <li className="px-3 py-2.5 text-sm text-gray-400">
+                      顧客名・電話番号・メールで検索できます
+                    </li>
+                  )
                 )}
-              </>
+                {searchQuery.trim() && (
+                  <li
+                    onMouseDown={switchToNewCustomer}
+                    className="px-3 py-2.5 cursor-pointer bg-emerald-50/40 hover:bg-emerald-50 border-t border-emerald-200"
+                  >
+                    <div className="text-sm font-medium text-emerald-700">
+                      ✨「{searchQuery.trim()}」を新規顧客として登録
+                    </div>
+                    <div className="text-xs text-emerald-600/80 mt-0.5">
+                      連絡先・住所などの追加情報を下に入力できます
+                    </div>
+                  </li>
+                )}
+              </ul>
             )}
+            <p className="text-xs text-gray-400 mt-2">
+              該当する顧客がいなければ、入力したキーワードで新規顧客として登録できます。
+            </p>
+          </div>
+        )}
+
+        {/* ── 選択済み顧客プレビュー ── */}
+        {mode === "existing" && selectedCustomer && (
+          <div className="bg-brand-50 border border-brand-100 rounded-md p-3 text-sm flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0 space-y-1.5">
+              <p className="font-medium text-brand-800">{selectedCustomer.name}</p>
+              <div className="text-xs text-gray-500 space-y-1">
+                {selectedCustomer.phone && <p>📞 {selectedCustomer.phone}</p>}
+                {selectedCustomer.email && <p>✉ {selectedCustomer.email}</p>}
+                {(selectedCustomer.postal_code || selectedCustomer.address) && (
+                  <p>📍 {selectedCustomer.postal_code ? `〒${selectedCustomer.postal_code} ` : ""}{selectedCustomer.address}</p>
+                )}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={clearCustomerSelection}
+              className="text-xs text-gray-500 hover:text-red-600 whitespace-nowrap shrink-0 px-2 py-1 rounded hover:bg-white"
+            >
+              ✕ 別の顧客を選ぶ
+            </button>
           </div>
         )}
       </section>
