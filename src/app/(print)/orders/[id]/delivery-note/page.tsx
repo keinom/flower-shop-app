@@ -167,9 +167,14 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
             flexDirection: "column",
           }}
         >
-          {type === "standard"
+          {/* 印刷用宛名: print_delivery_name があればそちら、なければ delivery_name */}
+          {(() => {
+            const printName =
+              (resolvedOrder! as { print_delivery_name?: string | null }).print_delivery_name?.trim()
+              || resolvedOrder!.delivery_name;
+            return type === "standard"
             ? <StandardNote
-                deliveryName={resolvedOrder!.delivery_name}
+                deliveryName={printName}
                 items={items ?? []}
                 productName={resolvedOrder!.product_name ?? ""}
                 quantity={resolvedOrder!.quantity}
@@ -181,14 +186,14 @@ export default async function DeliveryNotePage({ params, searchParams }: Props) 
                 senderPostalCode={customer?.postal_code ?? null}
                 senderAddress={customer?.address ?? null}
                 senderPhone={customer?.phone ?? null}
-                deliveryName={resolvedOrder!.delivery_name}
+                deliveryName={printName}
                 deliveryPostalCode={deliveryPostalCode ?? null}
                 deliveryAddress={resolvedOrder!.delivery_address ?? ""}
                 deliveryPhone={deliveryPhone ?? null}
                 deliveryDate={deliveryDateFmt}
                 productName={resolvedOrder!.product_name ?? ""}
-              />
-          }
+              />;
+          })()}
         </div>
       </div>
     </>

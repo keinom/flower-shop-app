@@ -166,6 +166,16 @@ export default async function OrderDetailPage({
                 <InfoRow label="お届け先名">
                   <span style={{ whiteSpace: "pre-line" }}>{order.delivery_name}</span>
                 </InfoRow>
+                {(order as { print_delivery_name?: string | null }).print_delivery_name && (
+                  <InfoRow label="印刷用宛名">
+                    <span style={{ whiteSpace: "pre-line" }}>
+                      {(order as { print_delivery_name: string }).print_delivery_name}
+                    </span>
+                    <span className="ml-2 text-[10px] bg-amber-50 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5">
+                      納品書で上書き
+                    </span>
+                  </InfoRow>
+                )}
                 <InfoRow label="郵便番号">
                   {(order as { delivery_postal_code?: string | null }).delivery_postal_code
                     ? `〒${(order as { delivery_postal_code: string }).delivery_postal_code}`

@@ -57,6 +57,7 @@ export async function createAdminOrder(
   // ── お届け先データを取得 ──
   const orderType            = ((formData.get("order_type") as string)?.trim() || "配達") as OrderType;
   const deliveryName         = (formData.get("delivery_name") as string)?.trim();
+  const printDeliveryName    = (formData.get("print_delivery_name") as string)?.trim() || null;
   const deliveryPostalCode   = (formData.get("delivery_postal_code") as string)?.trim() || null;
   const deliveryAddress      = (formData.get("delivery_address") as string)?.trim() || null;
   const deliveryDate      = (formData.get("delivery_date")       as string) || null;
@@ -140,6 +141,7 @@ export async function createAdminOrder(
       status:                "受付",
       order_type:            orderType,
       delivery_name:         deliveryName,
+      print_delivery_name:   printDeliveryName,
       delivery_postal_code:  deliveryPostalCode,
       delivery_address:      deliveryAddress,
       delivery_date:       deliveryDate,

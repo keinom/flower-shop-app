@@ -27,6 +27,7 @@ interface Props {
   defaultValues: {
     order_type: OrderType;
     delivery_name: string;
+    print_delivery_name: string | null;
     delivery_postal_code: string | null;
     delivery_address: string | null;
     delivery_date: string | null;
@@ -54,6 +55,7 @@ export function AdminOrderEditClient({
 }: Props) {
   const [orderType, setOrderType] = useState<OrderType>(dv.order_type);
   const [deliveryName, setDeliveryName]             = useState(dv.delivery_name);
+  const [printDeliveryName, setPrintDeliveryName]   = useState(dv.print_delivery_name ?? "");
   const [deliveryPostalCode, setDeliveryPostalCode] = useState(dv.delivery_postal_code ?? "");
   const [deliveryAddress, setDeliveryAddress]       = useState(dv.delivery_address ?? "");
   const [deliveryPhone, setDeliveryPhone]           = useState(dv.delivery_phone ?? "");
@@ -95,6 +97,25 @@ export function AdminOrderEditClient({
           />
           <p className="text-xs text-gray-400 mt-1">
             組織宛で納品書を複数行表示したい場合は、改行（Enter）で区切れます。
+          </p>
+        </div>
+
+        <div>
+          <label htmlFor="print_delivery_name" className="label">
+            印刷用お届け先名 <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
+          </label>
+          <textarea
+            id="print_delivery_name"
+            name="print_delivery_name"
+            value={printDeliveryName}
+            onChange={(e) => setPrintDeliveryName(e.target.value)}
+            placeholder="納品書に印字する宛名を上書きする場合のみ入力"
+            className="input"
+            rows={1}
+            style={{ resize: "vertical", minHeight: "2.5rem" }}
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            空欄の場合は上記「お届け先名」がそのまま納品書に印字されます。改行（Enter）で複数行も可。
           </p>
         </div>
 

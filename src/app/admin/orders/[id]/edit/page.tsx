@@ -92,6 +92,7 @@ export default async function EditOrderPage({
         defaultValues={{
           order_type:            ((order as { order_type?: string }).order_type ?? "配達") as import("@/types").OrderType,
           delivery_name:         order.delivery_name,
+          print_delivery_name:   (order as { print_delivery_name?: string | null }).print_delivery_name ?? null,
           delivery_postal_code:  (order as { delivery_postal_code?: string | null }).delivery_postal_code ?? null,
           delivery_address:      order.delivery_address ?? null,
           delivery_date:         order.delivery_date ?? null,
