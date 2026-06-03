@@ -173,12 +173,12 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
       </section>
 
       {/* ══════════════════════════════════════════
-          顧客情報
+          お届け主（注文主・ギフト納品書の贈り主）
       ══════════════════════════════════════════ */}
       <section className="card p-5 space-y-4">
         <div className="border-b pb-2">
           <h2 className="text-sm font-semibold text-gray-700">
-            顧客情報
+            お届け主
             {mode === "existing" && selectedCustomer && (
               <span className="ml-2 text-xs font-normal text-gray-400">既存顧客</span>
             )}
@@ -186,6 +186,9 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
               <span className="ml-2 text-xs font-normal text-emerald-600">新規顧客</span>
             )}
           </h2>
+          <p className="text-xs text-gray-500 mt-1">
+            注文者として登録される顧客。ギフト納品書では「贈り主」として印字されます。
+          </p>
         </div>
 
         {/* Server Action に渡す hidden inputs */}
@@ -372,6 +375,26 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
             </button>
           </div>
         )}
+
+        {/* 印刷用 送り主名（任意）: ギフト納品書の贈り主欄を上書き */}
+        <div>
+          <label htmlFor="print_sender_name" className="label">
+            印刷用 送り主名 <span className="text-gray-400 text-xs font-normal ml-1">（任意・ギフト納品書のみ）</span>
+          </label>
+          <textarea
+            id="print_sender_name"
+            name="print_sender_name"
+            value={printSenderName}
+            onChange={(e) => setPrintSenderName(e.target.value)}
+            placeholder="ギフト納品書の「贈り主」欄に印字する名前を上書きする場合のみ入力"
+            className="input"
+            rows={1}
+            style={{ resize: "vertical", minHeight: "2.5rem" }}
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            空欄の場合は上の顧客名がそのまま「贈り主」として印字されます。顧客紐付けには影響しません。改行（Enter）で複数行も可。
+          </p>
+        </div>
       </section>
 
       {/* ══════════════════════════════════════════
@@ -402,25 +425,6 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
             onChange={setDeliveryName}
             onSelectSuggestion={handleDeliverySuggestionSelect}
           />
-        </div>
-
-        <div>
-          <label htmlFor="print_sender_name" className="label">
-            印刷用 送り主名 <span className="text-gray-400 text-xs font-normal ml-1">（任意・ギフト納品書）</span>
-          </label>
-          <textarea
-            id="print_sender_name"
-            name="print_sender_name"
-            value={printSenderName}
-            onChange={(e) => setPrintSenderName(e.target.value)}
-            placeholder="ギフト納品書の「贈り主」欄を上書きする場合のみ入力"
-            className="input"
-            rows={1}
-            style={{ resize: "vertical", minHeight: "2.5rem" }}
-          />
-          <p className="text-xs text-gray-400 mt-1">
-            空欄の場合は顧客マスタの氏名が「贈り主」として印字されます。顧客紐付けには影響しません。改行（Enter）で複数行も可。
-          </p>
         </div>
 
         <div>

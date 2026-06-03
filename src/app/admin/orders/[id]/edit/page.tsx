@@ -89,6 +89,7 @@ export default async function EditOrderPage({
         orderId={id}
         taxRate={taxRate}
         today={today}
+        customerName={customer?.name ?? null}
         defaultValues={{
           order_type:            ((order as { order_type?: string }).order_type ?? "配達") as import("@/types").OrderType,
           delivery_name:         order.delivery_name,

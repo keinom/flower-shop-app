@@ -24,6 +24,7 @@ interface Props {
   orderId: string;
   taxRate: number;
   today: string;
+  customerName: string | null;
   defaultValues: {
     order_type: OrderType;
     delivery_name: string;
@@ -49,6 +50,7 @@ export function AdminOrderEditClient({
   orderId,
   taxRate,
   today,
+  customerName,
   defaultValues: dv,
   defaultItems,
   defaultShipping,
@@ -77,6 +79,39 @@ export function AdminOrderEditClient({
         <OrderTypeSelector defaultValue={dv.order_type} onChange={setOrderType} />
       </section>
 
+      {/* ══ お届け主（注文主・ギフト納品書の贈り主） ══ */}
+      <section className="card p-5 space-y-4">
+        <div className="border-b pb-2">
+          <h2 className="text-sm font-semibold text-gray-700">お届け主</h2>
+          <p className="text-xs text-gray-500 mt-1">
+            注文者として登録されている顧客。ギフト納品書では「贈り主」として印字されます。
+          </p>
+        </div>
+
+        <div className="text-sm bg-brand-50 border border-brand-100 rounded-md p-3" style={{ whiteSpace: "pre-line" }}>
+          {customerName ?? "—"}
+        </div>
+
+        <div>
+          <label htmlFor="print_sender_name" className="label">
+            印刷用 送り主名 <span className="text-gray-400 text-xs font-normal ml-1">（任意・ギフト納品書のみ）</span>
+          </label>
+          <textarea
+            id="print_sender_name"
+            name="print_sender_name"
+            value={printSenderName}
+            onChange={(e) => setPrintSenderName(e.target.value)}
+            placeholder="ギフト納品書の「贈り主」欄に印字する名前を上書きする場合のみ入力"
+            className="input"
+            rows={1}
+            style={{ resize: "vertical", minHeight: "2.5rem" }}
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            空欄の場合は上の顧客名がそのまま「贈り主」として印字されます。顧客紐付けには影響しません。改行（Enter）で複数行も可。
+          </p>
+        </div>
+      </section>
+
       {/* ══ お届け先情報 ══ */}
       <section className="card p-5 space-y-4">
         <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">お届け先情報</h2>
@@ -97,25 +132,6 @@ export function AdminOrderEditClient({
           />
           <p className="text-xs text-gray-400 mt-1">
             組織宛で納品書を複数行表示したい場合は、改行（Enter）で区切れます。
-          </p>
-        </div>
-
-        <div>
-          <label htmlFor="print_sender_name" className="label">
-            印刷用 送り主名 <span className="text-gray-400 text-xs font-normal ml-1">（任意・ギフト納品書）</span>
-          </label>
-          <textarea
-            id="print_sender_name"
-            name="print_sender_name"
-            value={printSenderName}
-            onChange={(e) => setPrintSenderName(e.target.value)}
-            placeholder="ギフト納品書の「贈り主」欄を上書きする場合のみ入力"
-            className="input"
-            rows={1}
-            style={{ resize: "vertical", minHeight: "2.5rem" }}
-          />
-          <p className="text-xs text-gray-400 mt-1">
-            空欄の場合は顧客マスタの氏名が「贈り主」として印字されます。顧客紐付けには影響しません。改行（Enter）で複数行も可。
           </p>
         </div>
 
