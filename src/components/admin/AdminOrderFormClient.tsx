@@ -58,7 +58,7 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
   const [deliveryAddress, setDeliveryAddress]       = useState("");
   const [deliveryPhone, setDeliveryPhone]           = useState("");
   const [deliveryEmail, setDeliveryEmail]           = useState("");
-  const [printDeliveryName, setPrintDeliveryName]   = useState("");
+  const [printSenderName, setPrintSenderName]       = useState("");
 
   // ── 注文種別 ──
   const [orderType, setOrderType] = useState<import("@/types").OrderType>("配達");
@@ -405,21 +405,21 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
         </div>
 
         <div>
-          <label htmlFor="print_delivery_name" className="label">
-            印刷用お届け先名 <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
+          <label htmlFor="print_sender_name" className="label">
+            印刷用 送り主名 <span className="text-gray-400 text-xs font-normal ml-1">（任意・ギフト納品書）</span>
           </label>
           <textarea
-            id="print_delivery_name"
-            name="print_delivery_name"
-            value={printDeliveryName}
-            onChange={(e) => setPrintDeliveryName(e.target.value)}
-            placeholder="納品書に印字する宛名を上書きする場合のみ入力"
+            id="print_sender_name"
+            name="print_sender_name"
+            value={printSenderName}
+            onChange={(e) => setPrintSenderName(e.target.value)}
+            placeholder="ギフト納品書の「贈り主」欄を上書きする場合のみ入力"
             className="input"
             rows={1}
             style={{ resize: "vertical", minHeight: "2.5rem" }}
           />
           <p className="text-xs text-gray-400 mt-1">
-            空欄の場合は上記「お届け先名」がそのまま納品書に印字されます。改行（Enter）で複数行も可。
+            空欄の場合は顧客マスタの氏名が「贈り主」として印字されます。顧客紐付けには影響しません。改行（Enter）で複数行も可。
           </p>
         </div>
 
