@@ -25,19 +25,23 @@ const vLabel = (extra: React.CSSProperties = {}): React.CSSProperties => ({
   ...extra,
 });
 
-// ── 住所欄（ラベル「ご住所」＋点線2本を1セル内にまとめる） ──
+// ── 住所欄
+// 大枠を3段に等分し、点線2本で仕切る。
+// 1段目: 「ご住所」ラベル / 2段目: 住所1行目 / 3段目: 住所2行目
 const AddressBlock = () => (
-  <div style={{ padding: "1.5mm 3mm 1mm 3mm" }}>
-    <div style={{ fontSize: "10pt", marginBottom: "2mm" }}>ご住所</div>
-    {[0, 1].map((i) => (
-      <div
-        key={i}
-        style={{
-          borderBottom: "1px dotted #666",
-          height: "6mm",
-        }}
-      />
-    ))}
+  <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{
+        flex: 1,
+        padding: "1mm 3mm 0 3mm",
+        fontSize: "10pt",
+        borderBottom: "1px dotted #666",
+      }}
+    >
+      ご住所
+    </div>
+    <div style={{ flex: 1, borderBottom: "1px dotted #666" }} />
+    <div style={{ flex: 1 }} />
   </div>
 );
 
@@ -165,7 +169,7 @@ export default async function OrderReceiptPage() {
               </tr>
 
               {/* ══════ 御届先様 ══════ */}
-              <tr style={{ height: "22mm" }}>
+              <tr style={{ height: "24mm" }}>
                 <td
                   rowSpan={3}
                   colSpan={3}
@@ -176,19 +180,19 @@ export default async function OrderReceiptPage() {
                 >
                   御届先様
                 </td>
-                <td colSpan={21} style={{ ...cell(), padding: 0 }}>
+                <td colSpan={21} style={{ ...cell(), padding: 0, height: "24mm" }}>
                   <AddressBlock />
                 </td>
               </tr>
-              <tr style={{ height: "8mm" }}>
+              <tr style={{ height: "9mm" }}>
                 <td
                   colSpan={21}
-                  style={{ ...cell(), padding: "1.5mm 3mm", fontSize: "10pt", textAlign: "center" }}
+                  style={{ ...cell(), padding: "1.5mm 3mm", fontSize: "10pt", textAlign: "left" }}
                 >
-                  TEL/携帯電話&emsp;&emsp;（&emsp;&emsp;&emsp;&emsp;）
+                  TEL/携帯電話&emsp;（&emsp;&emsp;&emsp;&emsp;）
                 </td>
               </tr>
-              <tr style={{ height: "9mm" }}>
+              <tr style={{ height: "11mm" }}>
                 <td
                   colSpan={21}
                   style={{ ...cell(), padding: "1mm 3mm", fontSize: "11pt", textAlign: "right", verticalAlign: "bottom" }}
@@ -198,7 +202,7 @@ export default async function OrderReceiptPage() {
               </tr>
 
               {/* ══════ 御注文主 ══════ */}
-              <tr style={{ height: "22mm" }}>
+              <tr style={{ height: "24mm" }}>
                 <td
                   rowSpan={3}
                   colSpan={3}
@@ -209,19 +213,19 @@ export default async function OrderReceiptPage() {
                 >
                   御注文主
                 </td>
-                <td colSpan={21} style={{ ...cell(), padding: 0 }}>
+                <td colSpan={21} style={{ ...cell(), padding: 0, height: "24mm" }}>
                   <AddressBlock />
                 </td>
               </tr>
-              <tr style={{ height: "8mm" }}>
+              <tr style={{ height: "9mm" }}>
                 <td
                   colSpan={21}
-                  style={{ ...cell(), padding: "1.5mm 3mm", fontSize: "10pt", textAlign: "center" }}
+                  style={{ ...cell(), padding: "1.5mm 3mm", fontSize: "10pt", textAlign: "left" }}
                 >
-                  TEL/携帯電話&emsp;&emsp;（&emsp;&emsp;&emsp;&emsp;）
+                  TEL/携帯電話&emsp;（&emsp;&emsp;&emsp;&emsp;）
                 </td>
               </tr>
-              <tr style={{ height: "9mm" }}>
+              <tr style={{ height: "11mm" }}>
                 <td
                   colSpan={21}
                   style={{ ...cell(), padding: "1mm 3mm", fontSize: "11pt", textAlign: "right", verticalAlign: "bottom" }}
@@ -267,8 +271,8 @@ export default async function OrderReceiptPage() {
                 <td colSpan={6} style={{ ...cell() }} />
               </tr>
 
-              {/* ══════ 金額 ══════ */}
-              <tr style={{ height: "11mm" }}>
+              {/* ══════ 金額 (税抜 / 税込) ══════ */}
+              <tr style={{ height: "12mm" }}>
                 <td
                   colSpan={3}
                   style={{ ...cell(), textAlign: "center", fontWeight: "bold", fontSize: "10.5pt" }}
@@ -276,10 +280,16 @@ export default async function OrderReceiptPage() {
                   金額
                 </td>
                 <td
-                  colSpan={21}
-                  style={{ ...cell(), padding: "1mm 3mm", fontSize: "11pt", textAlign: "right", verticalAlign: "bottom" }}
+                  colSpan={11}
+                  style={{ ...cell(), padding: "1mm 3mm", fontSize: "10.5pt", verticalAlign: "bottom" }}
                 >
-                  計&nbsp;¥
+                  税抜&nbsp;¥
+                </td>
+                <td
+                  colSpan={10}
+                  style={{ ...cell(), padding: "1mm 3mm", fontSize: "10.5pt", verticalAlign: "bottom" }}
+                >
+                  税込&nbsp;¥
                 </td>
               </tr>
 
@@ -300,7 +310,7 @@ export default async function OrderReceiptPage() {
               </tr>
 
               {/* ══════ カード/名札/備考 ══════ */}
-              <tr style={{ height: "47mm" }}>
+              <tr style={{ height: "42mm" }}>
                 <td
                   colSpan={3}
                   style={{
