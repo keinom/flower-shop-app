@@ -25,15 +25,16 @@ const vLabel = (extra: React.CSSProperties = {}): React.CSSProperties => ({
   ...extra,
 });
 
-// ── 住所行（点線3本） ──────────────────────────────────────
-const AddressLines = () => (
-  <div style={{ paddingTop: "1mm" }}>
-    {[0, 1, 2].map((i) => (
+// ── 住所欄（ラベル「ご住所」＋点線2本を1セル内にまとめる） ──
+const AddressBlock = () => (
+  <div style={{ padding: "1.5mm 3mm 1mm 3mm" }}>
+    <div style={{ fontSize: "10pt", marginBottom: "2mm" }}>ご住所</div>
+    {[0, 1].map((i) => (
       <div
         key={i}
         style={{
-          borderBottom: "1px dotted #555",
-          height: "4.5mm",
+          borderBottom: "1px dotted #666",
+          height: "6mm",
         }}
       />
     ))}
@@ -164,9 +165,9 @@ export default async function OrderReceiptPage() {
               </tr>
 
               {/* ══════ 御届先様 ══════ */}
-              <tr style={{ height: "8mm" }}>
+              <tr style={{ height: "22mm" }}>
                 <td
-                  rowSpan={4}
+                  rowSpan={3}
                   colSpan={3}
                   style={vLabel({
                     fontSize: "11pt",
@@ -175,13 +176,8 @@ export default async function OrderReceiptPage() {
                 >
                   御届先様
                 </td>
-                <td colSpan={21} style={{ ...cell(), padding: "1.5mm 3mm", fontSize: "10pt" }}>
-                  ご住所
-                </td>
-              </tr>
-              <tr style={{ height: "17mm" }}>
-                <td colSpan={21} style={{ ...cell(), padding: "0 3mm" }}>
-                  <AddressLines />
+                <td colSpan={21} style={{ ...cell(), padding: 0 }}>
+                  <AddressBlock />
                 </td>
               </tr>
               <tr style={{ height: "8mm" }}>
@@ -192,7 +188,7 @@ export default async function OrderReceiptPage() {
                   TEL/携帯電話&emsp;&emsp;（&emsp;&emsp;&emsp;&emsp;）
                 </td>
               </tr>
-              <tr style={{ height: "10mm" }}>
+              <tr style={{ height: "9mm" }}>
                 <td
                   colSpan={21}
                   style={{ ...cell(), padding: "1mm 3mm", fontSize: "11pt", textAlign: "right", verticalAlign: "bottom" }}
@@ -202,9 +198,9 @@ export default async function OrderReceiptPage() {
               </tr>
 
               {/* ══════ 御注文主 ══════ */}
-              <tr style={{ height: "8mm" }}>
+              <tr style={{ height: "22mm" }}>
                 <td
-                  rowSpan={4}
+                  rowSpan={3}
                   colSpan={3}
                   style={vLabel({
                     fontSize: "11pt",
@@ -213,13 +209,8 @@ export default async function OrderReceiptPage() {
                 >
                   御注文主
                 </td>
-                <td colSpan={21} style={{ ...cell(), padding: "1.5mm 3mm", fontSize: "10pt" }}>
-                  ご住所
-                </td>
-              </tr>
-              <tr style={{ height: "17mm" }}>
-                <td colSpan={21} style={{ ...cell(), padding: "0 3mm" }}>
-                  <AddressLines />
+                <td colSpan={21} style={{ ...cell(), padding: 0 }}>
+                  <AddressBlock />
                 </td>
               </tr>
               <tr style={{ height: "8mm" }}>
@@ -230,7 +221,7 @@ export default async function OrderReceiptPage() {
                   TEL/携帯電話&emsp;&emsp;（&emsp;&emsp;&emsp;&emsp;）
                 </td>
               </tr>
-              <tr style={{ height: "10mm" }}>
+              <tr style={{ height: "9mm" }}>
                 <td
                   colSpan={21}
                   style={{ ...cell(), padding: "1mm 3mm", fontSize: "11pt", textAlign: "right", verticalAlign: "bottom" }}
@@ -309,7 +300,7 @@ export default async function OrderReceiptPage() {
               </tr>
 
               {/* ══════ カード/名札/備考 ══════ */}
-              <tr style={{ height: "55mm" }}>
+              <tr style={{ height: "47mm" }}>
                 <td
                   colSpan={3}
                   style={{
