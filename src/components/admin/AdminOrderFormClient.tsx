@@ -8,6 +8,7 @@ import { OrderTypeSelector } from "@/components/ui/OrderTypeSelector";
 import { createAdminOrder, type CreateAdminOrderState } from "@/app/admin/orders/new/actions";
 import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
 import { OrderTotalBar } from "@/components/admin/OrderTotalBar";
+import { ShippingFeeSelector } from "@/components/admin/ShippingFeeSelector";
 import { PostalCodeInput } from "@/components/ui/PostalCodeInput";
 import { preventEnterSubmit } from "@/lib/formKeyboard";
 import { DeliverySuggestionInput, type DeliverySuggestion } from "@/components/admin/DeliverySuggestionInput";
@@ -553,6 +554,14 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
           </select>
         </div>
       </section>
+
+      {/* ══════════════════════════════════════════
+          配送料
+      ══════════════════════════════════════════ */}
+      <ShippingFeeSelector
+        deliveryAddress={deliveryAddress}
+        onFeeChange={setShippingFee}
+      />
 
       {/* ══════════════════════════════════════════
           メッセージカード
