@@ -5,14 +5,17 @@ import {
   CARRIER_NAMES,
   YAMATO_SIZES,
   SAGAWA_SIZES,
+  NITTSU_SIZES,
   SIZE_LABELS,
   YAMATO_ZONE_NAMES,
   YAMATO_PREFECTURE_ZONE,
   SAGAWA_ZONE_NAMES,
   SAGAWA_PREFECTURE_ZONE,
+  NITTSU_ZONE_NAMES,
+  NITTSU_PREFECTURE_ZONE,
+  carrierSizeLabel,
   extractPrefecture,
   calcShippingFee,
-  toTaxExclusive,
   shippingItemName,
   type Carrier,
 } from "@/lib/shipping";
@@ -34,10 +37,16 @@ export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipp
   const prefecture = extractPrefecture(deliveryAddress);
 
   // キャリアに応じたゾーンマップ・ゾーン名を使用
-  const prefZoneMap  = carrier === "yamato" ? YAMATO_PREFECTURE_ZONE : SAGAWA_PREFECTURE_ZONE;
-  const zoneNamesArr = carrier === "yamato" ? YAMATO_ZONE_NAMES      : SAGAWA_ZONE_NAMES;
-  const zone         = prefecture !== null ? prefZoneMap[prefecture] : undefined;
-  const zoneName     = zone !== undefined  ? zoneNamesArr[zone]      : null;
+  const prefZoneMap =
+    carrier === "yamato" ? YAMATO_PREFECTURE_ZONE :
+    carrier === "sagawa" ? SAGAWA_PREFECTURE_ZONE :
+    NITTSU_PREFECTURE_ZONE;
+  const zoneNamesArr =
+    carrier === "yamato" ? YAMATO_ZONE_NAMES :
+    carrier === "sagawa" ? SAGAWA_ZONE_NAMES :
+    NITTSU_ZONE_NAMES;
+  const zone     = prefecture !== null ? prefZoneMap[prefecture] : undefined;
+  const zoneName = zone !== undefined  ? zoneNamesArr[zone]      : null;
 
   // 自動計算料金
   const calcFee = (prefecture !== null)
@@ -50,11 +59,15 @@ export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipp
   // 税抜価格
   const unitPrice = Math.floor(effectiveFee / 1.1);
 
-  // キャリアを切り替えたときにサイズを調整（佐川は180/200未対応）
+  // キャリアを切り替えたときにサイズ/重量を調整
   useEffect(() => {
-    const validSizes: readonly number[] = carrier === "yamato" ? YAMATO_SIZES : SAGAWA_SIZES;
+    const validSizes: readonly number[] =
+      carrier === "yamato" ? YAMATO_SIZES :
+      carrier === "sagawa" ? SAGAWA_SIZES :
+      NITTSU_SIZES;
     if (!validSizes.includes(size as never)) {
-      setSize(validSizes[validSizes.length - 1] as number);
+      // 日通の既定は 5kg、ヤマト/佐川は適合する最大値
+      setSize(carrier === "nittsu" ? 5 : (validSizes[validSizes.length - 1] as number));
     }
   }, [carrier, size]);
 
@@ -78,7 +91,10 @@ export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipp
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, effectiveFee]);
 
-  const sizes = carrier === "yamato" ? YAMATO_SIZES : SAGAWA_SIZES;
+  const sizes: readonly number[] =
+    carrier === "yamato" ? YAMATO_SIZES :
+    carrier === "sagawa" ? SAGAWA_SIZES :
+    NITTSU_SIZES;
 
   return (
     <section className="card overflow-hidden">
@@ -94,7 +110,7 @@ export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipp
           <p className="text-sm font-semibold text-gray-700">配送料を追加する</p>
           {!enabled && (
             <p className="text-xs text-gray-400 mt-0.5">
-              ヤマト運輸・佐川急便の配送料を自動計算して明細に追加します
+              ヤマト運輸・佐川急便・日本通運の配送料を自動計算して明細に追加します
             </p>
           )}
         </div>
@@ -107,11 +123,11 @@ export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipp
           {/* 配送会社 */}
           <div>
             <p className="label mb-2">配送会社</p>
-            <div className="grid grid-cols-2 gap-2">
-              {(["yamato", "sagawa"] as Carrier[]).map((c) => (
+            <div className="grid grid-cols-3 gap-2">
+              {(["yamato", "sagawa", "nittsu"] as Carrier[]).map((c) => (
                 <label
                   key={c}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
+                  className={`flex items-center gap-2 px-3 py-3 rounded-lg border-2 cursor-pointer transition-all ${
                     carrier === c
                       ? "border-brand-500 bg-brand-50"
                       : "border-gray-200 hover:border-gray-300 bg-white"
@@ -125,17 +141,17 @@ export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipp
                     className="accent-brand-600"
                   />
                   <span className="font-medium text-sm text-gray-800">
-                    {c === "yamato" ? "🚀" : "🚛"} {CARRIER_NAMES[c]}
+                    {c === "yamato" ? "🚀" : c === "sagawa" ? "🚛" : "📦"} {CARRIER_NAMES[c]}
                   </span>
                 </label>
               ))}
             </div>
           </div>
 
-          {/* 配送サイズ */}
+          {/* 配送サイズ / 重量 */}
           <div>
             <label className="label" htmlFor="shipping_size_select">
-              配送サイズ（3辺合計）
+              {carrier === "nittsu" ? "重量" : "配送サイズ（3辺合計）"}
             </label>
             <select
               id="shipping_size_select"
@@ -145,7 +161,7 @@ export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipp
             >
               {sizes.map((s) => (
                 <option key={s} value={s}>
-                  {SIZE_LABELS[s]}
+                  {carrier === "nittsu" ? `${s}kg まで` : SIZE_LABELS[s]}
                 </option>
               ))}
             </select>
@@ -181,7 +197,7 @@ export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipp
                 <div>
                   <p className="text-xs text-green-600 font-medium mb-0.5">自動計算された配送料</p>
                   <p className="text-sm text-green-700 font-medium">
-                    {CARRIER_NAMES[carrier]}　{size}サイズ
+                    {CARRIER_NAMES[carrier]}　{carrierSizeLabel(carrier, size)}
                   </p>
                   <p className="text-xs text-green-500 mt-0.5">
                     {prefecture} 宛・参考料金（税込）

@@ -48,15 +48,22 @@ export default async function EditOrderPage({
   const regularItems = orderItems?.filter((i) => !i.product_name.startsWith(SHIPPING_PREFIX));
 
   // Parse carrier/size from shipping item name
+  // 表記:
+  //   ヤマト/佐川: 「配送料（○○ Nサイズ）」
+  //   日通:       「配送料（日本通運 Nkgまで）」
   let defaultShipping: { carrier: string; size: number; feeTaxInc: number } | undefined;
   if (shippingItem) {
-    const m = shippingItem.product_name.match(/配送料（(.+?)\s+(\d+)サイズ）/);
+    const m = shippingItem.product_name.match(/配送料（(.+?)\s+(\d+)(サイズ|kgまで)）/);
     if (m) {
       const carrierName = m[1];
       const size = parseInt(m[2], 10);
-      const carrier = carrierName === "ヤマト運輸" ? "yamato" : carrierName === "佐川急便" ? "sagawa" : null;
+      const carrier =
+        carrierName === "ヤマト運輸" ? "yamato" :
+        carrierName === "佐川急便"   ? "sagawa" :
+        carrierName === "日本通運"   ? "nittsu" :
+        null;
       if (carrier && !isNaN(size)) {
-        // 税抜→税込の再構築（shipping.ts と同じ端数切り捨てロジック）
+        // 税抜→税込の再構築（佐川は元から税込テーブルだが、明細は税抜で保存されるため復元）
         const u = shippingItem.unit_price;
         const feeTaxInc = u + Math.floor(u * 0.1);
         defaultShipping = { carrier, size, feeTaxInc };

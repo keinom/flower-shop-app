@@ -1,26 +1,35 @@
 /**
  * 配送料計算ライブラリ
  *
- * 発送元: 東京都（関東エリア）
+ * 発送元: 東京都港区
  *
  * ヤマト運輸: 法人料金（税抜）× 1.1 = 税込表示
  * 佐川急便:   参考料金（税込）
+ * 日本通運:   店舗料金（税抜）× 1.1 = 税込表示
  */
 
-export type Carrier = "yamato" | "sagawa";
+export type Carrier = "yamato" | "sagawa" | "nittsu";
 
 export const CARRIER_NAMES: Record<Carrier, string> = {
   yamato: "ヤマト運輸",
   sagawa: "佐川急便",
+  nittsu: "日本通運",
 };
 
-// ヤマト: 60/80/100/120/140/160/180/200cm
-// 佐川:   60/80/100/120/140/160cm
+// ヤマト/佐川: 3辺合計サイズ (cm)、日本通運: 重量階段 (kg)
 export const YAMATO_SIZES = [60, 80, 100, 120, 140, 160, 180, 200] as const;
 export const SAGAWA_SIZES = [60, 80, 100, 120, 140, 160] as const;
+export const NITTSU_SIZES = [1, 2, 5, 10, 15, 20, 25, 30] as const;
 
 export type YamatoSize = (typeof YAMATO_SIZES)[number];
 export type SagawaSize = (typeof SAGAWA_SIZES)[number];
+export type NittsuSize = (typeof NITTSU_SIZES)[number];
+
+/** キャリアごとの選択肢ラベル（UI 表示用） */
+export function carrierSizeLabel(carrier: Carrier, size: number): string {
+  if (carrier === "nittsu") return `${size}kgまで`;
+  return `${size}サイズ`;
+}
 
 // サイズ説明（3辺合計）
 export const SIZE_LABELS: Record<number, string> = {
@@ -191,6 +200,70 @@ const SAGAWA_RATES: Record<SagawaSize, number[]> = {
   160: [ 2_200, 2_310, 2_420, 2_750, 2_640, 2_750, 2_860, 2_970, 3_190, 3_850],
 };
 
+// ─────────────────────────────────────────
+// 日本通運 ゾーン定義（東京都港区発送・店舗料金表）
+// ─────────────────────────────────────────
+// Z0:  北海道（全域）
+// Z1:  北東北（青森・岩手・秋田）
+// Z2:  南東北（宮城・山形・福島）
+// Z3:  関東（東京・神奈川・埼玉・千葉・茨城・栃木・群馬・山梨）
+// Z4:  信越（長野・新潟）
+// Z5:  北陸（富山・石川・福井）
+// Z6:  東海（愛知・三重・岐阜・静岡）
+// Z7:  関西（大阪・奈良・京都・兵庫・滋賀・和歌山）
+// Z8:  中国（広島・岡山・山口・鳥取・島根）
+// Z9:  四国（香川・徳島・高知・愛媛）
+// Z10: 北九州（福岡・佐賀・長崎・大分）
+// Z11: 南九州（熊本・宮崎・鹿児島）
+// Z12: 沖縄（本島のみ）
+
+export const NITTSU_ZONE_NAMES = [
+  "北海道（全域）",
+  "北東北（青森・岩手・秋田）",
+  "南東北（宮城・山形・福島）",
+  "関東（東京・神奈川・埼玉・千葉・茨城・栃木・群馬・山梨）",
+  "信越（長野・新潟）",
+  "北陸（富山・石川・福井）",
+  "東海（愛知・三重・岐阜・静岡）",
+  "関西（大阪・奈良・京都・兵庫・滋賀・和歌山）",
+  "中国（広島・岡山・山口・鳥取・島根）",
+  "四国（香川・徳島・高知・愛媛）",
+  "北九州（福岡・佐賀・長崎・大分）",
+  "南九州（熊本・宮崎・鹿児島）",
+  "沖縄（本島のみ）",
+];
+
+export const NITTSU_PREFECTURE_ZONE: Record<string, number> = {
+  北海道: 0,
+  青森県: 1, 岩手県: 1, 秋田県: 1,
+  宮城県: 2, 山形県: 2, 福島県: 2,
+  東京都: 3, 神奈川県: 3, 埼玉県: 3, 千葉県: 3,
+  茨城県: 3, 栃木県: 3, 群馬県: 3, 山梨県: 3,
+  長野県: 4, 新潟県: 4,
+  富山県: 5, 石川県: 5, 福井県: 5,
+  愛知県: 6, 三重県: 6, 岐阜県: 6, 静岡県: 6,
+  大阪府: 7, 奈良県: 7, 京都府: 7, 兵庫県: 7, 滋賀県: 7, 和歌山県: 7,
+  広島県: 8, 岡山県: 8, 山口県: 8, 鳥取県: 8, 島根県: 8,
+  香川県: 9, 徳島県: 9, 高知県: 9, 愛媛県: 9,
+  福岡県: 10, 佐賀県: 10, 長崎県: 10, 大分県: 10,
+  熊本県: 11, 宮崎県: 11, 鹿児島県: 11,
+  沖縄県: 12,
+};
+
+// 日本通運 店舗料金（税抜・円）— 東京都港区発送
+// 列: Z0〜Z12（上記ゾーン順）
+const NITTSU_RATES: Record<NittsuSize, number[]> = {
+  //          Z0     Z1     Z2     Z3     Z4     Z5     Z6     Z7     Z8     Z9    Z10    Z11    Z12
+   1: [ 1_640, 1_070,   960,   820,   940, 1_070, 1_010, 1_120, 1_390, 1_370, 1_510, 1_580, 1_750],
+   2: [ 2_030, 1_460, 1_310,   940, 1_070, 1_460, 1_380, 1_500, 1_780, 1_770, 1_910, 1_970, 2_150],
+   5: [ 2_650, 2_080, 1_900, 1_160, 1_360, 2_080, 1_960, 2_140, 2_390, 2_390, 2_520, 2_600, 3_170],
+  10: [ 3_280, 2_710, 2_490, 1_500, 1_630, 2_710, 2_560, 2_750, 3_020, 3_010, 3_160, 3_220, 4_160],
+  15: [ 3_900, 3_320, 3_070, 1_720, 1_910, 3_320, 3_130, 3_390, 3_650, 3_650, 3_770, 3_830, 5_180],
+  20: [ 4_530, 3_940, 3_670, 1_960, 2_180, 3_940, 3_720, 4_010, 4_270, 4_260, 4_400, 4_460, 6_190],
+  25: [ 5_790, 5_080, 4_740, 2_370, 2_820, 5_080, 4_790, 5_150, 5_530, 5_660, 5_720, 5_840, 7_840],
+  30: [ 7_060, 6_220, 5_810, 2_920, 3_460, 6_220, 5_870, 6_260, 6_800, 6_780, 6_930, 6_980, 9_480],
+};
+
 // 後方互換（既存コードが PREFECTURE_ZONE / ZONE_NAMES を参照している場合）
 export const PREFECTURE_ZONE = SAGAWA_PREFECTURE_ZONE;
 export const ZONE_NAMES = SAGAWA_ZONE_NAMES;
@@ -233,15 +306,22 @@ export function calcShippingFee(
     if (!row) return null;
     const taxExcl = row[zone];
     if (taxExcl === undefined) return null;
-    // 税抜 → 税込（消費税10%・端数切り捨て）
-    // ※ Math.ceil(taxExcl * 1.1) は浮動小数点誤差で1円ずれるため整数演算で計算
     return taxExcl + Math.floor(taxExcl * 0.1);
-  } else {
-    const zone = SAGAWA_PREFECTURE_ZONE[prefecture];
-    if (zone === undefined) return null;
-    const row = SAGAWA_RATES[size as SagawaSize];
-    return row ? (row[zone] ?? null) : null;
   }
+  if (carrier === "nittsu") {
+    const zone = NITTSU_PREFECTURE_ZONE[prefecture];
+    if (zone === undefined) return null;
+    const row = NITTSU_RATES[size as NittsuSize];
+    if (!row) return null;
+    const taxExcl = row[zone];
+    if (taxExcl === undefined) return null;
+    return taxExcl + Math.floor(taxExcl * 0.1);
+  }
+  // sagawa: 税込テーブル
+  const zone = SAGAWA_PREFECTURE_ZONE[prefecture];
+  if (zone === undefined) return null;
+  const row = SAGAWA_RATES[size as SagawaSize];
+  return row ? (row[zone] ?? null) : null;
 }
 
 /**
@@ -254,7 +334,9 @@ export function toTaxExclusive(taxInclusivePrice: number): number {
 
 /**
  * 配送料明細の商品名を生成する
+ *  ヤマト/佐川: 「配送料（ヤマト運輸 80サイズ）」
+ *  日本通運:   「配送料（日本通運 5kgまで）」
  */
 export function shippingItemName(carrier: Carrier, size: number): string {
-  return `配送料（${CARRIER_NAMES[carrier]} ${size}サイズ）`;
+  return `配送料（${CARRIER_NAMES[carrier]} ${carrierSizeLabel(carrier, size)}）`;
 }
