@@ -163,8 +163,13 @@ export default async function OrderReceiptPage() {
                     letterSpacing: "0.02em",
                   }}
                 >
-                  令和&emsp;年&emsp;月&emsp;日（&emsp;）&emsp;
-                  配達&emsp;御来店&emsp;発送&emsp;&emsp;AM/PM&emsp;&emsp;迄
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span>
+                      令和&emsp;年&emsp;月&emsp;日（&emsp;）&emsp;
+                      配達&emsp;御来店&emsp;発送&emsp;&emsp;AM/PM
+                    </span>
+                    <span>迄</span>
+                  </div>
                 </td>
               </tr>
 
