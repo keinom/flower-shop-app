@@ -27,13 +27,13 @@ const vLabel = (extra: React.CSSProperties = {}): React.CSSProperties => ({
 
 // ── 住所行（点線3本） ──────────────────────────────────────
 const AddressLines = () => (
-  <div style={{ paddingTop: "1mm" }}>
+  <div style={{ paddingTop: "0.5mm" }}>
     {[0, 1, 2].map((i) => (
       <div
         key={i}
         style={{
           borderBottom: "1px dotted #555",
-          height: "5mm",
+          height: "3.5mm",
         }}
       />
     ))}
@@ -59,7 +59,7 @@ export default async function OrderReceiptPage() {
         * { box-sizing: border-box; }
 
         @media print {
-          @page { size: A4 portrait; margin: 8mm; }
+          @page { size: A5 portrait; margin: 6mm; }
           html, body {
             margin: 0;
             padding: 0;
@@ -69,8 +69,8 @@ export default async function OrderReceiptPage() {
           }
           .receipt-wrapper { padding: 0 !important; background: none !important; }
           .receipt-page {
-            width: 194mm !important;   /* 210mm - 8mm*2 */
-            height: 281mm !important;  /* 297mm - 8mm*2 */
+            width: 136mm !important;   /* 148mm - 6mm*2 */
+            height: 198mm !important;  /* 210mm - 6mm*2 */
             min-height: 0 !important;
             padding: 0 !important;
             margin: 0 !important;
@@ -93,8 +93,8 @@ export default async function OrderReceiptPage() {
           .receipt-page {
             background: white;
             box-shadow: 0 8px 40px rgba(0,0,0,0.22);
-            width: 194mm;
-            height: 281mm;
+            width: 136mm;
+            height: 198mm;
             padding: 0;
             overflow: hidden;
           }
@@ -120,14 +120,14 @@ export default async function OrderReceiptPage() {
             <tbody>
 
               {/* ── 行1: 注文受票 / 令和　年　月　日受付 / 担当 ── */}
-              <tr style={{ height: "12mm" }}>
+              <tr style={{ height: "10mm" }}>
                 <td
                   colSpan={9}
                   style={{
                     ...cell(),
-                    fontSize:   "14pt",
+                    fontSize:   "11pt",
                     fontWeight: "bold",
-                    padding:    "2mm 4mm",
+                    padding:    "1mm 3mm",
                   }}
                 >
                   注文受票
@@ -136,188 +136,189 @@ export default async function OrderReceiptPage() {
                   colSpan={15}
                   style={{
                     ...cell(),
-                    fontSize: "11pt",
-                    padding:  "1.5mm 4mm",
+                    fontSize: "9pt",
+                    padding:  "0.5mm 3mm",
                     textAlign: "right",
+                    lineHeight: 1.3,
                   }}
                 >
                   <div>令和&emsp;&emsp;年&emsp;&emsp;月&emsp;&emsp;日受付</div>
-                  <div style={{ marginTop: "2mm" }}>担当（&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;）</div>
+                  <div>担当（&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;）</div>
                 </td>
               </tr>
 
               {/* ── 行2: 配達日 + 種別 + 時間帯 ── */}
-              <tr style={{ height: "10mm" }}>
+              <tr style={{ height: "7mm" }}>
                 <td
                   colSpan={24}
                   style={{
                     ...cell(),
-                    fontSize: "11pt",
-                    padding:  "1.5mm 4mm",
-                    letterSpacing: "0.04em",
+                    fontSize: "9pt",
+                    padding:  "1mm 3mm",
+                    letterSpacing: "0.02em",
                   }}
                 >
-                  令和&emsp;&emsp;年&emsp;&emsp;月&emsp;&emsp;日（&emsp;&emsp;）&emsp;&emsp;
-                  配達&emsp;御来店&emsp;発送&emsp;&emsp;&emsp;AM/PM&emsp;&emsp;送&emsp;
+                  令和&emsp;年&emsp;月&emsp;日（&emsp;）&emsp;
+                  配達&emsp;御来店&emsp;発送&emsp;&emsp;AM/PM&emsp;&emsp;送
                 </td>
               </tr>
 
               {/* ══════ 御届先様 ══════ */}
-              <tr style={{ height: "10mm" }}>
+              <tr style={{ height: "7mm" }}>
                 <td
                   rowSpan={4}
                   colSpan={3}
                   style={vLabel({
-                    fontSize: "12pt",
-                    letterSpacing: "0.3em",
+                    fontSize: "10pt",
+                    letterSpacing: "0.2em",
                   })}
                 >
                   御届先様
                 </td>
-                <td colSpan={21} style={{ ...cell(), padding: "1.5mm 4mm", fontSize: "10pt" }}>
+                <td colSpan={21} style={{ ...cell(), padding: "1mm 3mm", fontSize: "9pt" }}>
                   ご住所
                 </td>
               </tr>
-              <tr style={{ height: "20mm" }}>
-                <td colSpan={21} style={{ ...cell(), padding: "0 4mm" }}>
+              <tr style={{ height: "13mm" }}>
+                <td colSpan={21} style={{ ...cell(), padding: "0 3mm" }}>
                   <AddressLines />
                 </td>
               </tr>
-              <tr style={{ height: "9mm" }}>
+              <tr style={{ height: "7mm" }}>
                 <td
                   colSpan={21}
-                  style={{ ...cell(), padding: "1.5mm 4mm", fontSize: "10.5pt", textAlign: "center" }}
+                  style={{ ...cell(), padding: "1mm 3mm", fontSize: "9pt", textAlign: "center" }}
                 >
-                  TEL/携帯電話&emsp;&emsp;&emsp;（&emsp;&emsp;&emsp;&emsp;&emsp;）
+                  TEL/携帯電話&emsp;&emsp;（&emsp;&emsp;&emsp;&emsp;）
                 </td>
               </tr>
-              <tr style={{ height: "12mm" }}>
+              <tr style={{ height: "8mm" }}>
                 <td
                   colSpan={21}
-                  style={{ ...cell(), padding: "1mm 4mm", fontSize: "12pt", textAlign: "right", verticalAlign: "bottom" }}
+                  style={{ ...cell(), padding: "1mm 3mm", fontSize: "10pt", textAlign: "right", verticalAlign: "bottom" }}
                 >
                   様
                 </td>
               </tr>
 
               {/* ══════ 御注文主 ══════ */}
-              <tr style={{ height: "10mm" }}>
+              <tr style={{ height: "7mm" }}>
                 <td
                   rowSpan={4}
                   colSpan={3}
                   style={vLabel({
-                    fontSize: "12pt",
-                    letterSpacing: "0.3em",
+                    fontSize: "10pt",
+                    letterSpacing: "0.2em",
                   })}
                 >
                   御注文主
                 </td>
-                <td colSpan={21} style={{ ...cell(), padding: "1.5mm 4mm", fontSize: "10pt" }}>
+                <td colSpan={21} style={{ ...cell(), padding: "1mm 3mm", fontSize: "9pt" }}>
                   ご住所
                 </td>
               </tr>
-              <tr style={{ height: "20mm" }}>
-                <td colSpan={21} style={{ ...cell(), padding: "0 4mm" }}>
+              <tr style={{ height: "13mm" }}>
+                <td colSpan={21} style={{ ...cell(), padding: "0 3mm" }}>
                   <AddressLines />
                 </td>
               </tr>
-              <tr style={{ height: "9mm" }}>
+              <tr style={{ height: "7mm" }}>
                 <td
                   colSpan={21}
-                  style={{ ...cell(), padding: "1.5mm 4mm", fontSize: "10.5pt", textAlign: "center" }}
+                  style={{ ...cell(), padding: "1mm 3mm", fontSize: "9pt", textAlign: "center" }}
                 >
-                  TEL/携帯電話&emsp;&emsp;&emsp;（&emsp;&emsp;&emsp;&emsp;&emsp;）
+                  TEL/携帯電話&emsp;&emsp;（&emsp;&emsp;&emsp;&emsp;）
                 </td>
               </tr>
-              <tr style={{ height: "12mm" }}>
+              <tr style={{ height: "8mm" }}>
                 <td
                   colSpan={21}
-                  style={{ ...cell(), padding: "1mm 4mm", fontSize: "12pt", textAlign: "right", verticalAlign: "bottom" }}
+                  style={{ ...cell(), padding: "1mm 3mm", fontSize: "10pt", textAlign: "right", verticalAlign: "bottom" }}
                 >
                   様
                 </td>
               </tr>
 
               {/* ══════ 御用途 ══════ */}
-              <tr style={{ height: "10mm" }}>
+              <tr style={{ height: "7mm" }}>
                 <td
                   colSpan={3}
-                  style={{ ...cell(), textAlign: "center", fontWeight: "bold", fontSize: "11pt" }}
+                  style={{ ...cell(), textAlign: "center", fontWeight: "bold", fontSize: "9.5pt" }}
                 >
                   御用途
                 </td>
                 <td
                   colSpan={21}
-                  style={{ ...cell(), padding: "1.5mm 4mm", fontSize: "11pt" }}
+                  style={{ ...cell(), padding: "1mm 3mm", fontSize: "9.5pt" }}
                 >
-                  お祝い（&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;/お誕生日）&emsp;御供（&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;）
+                  お祝い（&emsp;&emsp;&emsp;&emsp;&emsp;/お誕生日）&emsp;御供（&emsp;&emsp;&emsp;&emsp;&emsp;）
                 </td>
               </tr>
 
               {/* ══════ 品名 (2行 × 4列 のチェック欄) ══════ */}
-              <tr style={{ height: "9mm" }}>
+              <tr style={{ height: "7mm" }}>
                 <td
                   rowSpan={2}
                   colSpan={3}
-                  style={{ ...cell(), textAlign: "center", fontWeight: "bold", fontSize: "11pt" }}
+                  style={{ ...cell(), textAlign: "center", fontWeight: "bold", fontSize: "9.5pt" }}
                 >
                   品名
                 </td>
-                <td colSpan={5} style={{ ...cell(), padding: "1mm 3mm", fontSize: "10.5pt" }}>アレンジメント</td>
-                <td colSpan={5} style={{ ...cell(), padding: "1mm 3mm", fontSize: "10.5pt" }}>盛り花</td>
-                <td colSpan={5} style={{ ...cell(), padding: "1mm 3mm", fontSize: "10.5pt" }}>花束</td>
+                <td colSpan={5} style={{ ...cell(), padding: "0.5mm 2mm", fontSize: "9pt" }}>アレンジメント</td>
+                <td colSpan={5} style={{ ...cell(), padding: "0.5mm 2mm", fontSize: "9pt" }}>盛り花</td>
+                <td colSpan={5} style={{ ...cell(), padding: "0.5mm 2mm", fontSize: "9pt" }}>花束</td>
                 <td colSpan={6} style={{ ...cell() }} />
               </tr>
-              <tr style={{ height: "9mm" }}>
-                <td colSpan={5} style={{ ...cell(), padding: "1mm 3mm", fontSize: "10.5pt" }}>鉢植</td>
-                <td colSpan={5} style={{ ...cell(), padding: "1mm 3mm", fontSize: "10.5pt" }}>スタンド花</td>
-                <td colSpan={5} style={{ ...cell(), padding: "1mm 3mm", fontSize: "10.5pt" }}>その他</td>
+              <tr style={{ height: "7mm" }}>
+                <td colSpan={5} style={{ ...cell(), padding: "0.5mm 2mm", fontSize: "9pt" }}>鉢植</td>
+                <td colSpan={5} style={{ ...cell(), padding: "0.5mm 2mm", fontSize: "9pt" }}>スタンド花</td>
+                <td colSpan={5} style={{ ...cell(), padding: "0.5mm 2mm", fontSize: "9pt" }}>その他</td>
                 <td colSpan={6} style={{ ...cell() }} />
               </tr>
 
               {/* ══════ 金額 ══════ */}
-              <tr style={{ height: "13mm" }}>
+              <tr style={{ height: "9mm" }}>
                 <td
                   colSpan={3}
-                  style={{ ...cell(), textAlign: "center", fontWeight: "bold", fontSize: "11pt" }}
+                  style={{ ...cell(), textAlign: "center", fontWeight: "bold", fontSize: "9.5pt" }}
                 >
                   金額
                 </td>
                 <td
                   colSpan={21}
-                  style={{ ...cell(), padding: "1mm 4mm", fontSize: "12pt", textAlign: "right", verticalAlign: "bottom" }}
+                  style={{ ...cell(), padding: "1mm 3mm", fontSize: "10pt", textAlign: "right", verticalAlign: "bottom" }}
                 >
                   計&nbsp;¥
                 </td>
               </tr>
 
               {/* ══════ 支払方法 ══════ */}
-              <tr style={{ height: "10mm" }}>
+              <tr style={{ height: "7mm" }}>
                 <td
                   colSpan={3}
-                  style={{ ...cell(), textAlign: "center", fontWeight: "bold", fontSize: "11pt" }}
+                  style={{ ...cell(), textAlign: "center", fontWeight: "bold", fontSize: "9.5pt" }}
                 >
                   支払方法
                 </td>
                 <td
                   colSpan={21}
-                  style={{ ...cell(), padding: "1.5mm 4mm", fontSize: "11pt", textAlign: "center" }}
+                  style={{ ...cell(), padding: "1mm 3mm", fontSize: "9.5pt", textAlign: "center" }}
                 >
-                  代済&emsp;・&emsp;未納&emsp;&emsp;（掛&emsp;&emsp;&emsp;&emsp;納品時払）
+                  代済&emsp;・&emsp;未納&emsp;&emsp;（掛&emsp;&emsp;&emsp;納品時払）
                 </td>
               </tr>
 
               {/* ══════ カード/名札/備考 ══════ */}
-              <tr style={{ height: "60mm" }}>
+              <tr style={{ height: "38mm" }}>
                 <td
                   colSpan={3}
                   style={{
                     ...cell(),
                     textAlign: "center",
                     verticalAlign: "top",
-                    padding: "2mm 1mm",
-                    fontSize: "10.5pt",
-                    lineHeight: 1.6,
+                    padding: "1.5mm 1mm",
+                    fontSize: "9pt",
+                    lineHeight: 1.5,
                   }}
                 >
                   カード<br />名札<br />備考<br />詳細は裏

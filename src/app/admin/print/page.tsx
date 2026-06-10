@@ -15,8 +15,8 @@ export default function PrintHubPage() {
     {
       id:          "order-receipt",
       title:       "ご注文票",
-      description: "御届先・御注文主・用途・品名等の手書き受票。A4縦で印刷。",
-      size:        "A4 縦",
+      description: "御届先・御注文主・用途・品名等の手書き受票。A5縦で印刷。",
+      size:        "A5 縦",
       href:        "/print/order-receipt",
       icon:        "📝",
     },
