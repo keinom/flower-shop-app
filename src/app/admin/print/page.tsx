@@ -6,7 +6,7 @@ export default function PrintHubPage() {
   const forms = [
     {
       id:          "order-slip",
-      title:       "御注文票",
+      title:       "茶花注文表",
       description: "手書き注文表と同一レイアウト。A5縦で印刷。",
       size:        "A5 縦",
       href:        "/print/order-slip",
