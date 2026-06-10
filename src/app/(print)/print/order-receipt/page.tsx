@@ -315,7 +315,7 @@ export default async function OrderReceiptPage() {
               </tr>
 
               {/* ══════ カード/名札/備考 ══════ */}
-              <tr style={{ height: "42mm" }}>
+              <tr style={{ height: "36mm" }}>
                 <td
                   colSpan={3}
                   style={{
