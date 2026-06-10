@@ -297,21 +297,22 @@ export default async function OrderSlipPage() {
               </tr>
 
               {/* ── 行8: 品名 ── */}
+              {/* ── 品名 / 花入 / 備考 は罫線で区切らず連続表示 ── */}
               <tr style={{ height: "33mm" }}>
-                <td colSpan={2} style={vLabel()}>品名</td>
-                <td colSpan={10} style={cell()} />
+                <td colSpan={2} style={vLabel({ borderBottom: "none" })}>品名</td>
+                <td colSpan={10} style={cell({ borderBottom: "none" })} />
               </tr>
 
               {/* ── 行9: 花入 ── */}
               <tr style={{ height: "33mm" }}>
-                <td colSpan={2} style={vLabel()}>花入</td>
-                <td colSpan={10} style={cell()} />
+                <td colSpan={2} style={vLabel({ borderTop: "none", borderBottom: "none" })}>花入</td>
+                <td colSpan={10} style={cell({ borderTop: "none", borderBottom: "none" })} />
               </tr>
 
               {/* ── 行10: 備考 ── */}
               <tr style={{ height: "33mm" }}>
-                <td colSpan={2} style={vLabel()}>備考</td>
-                <td colSpan={10} style={cell()} />
+                <td colSpan={2} style={vLabel({ borderTop: "none" })}>備考</td>
+                <td colSpan={10} style={cell({ borderTop: "none" })} />
               </tr>
 
             </tbody>
