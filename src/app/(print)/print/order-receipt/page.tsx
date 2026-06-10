@@ -164,7 +164,7 @@ export default async function OrderReceiptPage() {
                   }}
                 >
                   令和&emsp;年&emsp;月&emsp;日（&emsp;）&emsp;
-                  配達&emsp;御来店&emsp;発送&emsp;&emsp;AM/PM&emsp;&emsp;送
+                  配達&emsp;御来店&emsp;発送&emsp;&emsp;AM/PM&emsp;&emsp;迄
                 </td>
               </tr>
 
