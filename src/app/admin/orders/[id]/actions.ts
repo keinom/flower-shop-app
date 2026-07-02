@@ -98,6 +98,68 @@ export async function updatePaymentStatus(
   return null;
 }
 
+export async function deleteOrder(formData: FormData) {
+  const orderId = formData.get("order_id") as string;
+  if (!orderId) redirect("/admin/orders");
+
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  // 請求書に紐づく注文は削除不可（請求データの整合性を守る）
+  const { data: linkedInvoiceItems } = await supabase
+    .from("invoice_items")
+    .select("invoice_id")
+    .eq("order_id", orderId)
+    .limit(1);
+
+  if (linkedInvoiceItems && linkedInvoiceItems.length > 0) {
+    redirect(
+      `/admin/orders/${orderId}?error=${encodeURIComponent(
+        "この注文は請求書に紐づいているため削除できません。先に該当の請求書を削除・修正してください。"
+      )}`
+    );
+  }
+
+  // 添付写真をストレージごと削除
+  const { data: rawPhotos } = await supabase
+    .from("order_photos" as never)
+    .select("storage_path")
+    .eq("order_id", orderId);
+
+  const photoPaths = ((rawPhotos ?? []) as Array<{ storage_path: string }>).map(
+    (p) => p.storage_path
+  );
+  if (photoPaths.length > 0) {
+    await supabase.storage.from("order-photos").remove(photoPaths);
+    await supabase.from("order_photos" as never).delete().eq("order_id", orderId);
+  }
+
+  // 注文を削除（order_items / order_status_logs は ON DELETE CASCADE）
+  // RLS で削除できなかった場合（admin 以外）は 0 件になるため、削除結果を確認する
+  const { data: deleted, error: deleteError } = await supabase
+    .from("orders")
+    .delete()
+    .eq("id", orderId)
+    .select("id");
+
+  if (deleteError || !deleted || deleted.length === 0) {
+    redirect(
+      `/admin/orders/${orderId}?error=${encodeURIComponent(
+        "注文の削除に失敗しました。削除は管理者のみ実行できます。"
+      )}`
+    );
+  }
+
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin");
+  revalidatePath("/admin/daily");
+  redirect(`/admin/orders?deleted=1`);
+}
+
 export async function updateOrderStatus(formData: FormData) {
   const orderId = formData.get("order_id") as string;
   const newStatus = formData.get("new_status") as OrderStatus;
