@@ -11,7 +11,7 @@ export function DeleteOrderButton({ orderId, deliveryName }: Props) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     if (
       !confirm(
-        `「${deliveryName}」宛の注文を完全に削除しますか？\n\n商品明細・変更履歴・写真もすべて削除されます。\nこの操作は取り消せません。`
+        `「${deliveryName}」宛の注文を削除しますか？\n\n商品明細・変更履歴・写真もあわせて削除されます（削除後は元に戻せません）。`
       )
     ) {
       e.preventDefault();
