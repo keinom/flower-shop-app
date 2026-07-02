@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AdminOrderEditClient } from "@/components/admin/AdminOrderEditClient";
+import { isShippingItemName, parseShippingItemName } from "@/lib/shipping";
 
 interface EditOrderPageProps {
   params: Promise<{ id: string }>;
@@ -42,32 +43,17 @@ export default async function EditOrderPage({
   const today   = new Date().toISOString().split("T")[0];
   const customer = order.customers as { id: string; name: string } | null;
 
-  // Detect shipping item
-  const SHIPPING_PREFIX = "配送料（";
-  const shippingItem = orderItems?.find((i) => i.product_name.startsWith(SHIPPING_PREFIX));
-  const regularItems = orderItems?.filter((i) => !i.product_name.startsWith(SHIPPING_PREFIX));
+  // 配送料明細を分離し、配送料セレクタの初期値として復元
+  const shippingItem = orderItems?.find((i) => isShippingItemName(i.product_name));
+  const regularItems = orderItems?.filter((i) => !isShippingItemName(i.product_name));
 
-  // Parse carrier/size from shipping item name
-  // 表記:
-  //   ヤマト/佐川: 「配送料（○○ Nサイズ）」
-  //   日通:       「配送料（日本通運 Nkgまで）」
   let defaultShipping: { carrier: string; size: number; feeTaxInc: number } | undefined;
   if (shippingItem) {
-    const m = shippingItem.product_name.match(/配送料（(.+?)\s+(\d+)(サイズ|kgまで)）/);
-    if (m) {
-      const carrierName = m[1];
-      const size = parseInt(m[2], 10);
-      const carrier =
-        carrierName === "ヤマト運輸" ? "yamato" :
-        carrierName === "佐川急便"   ? "sagawa" :
-        carrierName === "日本通運"   ? "nittsu" :
-        null;
-      if (carrier && !isNaN(size)) {
-        // 税抜→税込の再構築（佐川は元から税込テーブルだが、明細は税抜で保存されるため復元）
-        const u = shippingItem.unit_price;
-        const feeTaxInc = u + Math.floor(u * 0.1);
-        defaultShipping = { carrier, size, feeTaxInc };
-      }
+    const parsed = parseShippingItemName(shippingItem.product_name);
+    if (parsed) {
+      // 税抜→税込の再構築（佐川は元から税込テーブルだが、明細は税抜で保存されるため復元）
+      const u = shippingItem.unit_price;
+      defaultShipping = { ...parsed, feeTaxInc: u + Math.floor(u * 0.1) };
     }
   }
 

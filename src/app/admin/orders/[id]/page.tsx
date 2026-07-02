@@ -106,6 +106,13 @@ export default async function OrderDetailPage({
           >
             🖨 ギフト用
           </Link>
+          <span className="h-5 w-px bg-gray-200 mx-1" aria-hidden="true" />
+          <Link
+            href={`/admin/orders/new?copy_from=${id}`}
+            className="text-xs font-medium px-3 py-1.5 rounded-md border bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 transition-colors"
+          >
+            📋 コピーして作成
+          </Link>
           <Link href={`/admin/orders/${id}/edit`} className="btn-secondary text-sm">
             ✏️ 編集
           </Link>

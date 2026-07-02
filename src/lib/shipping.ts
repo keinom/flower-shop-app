@@ -340,3 +340,25 @@ export function toTaxExclusive(taxInclusivePrice: number): number {
 export function shippingItemName(carrier: Carrier, size: number): string {
   return `配送料（${CARRIER_NAMES[carrier]} ${carrierSizeLabel(carrier, size)}）`;
 }
+
+/** 商品明細が配送料明細（shippingItemName で生成されたもの）かどうか */
+export function isShippingItemName(productName: string): boolean {
+  return productName.startsWith("配送料（");
+}
+
+/**
+ * 配送料明細の商品名から配送会社・サイズを復元する（shippingItemName の逆変換）
+ * 該当しない商品名の場合は null
+ */
+export function parseShippingItemName(
+  productName: string
+): { carrier: Carrier; size: number } | null {
+  const m = productName.match(/配送料（(.+?)\s+(\d+)(サイズ|kgまで)）/);
+  if (!m) return null;
+  const carrier = (Object.keys(CARRIER_NAMES) as Carrier[]).find(
+    (c) => CARRIER_NAMES[c] === m[1]
+  );
+  const size = parseInt(m[2], 10);
+  if (!carrier || isNaN(size)) return null;
+  return { carrier, size };
+}
