@@ -21,6 +21,7 @@ interface SearchParams {
   amount_min?: string;
   amount_max?: string;
   searched?: string;
+  deleted?: string;
 }
 
 interface OrdersPageProps {
@@ -34,7 +35,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
 
   // 詳細から戻る用に現在の検索条件を query string に
   const currentQuery = new URLSearchParams(
-    Object.entries(p).filter(([, v]) => v != null && v !== "") as [string, string][],
+    Object.entries(p).filter(([k, v]) => k !== "deleted" && v != null && v !== "") as [string, string][],
   ).toString();
   const detailQuery = currentQuery ? `?from=${encodeURIComponent(currentQuery)}` : "";
 
@@ -133,6 +134,13 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
           + 注文を作成
         </Link>
       </div>
+
+      {/* ─── 削除完了 ─── */}
+      {p.deleted && (
+        <div className="p-3 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
+          注文を削除しました
+        </div>
+      )}
 
       {/* ─── 検索フォーム（Client Component） ─── */}
       <Suspense>

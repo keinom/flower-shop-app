@@ -7,8 +7,10 @@ import { ORDER_STATUSES } from "@/lib/constants";
 import { updateOrderStatus } from "./actions";
 import { OrderPhotoPanel } from "@/components/admin/OrderPhotoPanel";
 import { PaymentPanel } from "@/components/admin/PaymentPanel";
+import { DeleteOrderButton } from "@/components/admin/DeleteOrderButton";
 import type { OrderStatus, OrderType } from "@/types";
 import { formatJstDate, formatJstDateTime } from "@/lib/date";
+import { oneLineName } from "@/lib/name";
 
 interface OrderDetailPageProps {
   params: Promise<{ id: string }>;
@@ -30,6 +32,15 @@ export default async function OrderDetailPage({
     .single();
 
   if (!order) notFound();
+
+  // 削除は管理者のみ（従業員にはボタン自体を表示しない）
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: profile } = user
+    ? await supabase.from("profiles").select("role").eq("id", user.id).single()
+    : { data: null };
+  const isAdmin = profile?.role === "admin";
 
   const { data: logs } = await supabase
     .from("order_status_logs")
@@ -437,6 +448,16 @@ export default async function OrderDetailPage({
             currentPaymentPlan={paymentPlan}
           />
 
+          {/* 危険な操作（管理者のみ） */}
+          {isAdmin && (
+            <div className="card p-4 border-red-100">
+              <h2 className="text-sm font-semibold text-red-600 mb-2">危険な操作</h2>
+              <p className="text-xs text-gray-500 mb-3">
+                誤って作成した注文を完全に削除します。商品明細・変更履歴・写真も削除され、元に戻せません。
+              </p>
+              <DeleteOrderButton orderId={id} deliveryName={oneLineName(order.delivery_name)} />
+            </div>
+          )}
 
 </div>
       </div>
