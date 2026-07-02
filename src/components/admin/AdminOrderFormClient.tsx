@@ -24,14 +24,38 @@ interface Customer {
   address: string | null;
 }
 
+/** 過去注文コピー時にフォームへプリセットする値（日付系は引き継がない） */
+export interface AdminOrderCopyDefaults {
+  order_type: import("@/types").OrderType;
+  delivery_name: string;
+  print_sender_name: string | null;
+  delivery_postal_code: string | null;
+  delivery_address: string | null;
+  delivery_phone: string | null;
+  delivery_email: string | null;
+  delivery_time_start: string | null;
+  delivery_time_end: string | null;
+  purpose: string | null;
+  message_card: string | null;
+  remarks: string | null;
+  items: {
+    product_name: string;
+    description: string | null;
+    quantity: number;
+    unit_price: number;
+  }[];
+  shipping?: { carrier: import("@/lib/shipping").Carrier; size: number; feeTaxInc: number };
+}
+
 interface Props {
   customers: Customer[];
   today: string;
   taxRate: number;
   presetCustomerId?: string;
+  copyDefaults?: AdminOrderCopyDefaults;
 }
 
-export function AdminOrderFormClient({ customers, today, taxRate, presetCustomerId }: Props) {
+export function AdminOrderFormClient({ customers, today, taxRate, presetCustomerId, copyDefaults }: Props) {
   // ── 顧客モード ──
   const preset = presetCustomerId
     ? (customers.find((c) => c.id === presetCustomerId) ?? null)
@@ -54,15 +78,15 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // ── お届け先フィールド（controlledで反映ボタンに対応）──
-  const [deliveryName, setDeliveryName]             = useState("");
-  const [deliveryPostalCode, setDeliveryPostalCode] = useState("");
-  const [deliveryAddress, setDeliveryAddress]       = useState("");
-  const [deliveryPhone, setDeliveryPhone]           = useState("");
-  const [deliveryEmail, setDeliveryEmail]           = useState("");
-  const [printSenderName, setPrintSenderName]       = useState("");
+  const [deliveryName, setDeliveryName]             = useState(copyDefaults?.delivery_name ?? "");
+  const [deliveryPostalCode, setDeliveryPostalCode] = useState(copyDefaults?.delivery_postal_code ?? "");
+  const [deliveryAddress, setDeliveryAddress]       = useState(copyDefaults?.delivery_address ?? "");
+  const [deliveryPhone, setDeliveryPhone]           = useState(copyDefaults?.delivery_phone ?? "");
+  const [deliveryEmail, setDeliveryEmail]           = useState(copyDefaults?.delivery_email ?? "");
+  const [printSenderName, setPrintSenderName]       = useState(copyDefaults?.print_sender_name ?? "");
 
   // ── 注文種別 ──
-  const [orderType, setOrderType] = useState<import("@/types").OrderType>("配達");
+  const [orderType, setOrderType] = useState<import("@/types").OrderType>(copyDefaults?.order_type ?? "配達");
 
   // ── 合計金額 ──
   const [itemsTotal, setItemsTotal] = useState(0);
@@ -170,7 +194,7 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
         <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">
           注文種別 <span className="text-red-500">*</span>
         </h2>
-        <OrderTypeSelector onChange={setOrderType} />
+        <OrderTypeSelector defaultValue={copyDefaults?.order_type ?? "配達"} onChange={setOrderType} />
       </section>
 
       {/* ══════════════════════════════════════════
@@ -533,7 +557,10 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
               希望時間帯
               <span className="text-gray-400 text-xs font-normal ml-1">（任意）</span>
             </p>
-            <DeliveryTimeInput />
+            <DeliveryTimeInput
+              defaultStart={copyDefaults?.delivery_time_start}
+              defaultEnd={copyDefaults?.delivery_time_end}
+            />
           </div>
         )}
       </section>
@@ -543,10 +570,10 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
       ══════════════════════════════════════════ */}
       <section className="card p-5 space-y-4">
         <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">商品情報</h2>
-        <OrderItemsInput taxRate={taxRate} onTotalChange={setItemsTotal} />
+        <OrderItemsInput taxRate={taxRate} defaultItems={copyDefaults?.items} onTotalChange={setItemsTotal} />
         <div>
           <label htmlFor="purpose" className="label">用途</label>
-          <select id="purpose" name="purpose" className="input" defaultValue="">
+          <select id="purpose" name="purpose" className="input" defaultValue={copyDefaults?.purpose ?? ""}>
             <option value="">選択してください（任意）</option>
             {ORDER_PURPOSES.map((p) => (
               <option key={p} value={p}>{p}</option>
@@ -561,6 +588,7 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
       <ShippingFeeSelector
         deliveryAddress={deliveryAddress}
         onFeeChange={setShippingFee}
+        defaultShipping={copyDefaults?.shipping}
       />
 
       {/* ══════════════════════════════════════════
@@ -577,6 +605,7 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
             id="message_card"
             name="message_card"
             rows={3}
+            defaultValue={copyDefaults?.message_card ?? ""}
             placeholder={"例: 開店おめでとうございます。\nご多幸をお祈り申し上げます。"}
             className="input resize-none"
           />
@@ -597,6 +626,7 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
             id="remarks"
             name="remarks"
             rows={3}
+            defaultValue={copyDefaults?.remarks ?? ""}
             placeholder="例: 白系でまとめてください / 午前中配達希望"
             className="input resize-none"
           />
