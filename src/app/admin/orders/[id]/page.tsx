@@ -448,12 +448,12 @@ export default async function OrderDetailPage({
             currentPaymentPlan={paymentPlan}
           />
 
-          {/* 危険な操作（管理者のみ） */}
+          {/* 注文の削除（管理者のみ） */}
           {isAdmin && (
-            <div className="card p-4 border-red-100">
-              <h2 className="text-sm font-semibold text-red-600 mb-2">危険な操作</h2>
+            <div className="card p-4">
+              <h2 className="text-sm font-semibold text-gray-700 mb-2">注文の削除</h2>
               <p className="text-xs text-gray-500 mb-3">
-                誤って作成した注文を完全に削除します。商品明細・変更履歴・写真も削除され、元に戻せません。
+                誤って作成した注文を削除できます。商品明細・変更履歴・写真もあわせて削除されます（削除後は元に戻せません）。
               </p>
               <DeleteOrderButton orderId={id} deliveryName={oneLineName(order.delivery_name)} />
             </div>
