@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCurrentUserProfile } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { OrderTypeBadge } from "@/components/ui/OrderTypeBadge";
 import { ORDER_STATUSES } from "@/lib/constants";
@@ -33,32 +33,32 @@ export default async function OrderDetailPage({
 
   if (!order) notFound();
 
-  // 削除は管理者のみ（従業員にはボタン自体を表示しない）
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: profile } = user
-    ? await supabase.from("profiles").select("role").eq("id", user.id).single()
-    : { data: null };
+  // 注文本体の取得後、互いに依存しない取得（削除ボタン表示可否のためのロール判定・
+  // 変更履歴・商品明細・写真）を並列化。
+  // 削除は管理者のみ（従業員にはボタン自体を表示しない）。ロール判定は
+  // admin/layout.tsx と同じ getCurrentUserProfile() で行い、レイアウトで
+  // 既に検証済みの auth.getUser() + profiles 取得を同一レンダー内で再実行しない。
+  const [{ profile }, { data: logs }, { data: orderItems }, { data: rawPhotos }] =
+    await Promise.all([
+      getCurrentUserProfile(),
+      supabase
+        .from("order_status_logs")
+        .select("*, profiles(display_name)")
+        .eq("order_id", id)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("order_items")
+        .select("id, product_name, description, quantity, unit_price, tax_rate")
+        .eq("order_id", id)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("order_photos" as never)
+        .select("id, storage_path, file_name, created_at")
+        .eq("order_id", id)
+        .order("created_at", { ascending: true }),
+    ]);
+
   const isAdmin = profile?.role === "admin";
-
-  const { data: logs } = await supabase
-    .from("order_status_logs")
-    .select("*, profiles(display_name)")
-    .eq("order_id", id)
-    .order("created_at", { ascending: false });
-
-  const { data: orderItems } = await supabase
-    .from("order_items")
-    .select("id, product_name, description, quantity, unit_price, tax_rate")
-    .eq("order_id", id)
-    .order("created_at", { ascending: true });
-
-  const { data: rawPhotos } = await supabase
-    .from("order_photos" as never)
-    .select("id, storage_path, file_name, created_at")
-    .eq("order_id", id)
-    .order("created_at", { ascending: true });
 
   const photos = ((rawPhotos ?? []) as Array<{ id: string; storage_path: string; file_name: string; created_at: string }>).map((p) => ({
     ...p,

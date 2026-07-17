@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserProfile } from "@/lib/supabase/server";
 import { logout } from "@/app/login/actions";
 import { NavItem } from "@/components/admin/NavItem";
 import { MobileNav } from "@/components/admin/MobileNav";
@@ -9,18 +9,9 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, profile } = await getCurrentUserProfile();
 
   if (!user) redirect("/login");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, display_name")
-    .eq("id", user.id)
-    .single();
 
   if (profile?.role !== "admin" && profile?.role !== "employee") redirect("/customer");
 

@@ -711,6 +711,10 @@ export interface Database {
         Args: Record<string, never>;
         Returns: boolean;
       };
+      customer_order_status_counts: {
+        Args: Record<string, never>;
+        Returns: { status: string; order_count: number }[];
+      };
     };
     Enums: Record<string, never>;
   };

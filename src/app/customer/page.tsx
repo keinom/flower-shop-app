@@ -5,12 +5,20 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ORDER_STATUSES } from "@/lib/constants";
 import type { OrderStatus } from "@/types";
 
+// 注文一覧の1ページあたりの表示件数（表示上限）
+const PAGE_SIZE = 100;
+
+// 「対応中」とみなすステータス
+const ACTIVE_STATUS_LIST: OrderStatus[] = [
+  "受付", "受付完了", "作成中", "ラッピング中", "配達準備完了", "配達中",
+];
+
 interface CustomerTopPageProps {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; page?: string }>;
 }
 
 export default async function CustomerTopPage({ searchParams }: CustomerTopPageProps) {
-  const { status: filterStatus } = await searchParams;
+  const { status: filterStatus, page: pageParam } = await searchParams;
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -35,33 +43,49 @@ export default async function CustomerTopPage({ searchParams }: CustomerTopPageP
     );
   }
 
-  // 自分の注文を取得
-  let query = supabase
-    .from("orders")
-    .select("id, status, product_name, quantity, delivery_date, created_at, purpose, total_amount")
-    .eq("customer_id", customer.id)
-    .order("created_at", { ascending: false });
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
+  const offset = (page - 1) * PAGE_SIZE;
 
-  if (filterStatus) {
-    query = query.eq("status", filterStatus as OrderStatus);
-  }
-
-  const { data: orders } = await query;
-
-  // ステータス別件数（フィルター用）
-  const { data: allOrders } = await supabase
-    .from("orders")
-    .select("status")
-    .eq("customer_id", customer.id);
+  // 注文一覧（直近順・表示上限あり）とステータス別件数は互いに依存しないため並列取得。
+  // ステータス別件数は「全件取得+JS集計」ではなく DB 側の GROUP BY 集計（RPC）で行う。
+  const [{ data: orders }, { data: statusCountRows }] = await Promise.all([
+    (() => {
+      let query = supabase
+        .from("orders")
+        .select("id, status, product_name, quantity, delivery_date, created_at, purpose, total_amount")
+        .eq("customer_id", customer.id)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + PAGE_SIZE - 1);
+      if (filterStatus) {
+        query = query.eq("status", filterStatus as OrderStatus);
+      }
+      return query;
+    })(),
+    supabase.rpc("customer_order_status_counts"),
+  ]);
 
   const statusCounts = ORDER_STATUSES.reduce((acc, s) => {
-    acc[s] = allOrders?.filter((o) => o.status === s).length ?? 0;
+    acc[s] = statusCountRows?.find((r) => r.status === s)?.order_count ?? 0;
     return acc;
   }, {} as Record<OrderStatus, number>);
 
-  const activeCount = allOrders?.filter((o) =>
-    ["受付", "受付完了", "作成中", "ラッピング中", "配達準備完了", "配達中"].includes(o.status)
-  ).length ?? 0;
+  const totalCount = Object.values(statusCounts).reduce((sum, c) => sum + c, 0);
+  const activeCount = ACTIVE_STATUS_LIST.reduce((sum, s) => sum + (statusCounts[s] ?? 0), 0);
+
+  // 現在の絞り込み条件（ステータスフィルター）における総件数（ページング判定用）
+  const currentFilterTotal = filterStatus ? statusCounts[filterStatus as OrderStatus] ?? 0 : totalCount;
+  const hasNextPage = offset + PAGE_SIZE < currentFilterTotal;
+  const hasPrevPage = page > 1;
+  const rangeFrom = currentFilterTotal === 0 ? 0 : offset + 1;
+  const rangeTo = Math.min(offset + PAGE_SIZE, currentFilterTotal);
+
+  function pageHref(targetPage: number) {
+    const qs = new URLSearchParams();
+    if (filterStatus) qs.set("status", filterStatus);
+    if (targetPage > 1) qs.set("page", String(targetPage));
+    const s = qs.toString();
+    return s ? `/customer?${s}` : "/customer";
+  }
 
   return (
     <div className="space-y-5">
@@ -96,7 +120,7 @@ export default async function CustomerTopPage({ searchParams }: CustomerTopPageP
               : "bg-white text-gray-600 border-gray-300 hover:border-brand-400"
           }`}
         >
-          すべて（{allOrders?.length ?? 0}）
+          すべて（{totalCount}）
         </Link>
         {ORDER_STATUSES.filter((s) => statusCounts[s] > 0).map((status) => (
           <Link
@@ -113,6 +137,14 @@ export default async function CustomerTopPage({ searchParams }: CustomerTopPageP
         ))}
       </div>
 
+      {/* 表示上限の案内（ページングが実際に発生する場合のみ表示） */}
+      {currentFilterTotal > PAGE_SIZE && (
+        <p className="text-xs text-gray-400">
+          表示は最大{PAGE_SIZE}件ごとです。{rangeFrom}〜{rangeTo}件目 / 全{currentFilterTotal}件中
+          （下部の「前へ」「次へ」ですべての履歴を確認できます）
+        </p>
+      )}
+
       {/* 注文一覧 */}
       {!orders || orders.length === 0 ? (
         <div className="card p-12 text-center">
@@ -120,7 +152,7 @@ export default async function CustomerTopPage({ searchParams }: CustomerTopPageP
           <p className="text-gray-600 font-medium">
             {filterStatus ? `「${filterStatus}」の注文はありません` : "まだご注文がありません"}
           </p>
-          {!filterStatus && (
+          {!filterStatus && page === 1 && (
             <Link href="/customer/orders/new" className="btn-primary mt-4 inline-flex">
               最初の注文をする
             </Link>
@@ -169,6 +201,22 @@ export default async function CustomerTopPage({ searchParams }: CustomerTopPageP
               </div>
             </Link>
           ))}
+        </div>
+      )}
+
+      {/* ページング（全履歴への到達手段） */}
+      {(hasPrevPage || hasNextPage) && (
+        <div className="flex items-center justify-between pt-2">
+          {hasPrevPage ? (
+            <Link href={pageHref(page - 1)} className="btn-secondary text-sm">
+              ← 前の{PAGE_SIZE}件
+            </Link>
+          ) : <span />}
+          {hasNextPage ? (
+            <Link href={pageHref(page + 1)} className="btn-secondary text-sm">
+              さらに表示（次の{PAGE_SIZE}件）→
+            </Link>
+          ) : <span />}
         </div>
       )}
     </div>
