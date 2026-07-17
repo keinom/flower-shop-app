@@ -163,11 +163,11 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
       </Suspense>
 
       {/* ─── エラー ─── */}
-      {error && (
+      {error ? (
         <div className="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
           データの取得に失敗しました
         </div>
-      )}
+      ) : null}
 
       {/* ─── 検索前の案内 / 件数表示 ─── */}
       {!searched ? (
