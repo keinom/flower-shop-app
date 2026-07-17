@@ -17,18 +17,29 @@ export default async function AdminDashboard() {
   const supabase = await createClient();
   const today = todayJst();
 
-  // アクティブな全注文（完了・キャンセル除外）
-  const { data: activeOrders } = await supabase
-    .from("orders")
-    .select(
-      `id, status, order_type, created_at,
-       product_name, quantity, delivery_date, shipping_date, delivery_name,
-       purpose, total_amount, customers(id, name)`
-    )
-    .not("status", "eq", "完了")
-    .not("status", "eq", "キャンセル")
-    .not("status", "eq", "履歴")
-    .order("created_at", { ascending: false });
+  // アクティブな全注文（完了・キャンセル除外）と代未注文は互いに依存しないため並列取得
+  const [{ data: activeOrders }, { data: unpaidData }] = await Promise.all([
+    supabase
+      .from("orders")
+      .select(
+        `id, status, order_type, created_at,
+         product_name, quantity, delivery_date, shipping_date, delivery_name,
+         purpose, total_amount, customers(id, name)`
+      )
+      .not("status", "eq", "完了")
+      .not("status", "eq", "キャンセル")
+      .not("status", "eq", "履歴")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("orders")
+      .select(`id, status, order_type, created_at,
+               product_name, quantity, delivery_date, delivery_name, total_amount,
+               customers(id, name)`)
+      .eq("payment_status" as never, "代未")
+      .not("status", "eq", "キャンセル")
+      .not("status", "eq", "履歴")
+      .order("delivery_date", { ascending: true }),
+  ]);
 
   const orders = activeOrders ?? [];
 
@@ -45,17 +56,6 @@ export default async function AdminDashboard() {
 
   // 受付中（要対応）
   const pendingOrders = orders.filter((o) => o.status === "受付");
-
-  // 代未注文（全ステータス対象）
-  const { data: unpaidData } = await supabase
-    .from("orders")
-    .select(`id, status, order_type, created_at,
-             product_name, quantity, delivery_date, delivery_name, total_amount,
-             customers(id, name)`)
-    .eq("payment_status" as never, "代未")
-    .not("status", "eq", "キャンセル")
-    .not("status", "eq", "履歴")
-    .order("delivery_date", { ascending: true });
 
   type UnpaidOrder = {
     id: string; status: string; order_type: string | null;
