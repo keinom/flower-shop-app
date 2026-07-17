@@ -123,10 +123,13 @@ export async function createAdminOrder(
   }
 
   // ── 合計計算（税込）──
+  // 税率が明細ごとに異なる場合（商品8%・送料10%など）に対応するため、
+  // 明細ごとに税額を計算してから合算する
   const totalExcl   = orderItems.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
-  // 税率はすべて同じはずだが、最初のアイテムの税率を使用
-  const taxRate     = orderItems[0].tax_rate;
-  const taxAmount   = Math.round(totalExcl * taxRate / 100);
+  const taxAmount   = orderItems.reduce(
+    (sum, item) => sum + Math.round(item.quantity * item.unit_price * item.tax_rate / 100),
+    0
+  );
   const totalAmount = totalExcl + taxAmount;
 
   // orders.product_name: 1商品のみなら商品名、複数なら null

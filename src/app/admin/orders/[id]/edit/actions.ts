@@ -78,9 +78,14 @@ export async function updateAdminOrder(formData: FormData) {
   }
 
   // ── 合計計算（税込）──
+  // 税率が明細ごとに異なる場合（商品8%・送料10%など）に対応するため、
+  // 明細ごとに税額を計算してから合算する
   const totalExcl   = orderItems.reduce((s, i) => s + i.quantity * i.unit_price, 0);
-  const taxRate     = orderItems[0].tax_rate;
-  const totalAmount = totalExcl + Math.round(totalExcl * taxRate / 100);
+  const taxAmount   = orderItems.reduce(
+    (s, i) => s + Math.round(i.quantity * i.unit_price * i.tax_rate / 100),
+    0
+  );
+  const totalAmount = totalExcl + taxAmount;
 
   // summaryNameはシッピング以外の商品から算出
   const productItems = orderItems.filter(i => !i.product_name.startsWith("配送料（"));
