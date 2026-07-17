@@ -111,9 +111,17 @@ export async function updateCustomerOrder(formData: FormData) {
   }
 
   // ── order_items を差し替え ──
-  await supabase.from("order_items").delete().eq("order_id", orderId);
+  const { error: deleteError } = await supabase
+    .from("order_items")
+    .delete()
+    .eq("order_id", orderId);
 
-  await supabase.from("order_items").insert(
+  if (deleteError) {
+    revalidatePath(`/customer/orders/${orderId}`);
+    redirect(`/customer/orders/${orderId}/edit?error=` + encodeURIComponent("商品明細の更新に失敗しました"));
+  }
+
+  const { error: insertError } = await supabase.from("order_items").insert(
     orderItems.map((item) => ({
       order_id:     orderId,
       product_name: item.product_name,
@@ -123,6 +131,11 @@ export async function updateCustomerOrder(formData: FormData) {
       tax_rate:     item.tax_rate,
     }))
   );
+
+  if (insertError) {
+    revalidatePath(`/customer/orders/${orderId}`);
+    redirect(`/customer/orders/${orderId}/edit?error=` + encodeURIComponent("商品明細の更新に失敗しました"));
+  }
 
   revalidatePath(`/customer/orders/${orderId}`);
   redirect(`/customer/orders/${orderId}?success=` + encodeURIComponent("注文内容を更新しました"));
