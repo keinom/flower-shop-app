@@ -23,10 +23,12 @@ interface CustomersPageProps {
 export default async function CustomersPage({ searchParams }: CustomersPageProps) {
   const p = await searchParams;
   const supabase = await createClient();
+  const searched = p.searched === "1";
 
   // ── メインクエリ (ページング対応) ──
   // 移行データ + 流用分離で総顧客数が 1000 件を超えるため、PostgREST max-rows=1000
   // を回避するためページごとにクエリを作り直して連結取得する。
+  // 未検索時（searched !== "1"）は案内表示のみでクエリ自体を発行しない。
   type CustomerRow = {
     id: string; name: string; phone: string | null; email: string | null;
     address: string | null; created_at: string;
@@ -47,12 +49,14 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
   }
   const customers: CustomerRow[] = [];
   let error: unknown = null;
-  for (let offset = 0; ; offset += 1000) {
-    const pageQuery = await buildCustomerQuery().range(offset, offset + 999);
-    if (pageQuery.error) { error = pageQuery.error; break; }
-    if (!pageQuery.data || pageQuery.data.length === 0) break;
-    customers.push(...(pageQuery.data as CustomerRow[]));
-    if (pageQuery.data.length < 1000) break;
+  if (searched) {
+    for (let offset = 0; ; offset += 1000) {
+      const pageQuery = await buildCustomerQuery().range(offset, offset + 999);
+      if (pageQuery.error) { error = pageQuery.error; break; }
+      if (!pageQuery.data || pageQuery.data.length === 0) break;
+      customers.push(...(pageQuery.data as CustomerRow[]));
+      if (pageQuery.data.length < 1000) break;
+    }
   }
 
   // ── アカウントフィルタ（クライアント側で絞り込み） ──
@@ -75,9 +79,10 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
   // PostgREST のサーバ側 max-rows=1000 に引っかかり、
   // 移行した大量データがある顧客が軒並み「0 件」表示になっていた。
   // DB 側の集計ビュー customer_order_counts を表示中の顧客 ID に絞って参照する。
+  // 未検索時は表示対象の顧客がいないため、このクエリも発行しない。
   const displayedIds = filtered.map((c) => c.id);
   const countMap: Record<string, number> = {};
-  if (displayedIds.length > 0) {
+  if (searched && displayedIds.length > 0) {
     const { data: counts } = await supabase
       .from("customer_order_counts" as never)
       .select("customer_id, order_count")
@@ -86,8 +91,6 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
       countMap[row.customer_id] = row.order_count;
     }
   }
-
-  const searched = p.searched === "1";
 
   return (
     <div className="space-y-5">

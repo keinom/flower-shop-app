@@ -39,86 +39,101 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   ).toString();
   const detailQuery = currentQuery ? `?from=${encodeURIComponent(currentQuery)}` : "";
 
-  // ── 顧客名フィルタ: 先にcustomer_idの候補を取得 ──
-  let customerIdFilter: string[] | null = null;
-  if (p.customer_name?.trim()) {
-    const { data: customers } = await supabase
-      .from("customers")
-      .select("id")
-      .ilike("name", `%${p.customer_name.trim()}%`);
-    customerIdFilter = (customers ?? []).map((c) => c.id);
-    // 該当なし → 結果は必ず0件
-    if (customerIdFilter.length === 0) customerIdFilter = ["__no_match__"];
-  }
-
-  // ── メインクエリ ──
-  let query = supabase
-    .from("orders")
-    .select(
-      `id, status, order_type, product_name, quantity,
-       delivery_date, delivery_name, purpose,
-       created_at, total_amount,
-       customers(id, name)`
-    )
-    .order("created_at", { ascending: false })
-    .limit(200);
-
-  // キーワード: 商品名 OR 配達先名 OR お届け先住所
-  if (p.q?.trim()) {
-    const kw = p.q.trim();
-    query = query.or(
-      `product_name.ilike.%${kw}%,delivery_name.ilike.%${kw}%,delivery_address.ilike.%${kw}%`
-    );
-  }
-
-  // 顧客名（事前取得したIDで絞り込み）
-  if (customerIdFilter !== null) {
-    query = query.in("customer_id", customerIdFilter);
-  }
-
-  // ステータス
-  if (p.status?.trim()) {
-    query = query.eq("status", p.status.trim() as OrderStatus);
-  }
-
-  // 種別
-  if (p.order_type?.trim()) {
-    query = query.eq("order_type", p.order_type.trim() as OrderType);
-  }
-
-  // 用途
-  if (p.purpose?.trim()) {
-    query = query.eq("purpose", p.purpose.trim());
-  }
-
-  // お届け日 From〜To
-  if (p.delivery_from?.trim()) {
-    query = query.gte("delivery_date", p.delivery_from.trim());
-  }
-  if (p.delivery_to?.trim()) {
-    query = query.lte("delivery_date", p.delivery_to.trim());
-  }
-
-  // 注文日 From〜To (JST)
-  if (p.created_from?.trim()) {
-    query = query.gte("created_at", toJstStartOfDay(p.created_from.trim()));
-  }
-  if (p.created_to?.trim()) {
-    query = query.lte("created_at", toJstEndOfDay(p.created_to.trim()));
-  }
-
-  // 合計金額 From〜To
-  const amountMin = p.amount_min ? parseInt(p.amount_min) : null;
-  const amountMax = p.amount_max ? parseInt(p.amount_max) : null;
-  if (amountMin !== null && !isNaN(amountMin)) {
-    query = query.gte("total_amount", amountMin);
-  }
-  if (amountMax !== null && !isNaN(amountMax)) {
-    query = query.lte("total_amount", amountMax);
-  }
-
-  const { data: orders, error } = await query;
   const searched = p.searched === "1";
+
+  // 未検索時（searched !== "1"）は案内表示のみでクエリ自体を発行しない。
+  type OrderRow = {
+    id: string; status: string; order_type: string | null; product_name: string | null;
+    quantity: number; delivery_date: string | null; delivery_name: string; purpose: string | null;
+    created_at: string; total_amount: number | null;
+    customers: { id: string; name: string } | null;
+  };
+  let orders: OrderRow[] | null = null;
+  let error: unknown = null;
+
+  if (searched) {
+    // ── 顧客名フィルタ: 先にcustomer_idの候補を取得 ──
+    let customerIdFilter: string[] | null = null;
+    if (p.customer_name?.trim()) {
+      const { data: customers } = await supabase
+        .from("customers")
+        .select("id")
+        .ilike("name", `%${p.customer_name.trim()}%`);
+      customerIdFilter = (customers ?? []).map((c) => c.id);
+      // 該当なし → 結果は必ず0件
+      if (customerIdFilter.length === 0) customerIdFilter = ["__no_match__"];
+    }
+
+    // ── メインクエリ ──
+    let query = supabase
+      .from("orders")
+      .select(
+        `id, status, order_type, product_name, quantity,
+         delivery_date, delivery_name, purpose,
+         created_at, total_amount,
+         customers(id, name)`
+      )
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    // キーワード: 商品名 OR 配達先名 OR お届け先住所
+    if (p.q?.trim()) {
+      const kw = p.q.trim();
+      query = query.or(
+        `product_name.ilike.%${kw}%,delivery_name.ilike.%${kw}%,delivery_address.ilike.%${kw}%`
+      );
+    }
+
+    // 顧客名（事前取得したIDで絞り込み）
+    if (customerIdFilter !== null) {
+      query = query.in("customer_id", customerIdFilter);
+    }
+
+    // ステータス
+    if (p.status?.trim()) {
+      query = query.eq("status", p.status.trim() as OrderStatus);
+    }
+
+    // 種別
+    if (p.order_type?.trim()) {
+      query = query.eq("order_type", p.order_type.trim() as OrderType);
+    }
+
+    // 用途
+    if (p.purpose?.trim()) {
+      query = query.eq("purpose", p.purpose.trim());
+    }
+
+    // お届け日 From〜To
+    if (p.delivery_from?.trim()) {
+      query = query.gte("delivery_date", p.delivery_from.trim());
+    }
+    if (p.delivery_to?.trim()) {
+      query = query.lte("delivery_date", p.delivery_to.trim());
+    }
+
+    // 注文日 From〜To (JST)
+    if (p.created_from?.trim()) {
+      query = query.gte("created_at", toJstStartOfDay(p.created_from.trim()));
+    }
+    if (p.created_to?.trim()) {
+      query = query.lte("created_at", toJstEndOfDay(p.created_to.trim()));
+    }
+
+    // 合計金額 From〜To
+    const amountMin = p.amount_min ? parseInt(p.amount_min) : null;
+    const amountMax = p.amount_max ? parseInt(p.amount_max) : null;
+    if (amountMin !== null && !isNaN(amountMin)) {
+      query = query.gte("total_amount", amountMin);
+    }
+    if (amountMax !== null && !isNaN(amountMax)) {
+      query = query.lte("total_amount", amountMax);
+    }
+
+    const result = await query;
+    orders = result.data as unknown as OrderRow[] | null;
+    error = result.error;
+  }
 
   return (
     <div className="space-y-5">
