@@ -16,6 +16,7 @@ import {
   carrierSizeLabel,
   extractPrefecture,
   calcShippingFee,
+  calcShippingFeeExclusive,
   shippingItemName,
   type Carrier,
 } from "@/lib/shipping";
@@ -57,7 +58,12 @@ export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipp
   const effectiveFee = isManual ? (parseInt(manualAmount) || 0) : (calcFee ?? 0);
 
   // 税抜価格
-  const unitPrice = Math.floor(effectiveFee / 1.1);
+  // 自動計算モードはキャリアの内部税抜額（ヤマト/日通は正確な料金表、佐川は税込からの逆算）を使用し、
+  // calcShippingFee の税込額からさらに逆算する二重丸め（Issue #17 B-1）を避ける。
+  // 手動入力モードは税込入力額からの逆算のまま変更しない。
+  const unitPrice = (!isManual && prefecture !== null)
+    ? (calcShippingFeeExclusive(carrier, size, prefecture) ?? Math.floor(effectiveFee / 1.1))
+    : Math.floor(effectiveFee / 1.1);
 
   // キャリアを切り替えたときにサイズ/重量を調整
   useEffect(() => {

@@ -78,9 +78,21 @@ export async function updateAdminOrder(formData: FormData) {
   }
 
   // ── 合計計算（税込）──
-  const totalExcl   = orderItems.reduce((s, i) => s + i.quantity * i.unit_price, 0);
-  const taxRate     = orderItems[0].tax_rate;
-  const totalAmount = totalExcl + Math.round(totalExcl * taxRate / 100);
+  // インボイス制度では端数処理は「税率ごとに1回」が正しく、明細ごとの丸めは不可。
+  // 税率ごとに税抜額を合算してから Math.round で丸め、その合計を taxAmount とする。
+  const totalExcl = orderItems.reduce((s, i) => s + i.quantity * i.unit_price, 0);
+
+  const subtotalByRate = new Map<number, number>();
+  for (const item of orderItems) {
+    const excl = item.quantity * item.unit_price;
+    subtotalByRate.set(item.tax_rate, (subtotalByRate.get(item.tax_rate) ?? 0) + excl);
+  }
+  const taxAmount = Array.from(subtotalByRate.entries()).reduce(
+    (sum, [rate, subtotal]) => sum + Math.round((subtotal * rate) / 100),
+    0
+  );
+
+  const totalAmount = totalExcl + taxAmount;
 
   // summaryNameはシッピング以外の商品から算出
   const productItems = orderItems.filter(i => !i.product_name.startsWith("配送料（"));

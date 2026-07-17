@@ -333,6 +333,43 @@ export function toTaxExclusive(taxInclusivePrice: number): number {
 }
 
 /**
+ * 配送料の税抜金額を算出する（自動計算モード用）
+ *
+ * ヤマト運輸・日本通運は内部に正確な税抜料金（法人/店舗料金表）を持っているため、
+ * その値をそのまま返す。calcShippingFee が返す税込額から
+ * `toTaxExclusive` で逆算すると、税込額が既に一度切り捨てられているため
+ * 二重に丸められて 1 円ずれることがある（Issue #17 B-1）。
+ *
+ * 佐川急便は税込テーブルのみで内部税抜額を持たないため、
+ * 従来どおり税込額からの逆算（切り捨て）で近似する。
+ *
+ * @returns 税抜料金（円）、または計算できない場合は null
+ */
+export function calcShippingFeeExclusive(
+  carrier: Carrier,
+  size: number,
+  prefecture: string
+): number | null {
+  if (carrier === "yamato") {
+    const zone = YAMATO_PREFECTURE_ZONE[prefecture];
+    if (zone === undefined) return null;
+    const row = YAMATO_RATES[size as YamatoSize];
+    if (!row) return null;
+    return row[zone] ?? null;
+  }
+  if (carrier === "nittsu") {
+    const zone = NITTSU_PREFECTURE_ZONE[prefecture];
+    if (zone === undefined) return null;
+    const row = NITTSU_RATES[size as NittsuSize];
+    if (!row) return null;
+    return row[zone] ?? null;
+  }
+  // 佐川急便: 税込テーブルのみのため税込額から逆算（従来どおりの挙動）
+  const taxIncl = calcShippingFee(carrier, size, prefecture);
+  return taxIncl !== null ? toTaxExclusive(taxIncl) : null;
+}
+
+/**
  * 配送料明細の商品名を生成する
  *  ヤマト/佐川: 「配送料（ヤマト運輸 80サイズ）」
  *  日本通運:   「配送料（日本通運 5kgまで）」
