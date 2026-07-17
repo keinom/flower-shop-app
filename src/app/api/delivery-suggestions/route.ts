@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
  * お届け先サジェスト検索 API
@@ -38,6 +39,10 @@ export async function GET(req: NextRequest) {
   const q = rawQuery.replace(/[%_]/g, ""); // LIKE メタ文字を素直に
   const pattern = `%${q}%`;
 
+  // delivery_destinations マテビューは anon/authenticated から REVOKE 済みのため、
+  // admin/employee チェック通過後に限り service_role クライアントで参照する。
+  const adminSupabase = createAdminClient();
+
   // 並行検索
   const [customersRes, destsRes] = await Promise.all([
     supabase
@@ -46,7 +51,7 @@ export async function GET(req: NextRequest) {
       .or(`name.ilike.${pattern},phone.ilike.${pattern},address.ilike.${pattern}`)
       .order("name", { ascending: true })
       .limit(20),
-    supabase
+    adminSupabase
       .from("delivery_destinations" as never)
       .select("display_name, postal_code, address, phone, email, use_count, last_used")
       .or(`display_name.ilike.${pattern},phone.ilike.${pattern},address.ilike.${pattern}`)
