@@ -43,7 +43,7 @@ interface Props {
     shipping_deadline: string | null;
   };
   defaultItems: OrderItem[];
-  defaultShipping?: { carrier: string; size: number; feeTaxInc: number };
+  defaultShipping?: { carrier: string; size: number; feeTaxInc: number; cool?: boolean };
 }
 
 export function AdminOrderEditClient({
