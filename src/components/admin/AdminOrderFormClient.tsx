@@ -44,7 +44,7 @@ export interface AdminOrderCopyDefaults {
     quantity: number;
     unit_price: number;
   }[];
-  shipping?: { carrier: import("@/lib/shipping").Carrier; size: number; feeTaxInc: number };
+  shipping?: { carrier: import("@/lib/shipping").Carrier; size: number; feeTaxInc: number; cool?: boolean };
 }
 
 interface Props {

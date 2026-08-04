@@ -269,6 +269,41 @@ export const PREFECTURE_ZONE = SAGAWA_PREFECTURE_ZONE;
 export const ZONE_NAMES = SAGAWA_ZONE_NAMES;
 
 // ─────────────────────────────────────────
+// クール便（保冷）加算（第1弾: ヤマト運輸のみ）
+// ─────────────────────────────────────────
+// ヤマト運輸「クール宅急便」は 120サイズ／15kgまでが上限のため、
+// 140サイズ以上は加算テーブルに存在しない（＝クール便選択不可）。
+// 佐川急便・日本通運は本 Issue のスコープ外のため null。
+// キャリアごとに加算テーブルを追加できるよう Record<Carrier, ...> 構造にしておく。
+//
+// 金額は税抜（円）。主任担当確定値（公表税込 275/330/660/990円 ÷ 1.1）。
+const YAMATO_COOL_SURCHARGE: Partial<Record<YamatoSize, number>> = {
+  60: 250,
+  80: 300,
+  100: 600,
+  120: 900,
+};
+
+export const COOL_SURCHARGE: Record<Carrier, Partial<Record<number, number>> | null> = {
+  yamato: YAMATO_COOL_SURCHARGE,
+  sagawa: null,
+  nittsu: null,
+};
+
+/** 指定のキャリア・サイズでクール便（保冷）が選択可能か */
+export function isCoolAvailable(carrier: Carrier, size: number): boolean {
+  const table = COOL_SURCHARGE[carrier];
+  return !!table && table[size] !== undefined;
+}
+
+/** クール便加算額（税抜・円）を取得。対象外の組み合わせは null */
+export function getCoolSurcharge(carrier: Carrier, size: number): number | null {
+  const table = COOL_SURCHARGE[carrier];
+  if (!table) return null;
+  return table[size] ?? null;
+}
+
+// ─────────────────────────────────────────
 // ユーティリティ関数
 // ─────────────────────────────────────────
 
@@ -292,13 +327,19 @@ export function extractPrefecture(address: string): string | null {
  * ヤマト運輸: 法人料金（税抜）× 1.1 を切り上げ
  * 佐川急便:   税込料金テーブルをそのまま返す
  *
+ * @param cool クール便（保冷）を指定するか（省略時 false ＝従来どおり）。
+ *   クール便非対応のキャリア・サイズの組み合わせで true を指定した場合は null を返す。
+ *   加算は税抜ベースで通常送料に合算してから税込へ変換するため、
+ *   通常送料とクール加算を別々に丸めて二重丸めになることはない（Issue #17 B-1 対策の踏襲）。
  * @returns 税込料金（円）、または計算できない場合は null
  */
 export function calcShippingFee(
   carrier: Carrier,
   size: number,
-  prefecture: string
+  prefecture: string,
+  cool = false
 ): number | null {
+  if (cool && getCoolSurcharge(carrier, size) === null) return null;
   if (carrier === "yamato") {
     const zone = YAMATO_PREFECTURE_ZONE[prefecture];
     if (zone === undefined) return null;
@@ -306,7 +347,8 @@ export function calcShippingFee(
     if (!row) return null;
     const taxExcl = row[zone];
     if (taxExcl === undefined) return null;
-    return taxExcl + Math.floor(taxExcl * 0.1);
+    const totalExcl = taxExcl + (cool ? (getCoolSurcharge(carrier, size) ?? 0) : 0);
+    return totalExcl + Math.floor(totalExcl * 0.1);
   }
   if (carrier === "nittsu") {
     const zone = NITTSU_PREFECTURE_ZONE[prefecture];
@@ -343,19 +385,26 @@ export function toTaxExclusive(taxInclusivePrice: number): number {
  * 佐川急便は税込テーブルのみで内部税抜額を持たないため、
  * 従来どおり税込額からの逆算（切り捨て）で近似する。
  *
+ * @param cool クール便（保冷）を指定するか（省略時 false ＝従来どおり）。
+ *   加算額（税抜）をそのまま合算して返すため、こちらも二重丸めは発生しない。
+ *   クール便非対応の組み合わせで true を指定した場合は null を返す。
  * @returns 税抜料金（円）、または計算できない場合は null
  */
 export function calcShippingFeeExclusive(
   carrier: Carrier,
   size: number,
-  prefecture: string
+  prefecture: string,
+  cool = false
 ): number | null {
+  if (cool && getCoolSurcharge(carrier, size) === null) return null;
   if (carrier === "yamato") {
     const zone = YAMATO_PREFECTURE_ZONE[prefecture];
     if (zone === undefined) return null;
     const row = YAMATO_RATES[size as YamatoSize];
     if (!row) return null;
-    return row[zone] ?? null;
+    const taxExcl = row[zone];
+    if (taxExcl === undefined) return null;
+    return taxExcl + (cool ? (getCoolSurcharge(carrier, size) ?? 0) : 0);
   }
   if (carrier === "nittsu") {
     const zone = NITTSU_PREFECTURE_ZONE[prefecture];
@@ -365,7 +414,7 @@ export function calcShippingFeeExclusive(
     return row[zone] ?? null;
   }
   // 佐川急便: 税込テーブルのみのため税込額から逆算（従来どおりの挙動）
-  const taxIncl = calcShippingFee(carrier, size, prefecture);
+  const taxIncl = calcShippingFee(carrier, size, prefecture, cool);
   return taxIncl !== null ? toTaxExclusive(taxIncl) : null;
 }
 
@@ -373,9 +422,13 @@ export function calcShippingFeeExclusive(
  * 配送料明細の商品名を生成する
  *  ヤマト/佐川: 「配送料（ヤマト運輸 80サイズ）」
  *  日本通運:   「配送料（日本通運 5kgまで）」
+ *  クール便:   「配送料（ヤマト運輸 80サイズ・クール便）」
+ *
+ * @param cool クール便（保冷）付きかどうか（省略時 false ＝従来どおり）
  */
-export function shippingItemName(carrier: Carrier, size: number): string {
-  return `配送料（${CARRIER_NAMES[carrier]} ${carrierSizeLabel(carrier, size)}）`;
+export function shippingItemName(carrier: Carrier, size: number, cool = false): string {
+  const suffix = cool ? "・クール便" : "";
+  return `配送料（${CARRIER_NAMES[carrier]} ${carrierSizeLabel(carrier, size)}${suffix}）`;
 }
 
 /** 商品明細が配送料明細（shippingItemName で生成されたもの）かどうか */
@@ -384,18 +437,20 @@ export function isShippingItemName(productName: string): boolean {
 }
 
 /**
- * 配送料明細の商品名から配送会社・サイズを復元する（shippingItemName の逆変換）
- * 該当しない商品名の場合は null
+ * 配送料明細の商品名から配送会社・サイズ・クール便有無を復元する（shippingItemName の逆変換）
+ * 該当しない商品名の場合は null。
+ * 「・クール便」が付いていない既存形式（クール便対応前の明細名）も
+ * 引き続きパースでき、その場合 cool は false になる（後方互換）。
  */
 export function parseShippingItemName(
   productName: string
-): { carrier: Carrier; size: number } | null {
-  const m = productName.match(/配送料（(.+?)\s+(\d+)(サイズ|kgまで)）/);
+): { carrier: Carrier; size: number; cool: boolean } | null {
+  const m = productName.match(/配送料（(.+?)\s+(\d+)(サイズ|kgまで)(・クール便)?）/);
   if (!m) return null;
   const carrier = (Object.keys(CARRIER_NAMES) as Carrier[]).find(
     (c) => CARRIER_NAMES[c] === m[1]
   );
   const size = parseInt(m[2], 10);
   if (!carrier || isNaN(size)) return null;
-  return { carrier, size };
+  return { carrier, size, cool: !!m[4] };
 }

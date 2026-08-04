@@ -18,19 +18,22 @@ import {
   calcShippingFee,
   calcShippingFeeExclusive,
   shippingItemName,
+  isCoolAvailable,
   type Carrier,
 } from "@/lib/shipping";
 
 interface Props {
   deliveryAddress: string;
   onFeeChange?: (feeTaxInc: number) => void;
-  defaultShipping?: { carrier: Carrier; size: number; feeTaxInc: number };
+  defaultShipping?: { carrier: Carrier; size: number; feeTaxInc: number; cool?: boolean };
 }
 
 export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipping }: Props) {
   const [enabled,      setEnabled]      = useState(!!defaultShipping);
   const [carrier,      setCarrier]      = useState<Carrier>(defaultShipping?.carrier ?? "yamato");
   const [size,         setSize]         = useState<number>(defaultShipping?.size ?? 80);
+  const [cool,         setCool]         = useState<boolean>(defaultShipping?.cool ?? false);
+  const [coolWarning,  setCoolWarning]  = useState(false);
   const [isManual,     setIsManual]     = useState(false);
   const [manualAmount, setManualAmount] = useState("");
 
@@ -49,20 +52,25 @@ export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipp
   const zone     = prefecture !== null ? prefZoneMap[prefecture] : undefined;
   const zoneName = zone !== undefined  ? zoneNamesArr[zone]      : null;
 
-  // 自動計算料金
+  // 自動計算料金（クール便加算込み・税込）
   const calcFee = (prefecture !== null)
-    ? calcShippingFee(carrier, size, prefecture)
+    ? calcShippingFee(carrier, size, prefecture, cool)
+    : undefined;
+
+  // クールOFF時の通常送料（税込）。内訳表示用。
+  const baseFeeTaxIncl = (!isManual && cool && prefecture !== null)
+    ? calcShippingFee(carrier, size, prefecture, false)
     : undefined;
 
   // 実効料金
   const effectiveFee = isManual ? (parseInt(manualAmount) || 0) : (calcFee ?? 0);
 
   // 税抜価格
-  // 自動計算モードはキャリアの内部税抜額（ヤマト/日通は正確な料金表、佐川は税込からの逆算）を使用し、
-  // calcShippingFee の税込額からさらに逆算する二重丸め（Issue #17 B-1）を避ける。
+  // 自動計算モードはキャリアの内部税抜額（ヤマト/日通は正確な料金表、佐川は税込からの逆算）＋
+  // クール加算（税抜）を使用し、calcShippingFee の税込額からさらに逆算する二重丸め（Issue #17 B-1）を避ける。
   // 手動入力モードは税込入力額からの逆算のまま変更しない。
   const unitPrice = (!isManual && prefecture !== null)
-    ? (calcShippingFeeExclusive(carrier, size, prefecture) ?? Math.floor(effectiveFee / 1.1))
+    ? (calcShippingFeeExclusive(carrier, size, prefecture, cool) ?? Math.floor(effectiveFee / 1.1))
     : Math.floor(effectiveFee / 1.1);
 
   // キャリアを切り替えたときにサイズ/重量を調整
@@ -77,11 +85,24 @@ export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipp
     }
   }, [carrier, size]);
 
+  // キャリア／サイズがクール便非対応の組み合わせになったら自動でクールをOFFにし警告を表示する
+  // （例: ヤマト120サイズでクールONのまま140サイズ以上へ変更した場合）
+  useEffect(() => {
+    if (!isCoolAvailable(carrier, size)) {
+      setCool((prev) => {
+        if (prev) setCoolWarning(true);
+        return false;
+      });
+    } else {
+      setCoolWarning(false);
+    }
+  }, [carrier, size]);
+
   // 初期マウント時にdefaultShippingがあれば手動モードを判定
   useEffect(() => {
     if (defaultShipping) {
       const initialCalcFee = (prefecture !== null)
-        ? calcShippingFee(defaultShipping.carrier, defaultShipping.size, prefecture)
+        ? calcShippingFee(defaultShipping.carrier, defaultShipping.size, prefecture, defaultShipping.cool ?? false)
         : undefined;
       if (initialCalcFee !== defaultShipping.feeTaxInc) {
         setIsManual(true);
@@ -173,6 +194,39 @@ export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipp
             </select>
           </div>
 
+          {/* クール便（保冷）トグル — ヤマト運輸のみ対応（第1弾） */}
+          {carrier === "yamato" && (
+            <div>
+              <label
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 transition-all ${
+                  isCoolAvailable(carrier, size)
+                    ? "cursor-pointer border-sky-200 bg-sky-50 hover:border-sky-300"
+                    : "cursor-not-allowed border-gray-200 bg-gray-50 opacity-60"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={cool}
+                  disabled={!isCoolAvailable(carrier, size)}
+                  onChange={(e) => {
+                    setCool(e.target.checked);
+                    setCoolWarning(false);
+                  }}
+                  className="w-4 h-4 rounded border-gray-300 accent-sky-600"
+                />
+                <span className="font-medium text-sm text-sky-800">❄️ クール便（保冷）で発送する</span>
+              </label>
+              <p className="text-xs text-gray-400 mt-1">
+                クール便は120サイズ（15kgまで）が上限です。
+              </p>
+              {coolWarning && (
+                <p className="text-xs text-amber-600 font-medium mt-1">
+                  ⚠ クール便は120サイズまでのため、クール便の指定を解除しました。
+                </p>
+              )}
+            </div>
+          )}
+
           {/* お届け先ゾーン表示 */}
           <div className="bg-gray-50 rounded-lg px-4 py-3 space-y-1.5 text-sm">
             <div className="flex items-start gap-2">
@@ -204,10 +258,17 @@ export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipp
                   <p className="text-xs text-green-600 font-medium mb-0.5">自動計算された配送料</p>
                   <p className="text-sm text-green-700 font-medium">
                     {CARRIER_NAMES[carrier]}　{carrierSizeLabel(carrier, size)}
+                    {cool && "・クール便"}
                   </p>
                   <p className="text-xs text-green-500 mt-0.5">
                     {prefecture} 宛・参考料金（税込）
                   </p>
+                  {cool && baseFeeTaxIncl !== undefined && baseFeeTaxIncl !== null && (
+                    <p className="text-xs text-sky-700 mt-1">
+                      内訳: 通常送料 ¥{baseFeeTaxIncl.toLocaleString("ja-JP")}
+                      {" + "}クール加算 ¥{(calcFee - baseFeeTaxIncl).toLocaleString("ja-JP")}
+                    </p>
+                  )}
                 </div>
                 <p className="text-3xl font-black text-green-800">
                   ¥{calcFee.toLocaleString("ja-JP")}
@@ -271,9 +332,10 @@ export function ShippingFeeSelector({ deliveryAddress, onFeeChange, defaultShipp
           <input type="hidden" name="shipping_enabled"    value="true" />
           <input type="hidden" name="shipping_carrier"    value={carrier} />
           <input type="hidden" name="shipping_size"       value={String(size)} />
+          <input type="hidden" name="shipping_cool"       value={cool ? "true" : "false"} />
           <input type="hidden" name="shipping_fee_total"  value={String(effectiveFee)} />
           <input type="hidden" name="shipping_unit_price" value={String(unitPrice)} />
-          <input type="hidden" name="shipping_item_name"  value={shippingItemName(carrier, size)} />
+          <input type="hidden" name="shipping_item_name"  value={shippingItemName(carrier, size, cool)} />
         </div>
       )}
     </section>

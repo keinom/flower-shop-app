@@ -47,11 +47,12 @@ export default async function EditOrderPage({
   const shippingItem = orderItems?.find((i) => isShippingItemName(i.product_name));
   const regularItems = orderItems?.filter((i) => !isShippingItemName(i.product_name));
 
-  let defaultShipping: { carrier: string; size: number; feeTaxInc: number } | undefined;
+  let defaultShipping: { carrier: string; size: number; feeTaxInc: number; cool: boolean } | undefined;
   if (shippingItem) {
     const parsed = parseShippingItemName(shippingItem.product_name);
     if (parsed) {
       // 税抜→税込の再構築（佐川は元から税込テーブルだが、明細は税抜で保存されるため復元）
+      // クール加算はすでに税抜単価に合算済みのため、このまま税込へ復元すればクール込みの額になる。
       const u = shippingItem.unit_price;
       defaultShipping = { ...parsed, feeTaxInc: u + Math.floor(u * 0.1) };
     }
