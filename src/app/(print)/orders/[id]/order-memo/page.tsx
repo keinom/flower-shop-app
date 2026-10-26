@@ -2,9 +2,11 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PrintActions } from "./PrintActions";
 
-const INK    = "#1a1a1a";
+const INK    = "#111827";
+const INK2   = "#374151";
 const MUTED  = "#6b7280";
 const BORDER = "#d1d5db";
+const ACCENT = "#0f766e"; // teal-700
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -51,15 +53,18 @@ export default async function OrderMemoPage({ params }: Props) {
       year: "numeric", month: "long", day: "numeric", weekday: "short",
     });
 
-  const dateLine = orderType === "発送"
-    ? (shippingDate ? formatDate(shippingDate) : "発送日 未定")
-    : (order.delivery_date ? formatDate(order.delivery_date) : "日付 未定");
-
-  const timeLine = orderType === "発送"
-    ? (shippingDeadline ? `${shippingDeadline.slice(0, 5)} 締切` : null)
+  // 発送注文: 発送日 / 締切時刻、配達注文: お届け日 / お届け時間
+  const isShipping  = orderType === "発送";
+  const dateLabel   = isShipping ? "発送日"   : "お届け日";
+  const timeLabel   = isShipping ? "発送締切" : "お届け時間";
+  const dateValue   = isShipping
+    ? (shippingDate ? formatDate(shippingDate) : "未定")
+    : (order.delivery_date ? formatDate(order.delivery_date) : "未定");
+  const timeValue   = isShipping
+    ? (shippingDeadline ? `${shippingDeadline.slice(0, 5)} まで` : "指定なし")
     : (timeStart || timeEnd
         ? `${timeStart ? timeStart.slice(0, 5) : ""}〜${timeEnd ? timeEnd.slice(0, 5) : ""}`
-        : null);
+        : "指定なし");
 
   // 商品: order_items が空なら orders 自体の product_name/quantity から組み立て
   const displayItems = (items && items.length > 0)
@@ -84,7 +89,7 @@ export default async function OrderMemoPage({ params }: Props) {
           html, body { margin: 0; padding: 0; background: white !important; overflow: hidden; }
           .om-page {
             margin: 0 !important;
-            padding: 10mm 14mm !important;
+            padding: 8mm 10mm !important;
             box-shadow: none !important;
             width: 210mm !important;
             page-break-after: avoid !important;
@@ -106,7 +111,7 @@ export default async function OrderMemoPage({ params }: Props) {
           .om-page {
             background: white;
             box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-            padding: 10mm 14mm;
+            padding: 8mm 10mm;
           }
         }
       `}</style>
@@ -122,104 +127,140 @@ export default async function OrderMemoPage({ params }: Props) {
             color: INK,
             display: "flex",
             flexDirection: "column",
+            gap: "6pt",
           }}
         >
-          {/* ─── ご注文者 / 宛名 ─── */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "16pt",
-            paddingBottom: "8pt",
-            borderBottom: `1px solid ${BORDER}`,
-          }}>
-            <NameBlock label="ご注文者" name={customer?.name ?? "—"} />
-            <NameBlock label="宛名" name={order.delivery_name ?? "—"} />
+          {/* ─── ① ご注文主 / 宛名 ─── */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6pt" }}>
+            <Card label="ご注文主">
+              <BigText size={20}>{customer?.name ?? "—"}</BigText>
+            </Card>
+            <Card label="宛名（お届け先）" emphasis>
+              <BigText size={20} preLine>{order.delivery_name ?? "—"}</BigText>
+            </Card>
           </div>
 
-          {/* ─── 内容: 用途・商品 ─── */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "10pt 0" }}>
-            {order.purpose && (
-              <div style={{ textAlign: "center", marginBottom: "12pt" }}>
-                <div style={{ fontSize: "9pt", color: MUTED, letterSpacing: "0.2em", marginBottom: "3pt" }}>
-                  用途
-                </div>
-                <div style={{ fontSize: "28pt", fontWeight: 800, letterSpacing: "0.05em" }}>
-                  {order.purpose}
-                </div>
-              </div>
-            )}
-
-            <div>
-              <div style={{
-                fontSize: "9pt",
-                color: MUTED,
-                letterSpacing: "0.2em",
-                textAlign: "center",
-                marginBottom: "6pt",
-              }}>
-                商品 ／ 数量
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "5pt" }}>
-                {displayItems.map((item, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      display: "flex",
-                      alignItems: "baseline",
-                      justifyContent: "center",
-                      gap: "18pt",
-                      fontSize: "22pt",
-                      fontWeight: 700,
-                      lineHeight: 1.25,
-                    }}
-                  >
-                    <span style={{ whiteSpace: "pre-line" }}>{item.product_name}</span>
-                    <span style={{ color: MUTED, fontSize: "14pt", fontWeight: 500 }}>×</span>
-                    <span>{item.quantity}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+          {/* ─── ② 配達日 / 時間 ─── */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6pt" }}>
+            <Card label={dateLabel}>
+              <BigText size={18}>{dateValue}</BigText>
+            </Card>
+            <Card label={timeLabel}>
+              <BigText size={18}>{timeValue}</BigText>
+            </Card>
           </div>
 
-          {/* ─── 配達日時 ─── */}
-          <div style={{
-            paddingTop: "8pt",
-            borderTop: `1px solid ${BORDER}`,
-            textAlign: "center",
-          }}>
+          {/* ─── ③ 用途 ─── */}
+          <Card label="用途">
+            <BigText size={20}>{order.purpose ?? "—"}</BigText>
+          </Card>
+
+          {/* ─── ④ 商品 ／ 数量 ─── */}
+          <Card label="商品 ／ 数量" expand>
             <div style={{
-              fontSize: "20pt",
-              fontWeight: 700,
-              letterSpacing: "0.04em",
-              lineHeight: 1.3,
+              display: "flex",
+              flexDirection: "column",
+              gap: "5pt",
+              paddingTop: "2pt",
             }}>
-              {dateLine}
-              {timeLine && (
-                <span style={{ marginLeft: "16pt", fontWeight: 600 }}>{timeLine}</span>
-              )}
+              {displayItems.map((item, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr auto",
+                    columnGap: "16pt",
+                    alignItems: "baseline",
+                    padding: "3pt 0",
+                    borderBottom: idx < displayItems.length - 1 ? `0.5px dashed ${BORDER}` : "none",
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: "18pt", fontWeight: 700, lineHeight: 1.25 }}>
+                      {item.product_name}
+                    </div>
+                    {item.description && (
+                      <div style={{ fontSize: "9pt", color: MUTED, marginTop: "1pt", lineHeight: 1.4 }}>
+                        {item.description}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{
+                    fontSize: "18pt",
+                    fontWeight: 700,
+                    color: ACCENT,
+                    whiteSpace: "nowrap",
+                  }}>
+                    × {item.quantity}
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+          </Card>
         </div>
       </div>
     </>
   );
 }
 
-function NameBlock({ label, name }: { label: string; name: string }) {
+// ────────────────────────────────────────────────────
+// パーツ
+// ────────────────────────────────────────────────────
+
+function Card({
+  label,
+  emphasis = false,
+  expand = false,
+  children,
+}: {
+  label: string;
+  emphasis?: boolean;
+  expand?: boolean;
+  children: React.ReactNode;
+}) {
   return (
-    <div>
-      <div style={{ fontSize: "9pt", color: MUTED, letterSpacing: "0.2em", marginBottom: "3pt" }}>
+    <div style={{
+      border: `1px solid ${BORDER}`,
+      borderTop: emphasis ? `2pt solid ${ACCENT}` : `1px solid ${BORDER}`,
+      borderRadius: "2pt",
+      padding: "5pt 9pt 6pt",
+      backgroundColor: "white",
+      flex: expand ? 1 : undefined,
+      display: "flex",
+      flexDirection: "column",
+    }}>
+      <div style={{
+        fontSize: "8pt",
+        fontWeight: 700,
+        color: emphasis ? ACCENT : MUTED,
+        letterSpacing: "0.15em",
+        marginBottom: "3pt",
+      }}>
         {label}
       </div>
-      <div style={{
-        fontSize: "18pt",
-        fontWeight: 700,
-        lineHeight: 1.25,
-        whiteSpace: "pre-line",
-      }}>
-        {name}
-      </div>
+      <div style={{ flex: expand ? 1 : undefined }}>{children}</div>
+    </div>
+  );
+}
+
+function BigText({
+  size,
+  preLine = false,
+  children,
+}: {
+  size: number;
+  preLine?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div style={{
+      fontSize: `${size}pt`,
+      fontWeight: 700,
+      lineHeight: 1.25,
+      color: INK2,
+      whiteSpace: preLine ? "pre-line" : "normal",
+    }}>
+      {children}
     </div>
   );
 }
