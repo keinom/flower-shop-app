@@ -11,6 +11,7 @@ import { FixtureGmailClient } from "../src/lib/gmail/fixtures";
 import { parseGmailMessage, decodeMimeWords, parseAddressList, findPartById } from "../src/lib/gmail/mime";
 import { runSync, type InsertRow, type SyncStore, type SyncState } from "../src/lib/gmail/sync-core";
 import { prepareHtmlForViewer, htmlToPlainText } from "../src/lib/gmail/html";
+import { buildSrcDoc } from "../src/lib/gmail/viewer";
 import { GmailError } from "../src/lib/gmail/types";
 
 // ── インメモリ SyncStore（Supabase 実装と同じ契約: ロックのアトミック取得・UNIQUE 無視 insert） ──
@@ -292,6 +293,26 @@ async function main() {
     assert.ok(view.html.includes('href="https://example.com/ok"'));
     assert.ok(/rel="noopener noreferrer"/.test(view.html));
     assert.ok(/target="_blank"/.test(view.html));
+  });
+  await ok("相対 href・#fragment・tel: は href を落とし、絶対 http(s)/mailto のみ残る", () => {
+    const v2 = prepareHtmlForViewer(
+      '<a href="/admin/orders">rel</a><a href="admin/x">rel2</a><a href="//evil.example/x">proto</a><a href="#top">frag</a><a href="tel:0312345678">tel</a>' +
+        '<a href="https://example.com/a">abs</a><a href="mailto:a@example.com">mail</a><a href=" javascript:alert(1)">js</a>',
+    );
+    assert.ok(!/href="\/admin/.test(v2.html) && !v2.html.includes('href="admin') && !v2.html.includes("//evil"));
+    assert.ok(!v2.html.includes('href="#') && !v2.html.includes("tel:") && !v2.html.toLowerCase().includes("javascript"));
+    assert.ok(v2.html.includes('href="https://example.com/a"') && v2.html.includes('href="mailto:a@example.com"'));
+  });
+  await ok("画像表示時の置換は属性のみ（本文・alt・title 中の同じ文字列は不変）", () => {
+    const v3 = prepareHtmlForViewer(
+      '<p>text data-remote-src="x" data-remote-src=y</p><img alt=\'a data-remote-src="b\' title=\'t data-remote-src="c\' src="https://img.example.com/p.png">',
+    );
+    const shown = buildSrcDoc(v3.html, true);
+    const blocked = buildSrcDoc(v3.html, false);
+    assert.ok(shown.includes('<p>text data-remote-src="x" data-remote-src=y</p>'), "本文が書き換わった: " + shown.slice(shown.indexOf("<body>")));
+    assert.ok(shown.includes('src="https://img.example.com/p.png"') && !/ data-remote-src="https:\/\/img/.test(shown));
+    assert.ok(shown.includes("alt=\"a data-remote-src=&quot;b\"") && shown.includes("title=\"t data-remote-src=&quot;c\""), "alt/title が書き換わった");
+    assert.ok(!/ src="https:/.test(blocked), "ブロック時に src が残った");
   });
   await ok("ニュースレターHTML: 外部画像が退避される・表は残る", () => {
     const v = prepareHtmlForViewer(parsed("fx-0003").bodyHtml!);

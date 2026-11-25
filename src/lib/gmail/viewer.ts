@@ -9,8 +9,13 @@ export const REMOTE_IMAGE_ATTR = "data-remote-src";
 
 export function buildSrcDoc(sanitizedHtml: string, allowRemoteImages: boolean): string {
   const imgSrc = allowRemoteImages ? "data: https: http:" : "data:";
+  // 退避属性を src に戻すのは <img ...> タグの中の「属性としての出現」だけ。
+  // サニタイズ済み HTML では属性値内の " や > はエスケープされているため、alt/title の中身には影響せず、
+  // タグの外（本文テキスト）は一切書き換えない。
   const body = allowRemoteImages
-    ? sanitizedHtml.split(`${REMOTE_IMAGE_ATTR}=`).join("src=")
+    ? sanitizedHtml.replace(/<img\b[^>]*>/gi, (tag) =>
+        tag.split(` ${REMOTE_IMAGE_ATTR}="`).join(' src="'),
+      )
     : sanitizedHtml;
   const csp = `default-src 'none'; img-src ${imgSrc}; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'`;
   return (

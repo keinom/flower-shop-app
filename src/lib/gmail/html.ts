@@ -64,15 +64,17 @@ export function prepareHtmlForViewer(rawHtml: string): ViewerHtml {
       "*": ["style", "dir", "lang"],
     },
     allowedStyles: { "*": ALLOWED_STYLES },
-    allowedSchemes: ["http", "https", "mailto", "tel"],
+    allowedSchemes: ["http", "https", "mailto"],
     allowedSchemesByTag: { img: ["data"] },
     allowProtocolRelative: false,
     nonTextTags: NON_TEXT_TAGS,
     transformTags: {
-      a: (tagName, attribs) => ({
-        tagName,
-        attribs: { ...attribs, target: "_blank", rel: "noopener noreferrer" },
-      }),
+      a: (tagName, attribs) => {
+        const next: Record<string, string> = { ...attribs, target: "_blank", rel: "noopener noreferrer" };
+        // 絶対の http(s) / mailto のみ許可。相対 URL（/admin/... 等）・#fragment・tel: などは href を落とす
+        if (!/^\s*(https?:\/\/|mailto:)/i.test(next.href ?? "")) delete next.href;
+        return { tagName, attribs: next };
+      },
       img: (tagName, attribs) => {
         const next = { ...attribs };
         const src = (next.src ?? "").trim();

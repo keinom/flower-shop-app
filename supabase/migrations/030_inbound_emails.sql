@@ -117,13 +117,6 @@ CREATE POLICY "inbound_emails_update"
   USING ((SELECT public.is_staff()))
   WITH CHECK ((SELECT public.is_staff()));
 
--- 列権限: staff（authenticated）が直接更新できるのは対応管理に必要な4列だけ。
--- 本文・送信者・受信日時・Gmail 識別子などは API 経由でも書き換えられない。
-REVOKE ALL ON public.inbound_emails FROM anon;
-REVOKE INSERT, UPDATE, DELETE ON public.inbound_emails FROM authenticated;
-GRANT SELECT ON public.inbound_emails TO authenticated;
-GRANT UPDATE (status, assigned_to, memo, customer_id) ON public.inbound_emails TO authenticated;
-
 -- ── 2. email_sync_state ────────────────────────────────────
 -- メールボックスごとに 1 行（現状は代表アドレス 1 つなので 'primary' のみ）。
 -- メールアドレスそのものは保存しない（impersonate 先は環境変数で固定）。
@@ -150,9 +143,18 @@ CREATE POLICY "email_sync_state_select"
   ON public.email_sync_state FOR SELECT
   USING ((SELECT public.is_staff()));
 
--- 書き込みはサービスロール（RLS をバイパス）のみ。staff にも書き込み権限は付けない。
-REVOKE ALL ON public.email_sync_state FROM anon;
-REVOKE INSERT, UPDATE, DELETE ON public.email_sync_state FROM authenticated;
+-- ── 権限（両テーブル）──
+-- まず anon / authenticated の権限を全て剥がす（TRUNCATE / REFERENCES / TRIGGER、既定の全体 SELECT や
+-- 列権限も含む）。そのうえで必要なものだけ付与し直す。service_role（サーバー側の同期処理）には触れない。
+REVOKE ALL ON public.inbound_emails, public.email_sync_state FROM anon, authenticated;
+
+-- inbound_emails: staff は SELECT と、対応管理に必要な4列の UPDATE のみ
+--   （本文・送信者・受信日時・Gmail 識別子などは API 経由でも書き換えられない。INSERT/DELETE も不可）
+GRANT SELECT ON public.inbound_emails TO authenticated;
+GRANT UPDATE (status, assigned_to, memo, customer_id) ON public.inbound_emails TO authenticated;
+
+-- email_sync_state: 書き込みはサービスロール（RLS をバイパス）のみ。
+--   staff が読める列は lock_token / locked_at / last_history_id を除いたものだけ。
 GRANT SELECT (mailbox_key, last_synced_at, last_error, last_error_at, lock_expires_at)
   ON public.email_sync_state TO authenticated;
 
