@@ -17,7 +17,7 @@ src/
   app/
     admin/        # 管理者向けページ（注文・顧客・請求・シフト・立て札・設定）
     customer/     # 顧客向けページ（注文・日次注文）
-    api/          # Route Handlers（cron・顧客・請求）
+    api/          # Route Handlers（cron・顧客・請求・受信メール同期/添付）
     login/        # 認証ページ
     page.tsx      # ルートリダイレクト（ログイン状態・ロールで振り分け）
   components/
@@ -26,6 +26,8 @@ src/
     ui/           # 共通UIコンポーネント
   lib/
     supabase/     # Supabaseクライアント（server.ts / client.ts）
+    gmail/        # Gmail連携（server-only: 認証・API・MIME解析・同期・フィクスチャ）
+    auth/         # staff権限チェック共通ヘルパ（requireStaff 系）
     constants.ts  # 定数
     recurring.ts  # 定期注文ロジック
     shipping.ts   # 配送ロジック
@@ -33,7 +35,7 @@ src/
     database.ts   # Supabase自動生成型
     index.ts      # アプリ共通型
 supabase/
-  migrations/     # DBマイグレーション（001〜018）
+  migrations/     # DBマイグレーション（001〜030）
 ```
 
 ## 主な機能
@@ -44,6 +46,7 @@ supabase/
 - **シフト管理**: スタッフシフトの登録・管理
 - **立て札管理**: PDF OCR（Gemini API）で立て札情報を抽出
 - **顧客管理**: 法人・継続顧客の情報管理
+- **受信メール**: 代表アドレス宛メールを Gmail API で取り込み（読み取り専用）、対応ステータス・担当者・メモ管理、送信者→顧客の自動照合（`/admin/mail`）
 
 ## 環境変数
 
@@ -54,6 +57,13 @@ NEXT_PUBLIC_SUPABASE_URL=       # SupabaseプロジェクトURL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=  # anon公開キー
 SUPABASE_SERVICE_ROLE_KEY=      # サービスロールキー（サーバーサイドのみ）
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
+# 受信メール（Gmail連携）。すべて server-only。設定手順は docs/GMAIL_SETUP.md
+GMAIL_SA_CLIENT_EMAIL=          # サービスアカウントのメールアドレス
+GMAIL_SA_PRIVATE_KEY=           # サービスアカウントの秘密鍵（改行は \n 表記可）
+GMAIL_IMPERSONATE_USER=         # 読み取り対象の代表アドレス（環境変数で固定）
+GMAIL_INITIAL_SYNC_DAYS=        # 任意（既定30）
+GMAIL_FIXTURE_MODE=             # 開発・検証専用（1で架空データ。本番では無視）
 ```
 
 ## 開発コマンド

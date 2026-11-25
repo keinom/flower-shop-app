@@ -8,9 +8,11 @@ interface NavItemProps {
   label: string;
   icon: string;
   exact?: boolean;
+  /** 件数バッジ（0・null・undefined のときは表示しない） */
+  badge?: number | null;
 }
 
-export function NavItem({ href, label, icon, exact = false }: NavItemProps) {
+export function NavItem({ href, label, icon, exact = false, badge }: NavItemProps) {
   const pathname = usePathname();
   const isActive = exact ? pathname === href : pathname.startsWith(href);
 
@@ -25,9 +27,17 @@ export function NavItem({ href, label, icon, exact = false }: NavItemProps) {
     >
       <span className="text-base leading-none">{icon}</span>
       <span>{label}</span>
+      {badge != null && badge > 0 && (
+        <span
+          className="ml-auto min-w-[1.25rem] px-1.5 py-0.5 rounded-full bg-red-600 text-white text-[11px] font-bold leading-none text-center"
+          aria-label={`未対応 ${badge} 件`}
+        >
+          {badge > 99 ? "99+" : badge}
+        </span>
+      )}
       {isActive && (
         <span
-          className="ml-auto w-1.5 h-1.5 rounded-full bg-brand-600"
+          className={`${badge != null && badge > 0 ? "" : "ml-auto "}w-1.5 h-1.5 rounded-full bg-brand-600`}
         />
       )}
     </Link>

@@ -1,4 +1,4 @@
-import type { OrderStatus, OrderType } from "@/types";
+import type { OrderStatus, OrderType, InboundEmailStatus } from "@/types";
 
 /**
  * 注文ステータス定義
@@ -72,3 +72,20 @@ export const ORDER_PURPOSES = [
  * ページネーション設定
  */
 export const PAGE_SIZE = 20;
+
+/**
+ * 受信メールの対応ステータス（基幹システム側だけの情報。Gmail の既読/ラベルとは連動しない）
+ */
+export const INBOUND_EMAIL_STATUSES: InboundEmailStatus[] = ["未対応", "対応中", "対応済み"];
+
+export const INBOUND_EMAIL_STATUS_COLORS: Record<
+  InboundEmailStatus,
+  { bg: string; text: string; border: string }
+> = {
+  未対応:   { bg: "bg-red-50",    text: "text-red-700",   border: "border-red-200"   },
+  対応中:   { bg: "bg-amber-50",  text: "text-amber-700", border: "border-amber-200" },
+  対応済み: { bg: "bg-gray-100",  text: "text-gray-600",  border: "border-gray-200"  },
+};
+
+/** 受信メール一覧の 1 ページあたりの件数 */
+export const MAIL_PAGE_SIZE = 50;

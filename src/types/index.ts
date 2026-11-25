@@ -1,7 +1,14 @@
 /**
  * アプリ全体で使う型のエクスポート
  */
-export type { Database, UserRole, OrderStatus, OrderType } from "./database";
+export type {
+  Database,
+  UserRole,
+  OrderStatus,
+  OrderType,
+  InboundEmailStatus,
+  InboundEmailAttachment,
+} from "./database";
 
 // テーブルの行型を使いやすいエイリアスとして再エクスポート
 import type { Database } from "./database";
@@ -21,3 +28,5 @@ export type CustomerWithProfile = Customer & {
 export type OrderWithCustomer = Order & {
   customers: Pick<Customer, "name"> | null;
 };
+
+export type InboundEmail = Database["public"]["Tables"]["inbound_emails"]["Row"];

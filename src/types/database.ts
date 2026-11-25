@@ -18,6 +18,16 @@ export type OrderStatus =
   | "キャンセル"
   | "履歴";
 
+export type InboundEmailStatus = "未対応" | "対応中" | "対応済み";
+
+/** 添付メタデータ（実体は保存しない。ダウンロード時に Gmail から都度取得） */
+export interface InboundEmailAttachment {
+  filename: string;
+  mime_type: string;
+  size: number;
+  part_id: string;
+}
+
 export type ShiftPreferenceType = "available" | "off";
 export type ShiftTimeSlot       = "AM" | "PM" | "FULL";
 export type ShiftStatus         = "draft" | "confirmed";
@@ -700,6 +710,118 @@ export interface Database {
           }
         ];
       };
+      inbound_emails: {
+        Row: {
+          id: string;
+          gmail_message_id: string;
+          gmail_thread_id: string;
+          message_id_header: string | null;
+          references_header: string | null;
+          reply_to: string | null;
+          from_name: string | null;
+          from_address: string;
+          to_addresses: string | null;
+          cc_addresses: string | null;
+          subject: string;
+          snippet: string | null;
+          body_text: string | null;
+          body_html: string | null;
+          received_at: string;
+          attachments: InboundEmailAttachment[];
+          status: InboundEmailStatus;
+          assigned_to: string | null;
+          memo: string | null;
+          status_updated_by: string | null;
+          status_updated_at: string | null;
+          customer_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          gmail_message_id: string;
+          gmail_thread_id: string;
+          message_id_header?: string | null;
+          references_header?: string | null;
+          reply_to?: string | null;
+          from_name?: string | null;
+          from_address?: string;
+          to_addresses?: string | null;
+          cc_addresses?: string | null;
+          subject?: string;
+          snippet?: string | null;
+          body_text?: string | null;
+          body_html?: string | null;
+          received_at: string;
+          attachments?: InboundEmailAttachment[];
+          status?: InboundEmailStatus;
+          assigned_to?: string | null;
+          memo?: string | null;
+          status_updated_by?: string | null;
+          status_updated_at?: string | null;
+          customer_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          status?: InboundEmailStatus;
+          assigned_to?: string | null;
+          memo?: string | null;
+          customer_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "inbound_emails_assigned_to_fkey";
+            columns: ["assigned_to"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "inbound_emails_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "customers";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      email_sync_state: {
+        Row: {
+          mailbox_key: string;
+          last_history_id: string | null;
+          last_synced_at: string | null;
+          last_error: string | null;
+          last_error_at: string | null;
+          lock_token: string | null;
+          locked_at: string | null;
+          lock_expires_at: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          mailbox_key: string;
+          last_history_id?: string | null;
+          last_synced_at?: string | null;
+          last_error?: string | null;
+          last_error_at?: string | null;
+          lock_token?: string | null;
+          locked_at?: string | null;
+          lock_expires_at?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          mailbox_key?: string;
+          last_history_id?: string | null;
+          last_synced_at?: string | null;
+          last_error?: string | null;
+          last_error_at?: string | null;
+          lock_token?: string | null;
+          locked_at?: string | null;
+          lock_expires_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -714,6 +836,10 @@ export interface Database {
       customer_order_status_counts: {
         Args: Record<string, never>;
         Returns: { status: string; order_count: number }[];
+      };
+      match_customers_by_email: {
+        Args: { p_emails: string[] };
+        Returns: { email_key: string; customer_id: string; customer_name: string }[];
       };
     };
     Enums: Record<string, never>;

@@ -3,13 +3,18 @@ import { getCurrentUserProfile } from "@/lib/supabase/server";
 import { logout } from "@/app/login/actions";
 import { NavItem } from "@/components/admin/NavItem";
 import { MobileNav } from "@/components/admin/MobileNav";
+import { getUnhandledMailCount } from "@/lib/mailBadge";
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, profile } = await getCurrentUserProfile();
+  // 未対応メール件数は認証と並列で取得（失敗時は null → バッジ非表示。レイアウトは落とさない）
+  const [{ user, profile }, unhandledMailCount] = await Promise.all([
+    getCurrentUserProfile(),
+    getUnhandledMailCount(),
+  ]);
 
   if (!user) redirect("/login");
 
@@ -35,7 +40,11 @@ export default async function AdminLayout({
             {/* 左: ハンバーガー（モバイル） + ロゴ + システム名 */}
             <div className="flex items-center gap-3">
               {/* モバイルメニュー */}
-              <MobileNav isAdmin={isAdmin} displayName={displayName} />
+              <MobileNav
+                isAdmin={isAdmin}
+                displayName={displayName}
+                unhandledMailCount={unhandledMailCount}
+              />
 
               {/* ロゴ */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -124,6 +133,7 @@ export default async function AdminLayout({
             <NavItem href="/admin/daily"     label="日報"           icon="📅" />
             <NavItem href="/admin/customers" label="顧客検索"       icon="👥" />
             <NavItem href="/admin/orders"    label="注文検索"       icon="📋" />
+            <NavItem href="/admin/mail"      label="受信メール"     icon="✉️" badge={unhandledMailCount} />
             <NavItem href="/admin/recurring" label="定期注文"       icon="🔄" />
             <NavItem href="/admin/invoices"  label="請求書"         icon="📄" />
             <NavItem href="/admin/fuda"      label="立て札"         icon="🌸" />
