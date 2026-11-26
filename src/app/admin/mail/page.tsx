@@ -6,7 +6,7 @@ import { isFixtureMode, isGmailConfigured } from "@/lib/gmail/config";
 import { MAIL_PAGE_SIZE } from "@/lib/constants";
 import { formatJstDateTime } from "@/lib/date";
 import { oneLineName } from "@/lib/name";
-import { buildMailQueryString, ilikeOrValue, parseMailQuery } from "@/lib/mailQuery";
+import { buildMailQueryString, ilikeOrValue, mailStatusParam, parseMailQuery } from "@/lib/mailQuery";
 import { MailSyncBar } from "@/components/admin/MailSyncBar";
 import { MailList, type MailListRow } from "@/components/admin/MailList";
 import type { InboundEmailAttachment, InboundEmailStatus } from "@/types";
@@ -28,11 +28,12 @@ type ListRow = {
   assignee: { display_name: string | null } | null;
 };
 
+// 既定（URL に status が無いとき）は「未対応」。「すべて」は status=all
 const FILTERS: { label: string; status: InboundEmailStatus | null }[] = [
-  { label: "すべて", status: null },
-  { label: "未対応のみ", status: "未対応" },
+  { label: "未対応", status: "未対応" },
   { label: "対応中", status: "対応中" },
   { label: "対応済み", status: "対応済み" },
+  { label: "すべて", status: null },
 ];
 
 export default async function MailPage({ searchParams }: MailPageProps) {
@@ -92,6 +93,7 @@ export default async function MailPage({ searchParams }: MailPageProps) {
     return `/admin/mail${qs ? `?${qs}` : ""}`;
   };
   const currentQs = buildMailQueryString(query);
+  const statusParam = mailStatusParam(query.status);
 
   return (
     <div className="space-y-5">
@@ -139,7 +141,7 @@ export default async function MailPage({ searchParams }: MailPageProps) {
           })}
         </div>
         <form method="get" action="/admin/mail" className="flex gap-2 sm:w-80">
-          {query.status && <input type="hidden" name="status" value={query.status} />}
+          {statusParam && <input type="hidden" name="status" value={statusParam} />}
           <input
             type="search"
             name="q"
@@ -169,7 +171,13 @@ export default async function MailPage({ searchParams }: MailPageProps) {
         <div className="flex flex-col items-center justify-center py-16 text-gray-400 space-y-2">
           <span className="text-4xl">✉️</span>
           <p className="text-sm font-medium">
-            {query.status || query.q ? "条件に一致するメールがありません" : "受信メールはまだありません"}
+            {query.q
+              ? "条件に一致するメールがありません"
+              : query.status === "未対応"
+                ? "未対応のメールはありません"
+                : query.status
+                  ? `「${query.status}」のメールはありません`
+                  : "受信メールはまだありません"}
           </p>
         </div>
       ) : (

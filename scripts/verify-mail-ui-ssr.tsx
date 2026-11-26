@@ -133,9 +133,23 @@ ok("添付ヘッダ: attachment・RFC5987・パス区切り/制御文字除去",
 });
 
 ok("検索条件: 戻り用 from の再構築・ilike エスケープ", () => {
-  assert.equal(sanitizeFromParam("status=未対応&page=2&evil=1&q=abc"), "status=%E6%9C%AA%E5%AF%BE%E5%BF%9C&q=abc&page=2");
-  assert.deepEqual(parseMailQuery({ status: "x", page: "-3" }), { status: null, q: "", page: 1 });
+  // 既定の「未対応」は URL から省略される
+  assert.equal(sanitizeFromParam("status=未対応&page=2&evil=1&q=abc"), "q=abc&page=2");
+  assert.equal(sanitizeFromParam("status=対応中&page=2"), "status=%E5%AF%BE%E5%BF%9C%E4%B8%AD&page=2");
+  assert.equal(sanitizeFromParam("status=all&q=abc"), "status=all&q=abc");
+  // 未指定・不正値は既定の「未対応」、status=all は「すべて」(null)
+  assert.deepEqual(parseMailQuery({}), { status: "未対応", q: "", page: 1 });
+  assert.deepEqual(parseMailQuery({ status: "x", page: "-3" }), { status: "未対応", q: "", page: 1 });
+  assert.deepEqual(parseMailQuery({ status: "all" }), { status: null, q: "", page: 1 });
   assert.equal(buildMailQueryString({ page: 1 }), "");
+  assert.equal(buildMailQueryString({ status: "未対応", page: 1 }), "");
+  assert.equal(buildMailQueryString({ status: null, page: 1 }), "status=all");
+  // 往復で状態が保たれる
+  for (const s of ["未対応", "対応中", "対応済み", null] as const) {
+    const qs = buildMailQueryString({ status: s, q: "", page: 1 });
+    const back = parseMailQuery(Object.fromEntries(new URLSearchParams(qs)));
+    assert.equal(back.status, s);
+  }
   assert.equal(ilikeOrValue('a,b)"%_'), String.raw`"%a,b)\"\\%\\_%"`);
 });
 
