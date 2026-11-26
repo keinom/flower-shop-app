@@ -11,6 +11,10 @@ import { OrderTotalBar } from "@/components/admin/OrderTotalBar";
 import { ShippingFeeSelector } from "@/components/admin/ShippingFeeSelector";
 import { PostalCodeInput } from "@/components/ui/PostalCodeInput";
 import { preventEnterSubmit } from "@/lib/formKeyboard";
+import { SubmitButton } from "@/components/ui/SubmitButton";
+import { DuplicateCustomerWarning } from "@/components/admin/DuplicateCustomerWarning";
+import type { DuplicateCustomer } from "@/lib/customerDuplicates";
+import { useGuardedSubmit } from "@/lib/useGuardedSubmit";
 import { DeliverySuggestionInput, type DeliverySuggestion } from "@/components/admin/DeliverySuggestionInput";
 
 const INITIAL_STATE: CreateAdminOrderState = {};
@@ -53,9 +57,11 @@ interface Props {
   taxRate: number;
   presetCustomerId?: string;
   copyDefaults?: AdminOrderCopyDefaults;
+  /** フォーム表示ごとにサーバーで発行した冪等キー（二重送信対策） */
+  idempotencyKey: string;
 }
 
-export function AdminOrderFormClient({ customers, today, taxRate, presetCustomerId, copyDefaults }: Props) {
+export function AdminOrderFormClient({ customers, today, taxRate, presetCustomerId, copyDefaults, idempotencyKey }: Props) {
   // ── 顧客モード ──
   const preset = presetCustomerId
     ? (customers.find((c) => c.id === presetCustomerId) ?? null)
@@ -93,7 +99,24 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
   const [shippingFee, setShippingFee] = useState(0);
 
   // ── Server Action 状態（エラー時にフォーム入力を保持するため useActionState を使用）──
+  // 入力を消さず・二重に送らずに送信する（重複警告の「それでも登録する」は confirm_duplicate=1 で再送信）
   const [state, formAction, isPending] = useActionState(createAdminOrder, INITIAL_STATE);
+  const { formRef, onSubmit, submit } = useGuardedSubmit(formAction, isPending);
+
+  // 重複警告から既存顧客に切り替える（注文の入力内容はそのまま）
+  function switchToExistingCustomer(d: DuplicateCustomer) {
+    const found = customers.find((c) => c.id === d.id);
+    selectCustomer(
+      found ?? {
+        id: d.id,
+        name: d.name,
+        phone: d.phone,
+        email: d.email,
+        postal_code: d.postal_code,
+        address: d.address,
+      }
+    );
+  }
 
   // サジェスト外クリックで閉じる
   useEffect(() => {
@@ -178,7 +201,14 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
   }
 
   return (
-    <form action={formAction} className="space-y-5" onKeyDown={preventEnterSubmit}>
+    <form
+      ref={formRef}
+      action={formAction}
+      onSubmit={onSubmit}
+      className="space-y-5"
+      onKeyDown={preventEnterSubmit}
+    >
+      <input type="hidden" name="idempotency_key" value={idempotencyKey} />
       {state.error && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
           {state.error}
@@ -636,15 +666,22 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
       {/* ── 合計バー ── */}
       <OrderTotalBar itemsTotal={itemsTotal} shippingFee={shippingFee} />
 
+      {/* ── 新規顧客の重複警告（顧客も注文も作成していない）── */}
+      {mode === "new" && state.duplicates && state.duplicates.length > 0 && (
+        <DuplicateCustomerWarning
+          duplicates={state.duplicates}
+          pending={isPending}
+          onProceed={() => submit({ confirm_duplicate: "1" })}
+          proceedLabel="それでも新規顧客として登録する"
+          onUseExisting={switchToExistingCustomer}
+        />
+      )}
+
       {/* ── 送信 ── */}
       <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="btn-primary px-8 disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {isPending ? "作成中..." : "注文を作成する"}
-        </button>
+        <SubmitButton pending={isPending} pendingText="作成中..." className="btn-primary px-8">
+          注文を作成する
+        </SubmitButton>
         <Link href="/admin/orders" className="btn-secondary">キャンセル</Link>
       </div>
     </form>

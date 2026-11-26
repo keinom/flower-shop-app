@@ -11,6 +11,7 @@ import { DeleteOrderButton } from "@/components/admin/DeleteOrderButton";
 import type { OrderStatus, OrderType } from "@/types";
 import { formatJstDate, formatJstDateTime } from "@/lib/date";
 import { oneLineName } from "@/lib/name";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 interface OrderDetailPageProps {
   params: Promise<{ id: string }>;
@@ -434,9 +435,9 @@ export default async function OrderDetailPage({
                   className="input text-sm"
                 />
               </div>
-              <button type="submit" className="btn-primary w-full text-sm">
+              <SubmitButton className="btn-primary w-full text-sm" pendingText="更新中...">
                 更新する
-              </button>
+              </SubmitButton>
             </form>
           </div>
 

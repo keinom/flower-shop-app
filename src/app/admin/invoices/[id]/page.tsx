@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { updateInvoiceStatus } from "./actions";
 import { DeleteInvoiceButton } from "@/components/admin/DeleteInvoiceButton";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 type InvoiceStatus = "draft" | "issued" | "sent" | "paid";
 
@@ -245,24 +246,20 @@ export default async function InvoiceDetailPage({ params, searchParams }: Props)
               <form action={updateInvoiceStatus}>
                 <input type="hidden" name="invoice_id" value={inv.id} />
                 <input type="hidden" name="new_status" value="issued" />
-                <button
-                  type="submit"
-                  className="w-full py-2.5 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors"
-                >
+                <SubmitButton
+                  className="w-full py-2.5 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors" pendingText="処理中...">
                   請求書を発行する
-                </button>
+                </SubmitButton>
               </form>
             )}
             {(inv.status === "issued" || inv.status === "sent") && (
               <form action={updateInvoiceStatus}>
                 <input type="hidden" name="invoice_id" value={inv.id} />
                 <input type="hidden" name="new_status" value="paid" />
-                <button
-                  type="submit"
-                  className="w-full py-2.5 rounded-lg text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
-                >
+                <SubmitButton
+                  className="w-full py-2.5 rounded-lg text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors" pendingText="処理中...">
                   入金済みにする
-                </button>
+                </SubmitButton>
                 <p className="mt-2 text-xs text-gray-500 leading-relaxed">
                   紐付く注文の支払いを「代済み（振込）」に自動更新します
                 </p>
@@ -291,12 +288,10 @@ export default async function InvoiceDetailPage({ params, searchParams }: Props)
                     <option key={s} value={s}>{STATUS_LABELS[s]}</option>
                   ))}
                 </select>
-                <button
-                  type="submit"
-                  className="w-full py-2 rounded-lg text-sm font-semibold bg-gray-600 hover:bg-gray-700 text-white transition-colors"
-                >
+                <SubmitButton
+                  className="w-full py-2 rounded-lg text-sm font-semibold bg-gray-600 hover:bg-gray-700 text-white transition-colors" pendingText="処理中...">
                   変更する
-                </button>
+                </SubmitButton>
               </form>
             </details>
           </div>

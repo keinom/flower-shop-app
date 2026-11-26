@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createStaffUser } from "../actions";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 interface NewAdminUserPageProps {
   searchParams: Promise<{ error?: string }>;
@@ -98,9 +99,9 @@ export default async function NewAdminUserPage({ searchParams }: NewAdminUserPag
           </div>
 
           <div className="pt-2 flex gap-3">
-            <button type="submit" className="btn-primary">
+            <SubmitButton className="btn-primary" pendingText="追加中...">
               ユーザーを追加する
-            </button>
+            </SubmitButton>
             <Link href="/admin/users" className="btn-secondary">
               キャンセル
             </Link>

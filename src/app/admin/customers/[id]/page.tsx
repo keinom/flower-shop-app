@@ -7,6 +7,7 @@ import { issueAccount } from "../actions";
 import type { OrderStatus } from "@/types";
 import type { Database } from "@/types/database";
 import { formatJstDate, jstDateString, jstYearMonthString } from "@/lib/date";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 type CustomerRow = Database["public"]["Tables"]["customers"]["Row"] & { postal_code?: string | null };
 
@@ -217,9 +218,9 @@ export default async function CustomerDetailPage({
                 />
               </div>
             </div>
-            <button type="submit" className="btn-primary">
+            <SubmitButton className="btn-primary" pendingText="発行中...">
               アカウントを発行する
-            </button>
+            </SubmitButton>
           </form>
         </div>
       )}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { findIdByIdempotencyKey, isUniqueViolation, parseIdempotencyKey } from "@/lib/idempotency";
 
 function generateInvoiceNumber(yearMonth: string, seq: number): string {
   return `INV-${yearMonth.replace("-", "")}-${String(seq).padStart(3, "0")}`;
@@ -21,9 +22,17 @@ export async function POST(req: NextRequest) {
       dueDate: string | null;
       remarks: string | null;
       orderIds: string[];
+      idempotencyKey?: string | null;
     };
 
     const { customerId, invoiceType, targetYearMonth, dueDate, remarks, orderIds } = body;
+
+    // 同じ送信（冪等キー）がすでに処理済みなら、作成済みの請求書を返す（二重作成しない）
+    const idempotencyKey = parseIdempotencyKey(body.idempotencyKey);
+    const doneId = await findIdByIdempotencyKey(supabase, "invoices", idempotencyKey);
+    if (doneId) {
+      return NextResponse.json({ invoiceId: doneId }, { status: 200 });
+    }
 
     if (!customerId || !invoiceType || !orderIds || orderIds.length === 0) {
       return NextResponse.json({ error: "必須項目が不足しています" }, { status: 400 });
@@ -142,9 +151,16 @@ export async function POST(req: NextRequest) {
         status:            "draft",
         due_date:          dueDate   || null,
         remarks:           remarks   || null,
+        idempotency_key:   idempotencyKey,
       } as never)
       .select("id")
       .single();
+
+    if (invError && isUniqueViolation(invError as { code?: string })) {
+      // 並行して同じ送信が先に作成していた場合
+      const existing = await findIdByIdempotencyKey(supabase, "invoices", idempotencyKey);
+      if (existing) return NextResponse.json({ invoiceId: existing }, { status: 200 });
+    }
 
     if (invError || !invoice) {
       return NextResponse.json(

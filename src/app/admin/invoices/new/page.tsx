@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { newIdempotencyKey } from "@/lib/idempotency";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 interface Customer {
   id: string;
@@ -21,7 +23,11 @@ interface EligibleOrder {
 
 export default function NewInvoicePage() {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  // 送信中（成功時は画面遷移するまで true のまま。エラー時のみ false に戻す）
+  const [isPending, setIsPending] = useState(false);
+  const inFlight = useRef(false);
+  // 二重送信対策の冪等キー（画面を開き直すと新しいキー。エラー後の再送信は同じキーを使う）
+  const [idempotencyKey] = useState(() => newIdempotencyKey());
 
   const [invoiceType, setInvoiceType] = useState<"single" | "monthly">("single");
   const [customerId,  setCustomerId]  = useState("");
@@ -94,33 +100,41 @@ export default function NewInvoicePage() {
     if (!customerId) return setErrorMsg("顧客を選択してください");
     if (selectedOrders.length === 0) return setErrorMsg("請求する注文を1件以上選択してください");
 
-    startTransition(() => {
-      void fetch("/api/invoices/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customerId,
-          invoiceType,
-          targetYearMonth: invoiceType === "monthly" ? targetYearMonth : null,
-          dueDate:  dueDate  || null,
-          remarks:  remarks  || null,
-          orderIds: selectedOrders,
-        }),
+    if (inFlight.current) return; // 連打・Enter 連打の 2 回目以降は無視
+    inFlight.current = true;
+    setIsPending(true);
+    const finishWithError = (msg: string) => {
+      setErrorMsg(msg);
+      inFlight.current = false;
+      setIsPending(false);
+    };
+
+    void fetch("/api/invoices/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customerId,
+        invoiceType,
+        targetYearMonth: invoiceType === "monthly" ? targetYearMonth : null,
+        dueDate:  dueDate  || null,
+        remarks:  remarks  || null,
+        orderIds: selectedOrders,
+        idempotencyKey,
+      }),
+    })
+      .then(async (res) => {
+        const json = await res.json() as { invoiceId?: string; error?: string };
+        if (json.error) {
+          finishWithError(json.error);
+        } else if (json.invoiceId) {
+          router.push(`/admin/invoices/${json.invoiceId}?created=1`);
+        } else {
+          finishWithError("予期しない応答が返されました");
+        }
       })
-        .then(async (res) => {
-          const json = await res.json() as { invoiceId?: string; error?: string };
-          if (json.error) {
-            setErrorMsg(json.error);
-          } else if (json.invoiceId) {
-            router.push(`/admin/invoices/${json.invoiceId}?created=1`);
-          } else {
-            setErrorMsg("予期しない応答が返されました");
-          }
-        })
-        .catch((err: unknown) => {
-          setErrorMsg(`通信エラー: ${err instanceof Error ? err.message : String(err)}`);
-        });
-    });
+      .catch((err: unknown) => {
+        finishWithError(`通信エラー: ${err instanceof Error ? err.message : String(err)}`);
+      });
   };
 
   const subtotal = eligibleOrders
@@ -323,13 +337,13 @@ export default function NewInvoicePage() {
           <button type="button" onClick={() => router.back()} className="btn-ghost">
             キャンセル
           </button>
-          <button
-            type="submit"
-            disabled={isPending || !customerId || selectedOrders.length === 0}
-            className="btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
+          <SubmitButton
+            pending={isPending}
+            pendingText="作成中..."
+            disabled={!customerId || selectedOrders.length === 0}
           >
-            {isPending ? "作成中..." : "請求書を作成する"}
-          </button>
+            請求書を作成する
+          </SubmitButton>
         </div>
       </form>
     </div>

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { updateShiftRequirements } from "../actions";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 interface Props {
   searchParams: Promise<{ success?: string; error?: string }>;
@@ -161,9 +162,9 @@ export default async function ShiftRequirementsPage({ searchParams }: Props) {
           })}
         </div>
 
-        <button type="submit" className="btn-primary w-full">
+        <SubmitButton className="btn-primary w-full" pendingText="保存中...">
           設定を保存する
-        </button>
+        </SubmitButton>
       </form>
 
       <div className="p-4 bg-blue-50 border border-blue-100 rounded-md text-sm text-blue-700">

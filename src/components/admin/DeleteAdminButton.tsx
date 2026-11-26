@@ -1,6 +1,7 @@
 "use client";
 
 import { deleteAdminUser } from "@/app/admin/users/actions";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 interface DeleteAdminButtonProps {
   userId: string;
@@ -17,9 +18,9 @@ export function DeleteAdminButton({ userId, displayName }: DeleteAdminButtonProp
   return (
     <form action={deleteAdminUser} onSubmit={handleSubmit}>
       <input type="hidden" name="user_id" value={userId} />
-      <button type="submit" className="text-sm text-red-500 hover:text-red-700">
+      <SubmitButton className="text-sm text-red-500 hover:text-red-700" pendingText="削除中...">
         削除
-      </button>
+      </SubmitButton>
     </form>
   );
 }

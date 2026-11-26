@@ -58,6 +58,7 @@ export interface Database {
       };
       customers: {
         Row: {
+          idempotency_key: string | null;
           id: string;
           profile_id: string | null;
           name: string;
@@ -70,6 +71,7 @@ export interface Database {
           updated_at: string;
         };
         Insert: {
+          idempotency_key?: string | null;
           id?: string;
           profile_id?: string | null;
           name: string;
@@ -82,6 +84,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: {
+          idempotency_key?: string | null;
           id?: string;
           profile_id?: string | null;
           name?: string;
@@ -105,6 +108,8 @@ export interface Database {
       };
       orders: {
         Row: {
+          idempotency_key: string | null;
+          print_sender_name: string | null;
           id: string;
           customer_id: string;
           status: OrderStatus;
@@ -130,6 +135,8 @@ export interface Database {
           updated_at: string;
         };
         Insert: {
+          idempotency_key?: string | null;
+          print_sender_name?: string | null;
           id?: string;
           customer_id: string;
           status?: OrderStatus;
@@ -155,6 +162,8 @@ export interface Database {
           updated_at?: string;
         };
         Update: {
+          idempotency_key?: string | null;
+          print_sender_name?: string | null;
           id?: string;
           customer_id?: string;
           status?: OrderStatus;
@@ -198,6 +207,7 @@ export interface Database {
       };
       recurring_order_templates: {
         Row: {
+          idempotency_key: string | null;
           id: string;
           customer_id: string;
           title: string;
@@ -225,6 +235,7 @@ export interface Database {
           updated_at: string;
         };
         Insert: {
+          idempotency_key?: string | null;
           id?: string;
           customer_id: string;
           title: string;
@@ -252,6 +263,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: {
+          idempotency_key?: string | null;
           id?: string;
           customer_id?: string;
           title?: string;
@@ -546,6 +558,7 @@ export interface Database {
       };
       invoices: {
         Row: {
+          idempotency_key: string | null;
           id: string;
           invoice_number: string;
           customer_id: string;
@@ -563,6 +576,7 @@ export interface Database {
           updated_at: string;
         };
         Insert: {
+          idempotency_key?: string | null;
           id?: string;
           invoice_number: string;
           customer_id: string;
@@ -580,6 +594,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: {
+          idempotency_key?: string | null;
           id?: string;
           invoice_number?: string;
           customer_id?: string;

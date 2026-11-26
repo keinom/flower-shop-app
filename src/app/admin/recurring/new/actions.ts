@@ -2,10 +2,18 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { findIdByIdempotencyKey, isUniqueViolation, readIdempotencyKey } from "@/lib/idempotency";
 import type { OrderType } from "@/types";
 
 export async function createRecurringTemplate(formData: FormData) {
   const supabase = await createClient();
+
+  // 同じ送信（冪等キー）がすでに処理済みなら、作成済みのテンプレート詳細へ
+  const idempotencyKey = readIdempotencyKey(formData);
+  const doneId = await findIdByIdempotencyKey(supabase, "recurring_order_templates", idempotencyKey);
+  if (doneId) {
+    redirect(`/admin/recurring/${doneId}`);
+  }
 
   const title = (formData.get("title") as string)?.trim();
   const customerId = formData.get("customer_id") as string;
@@ -69,11 +77,16 @@ export async function createRecurringTemplate(formData: FormData) {
       purpose,
       message_card: messageCard,
       remarks,
+      idempotency_key: idempotencyKey,
     })
     .select("id")
     .single();
 
   if (tmplErr || !template) {
+    if (isUniqueViolation(tmplErr)) {
+      const existing = await findIdByIdempotencyKey(supabase, "recurring_order_templates", idempotencyKey);
+      if (existing) redirect(`/admin/recurring/${existing}`);
+    }
     redirect("/admin/recurring/new?error=" + encodeURIComponent("テンプレートの作成に失敗しました: " + (tmplErr?.message ?? "")));
   }
 

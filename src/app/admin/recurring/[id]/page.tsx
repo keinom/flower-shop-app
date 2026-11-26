@@ -8,6 +8,7 @@ import type { RecurrenceRule } from "@/lib/recurring";
 import type { OrderStatus, OrderType } from "@/types";
 import { toggleTemplateActive, runManualGeneration } from "./actions";
 import { DeleteTemplateButton } from "@/components/admin/DeleteTemplateButton";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -110,13 +111,11 @@ export default async function RecurringTemplateDetailPage({ params, searchParams
           {/* メインアクション: 今すぐ生成 */}
           <form action={runManualGeneration}>
             <input type="hidden" name="template_id" value={template.id} />
-            <button
-              type="submit"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold shadow-sm transition-colors"
-            >
+            <SubmitButton
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold shadow-sm transition-colors" pendingText="処理中...">
               <span>🔄</span>
               <span>今すぐ生成（30日分）</span>
-            </button>
+            </SubmitButton>
           </form>
 
           {/* セカンダリアクション群 */}
@@ -131,17 +130,15 @@ export default async function RecurringTemplateDetailPage({ params, searchParams
           <form action={toggleTemplateActive}>
             <input type="hidden" name="template_id" value={template.id} />
             <input type="hidden" name="is_active" value={String(template.is_active)} />
-            <button
-              type="submit"
+            <SubmitButton
               className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border text-sm font-semibold transition-colors ${
                 template.is_active
                   ? "bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100"
                   : "bg-green-50 text-green-700 border-green-300 hover:bg-green-100"
-              }`}
-            >
+              }`} pendingText="処理中...">
               <span>{template.is_active ? "⏸" : "▶"}</span>
               <span>{template.is_active ? "停止" : "再開"}</span>
-            </button>
+            </SubmitButton>
           </form>
 
           <DeleteTemplateButton templateId={template.id} />

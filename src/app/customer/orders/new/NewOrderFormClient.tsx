@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { ORDER_PURPOSES, ORDER_TYPES, ORDER_TYPE_ICONS } from "@/lib/constants";
 import { createOrder, type CreateOrderState } from "../actions";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 import { DeliveryInfoInput } from "./DeliveryInfoInput";
 
 interface CustomerInfo {
@@ -16,15 +17,18 @@ interface CustomerInfo {
 interface Props {
   customer: CustomerInfo | null;
   today: string;
+  /** フォーム表示ごとにサーバーで発行した冪等キー（二重送信対策） */
+  idempotencyKey: string;
 }
 
 const INITIAL_STATE: CreateOrderState = {};
 
-export function NewOrderFormClient({ customer, today }: Props) {
+export function NewOrderFormClient({ customer, today, idempotencyKey }: Props) {
   const [state, formAction, isPending] = useActionState(createOrder, INITIAL_STATE);
 
   return (
     <form action={formAction} className="space-y-6">
+      <input type="hidden" name="idempotency_key" value={idempotencyKey} />
       {state.error && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
           {state.error}
@@ -189,13 +193,9 @@ export function NewOrderFormClient({ customer, today }: Props) {
       </div>
 
       <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="btn-primary px-8 disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {isPending ? "送信中..." : "注文を送信する"}
-        </button>
+        <SubmitButton pending={isPending} pendingText="送信中..." className="btn-primary px-8">
+          注文を送信する
+        </SubmitButton>
         <Link href="/customer" className="btn-secondary">
           キャンセル
         </Link>

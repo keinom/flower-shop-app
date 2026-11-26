@@ -1,3 +1,4 @@
+import { newIdempotencyKey } from "@/lib/idempotency";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { RecurringTemplateFormClient } from "./RecurringTemplateFormClient";
@@ -54,6 +55,7 @@ export default async function NewRecurringTemplatePage({ searchParams }: Props) 
         customers={customers}
         today={today}
         taxRate={taxRate}
+        idempotencyKey={newIdempotencyKey()}
       />
     </div>
   );
