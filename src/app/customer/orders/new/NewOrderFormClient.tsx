@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { ORDER_PURPOSES, ORDER_TYPES, ORDER_TYPE_ICONS } from "@/lib/constants";
 import { createOrder, type CreateOrderState } from "../actions";
+import { useIdempotencyKey } from "@/lib/useIdempotencyKey";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { DeliveryInfoInput } from "./DeliveryInfoInput";
 
@@ -24,11 +25,12 @@ interface Props {
 const INITIAL_STATE: CreateOrderState = {};
 
 export function NewOrderFormClient({ customer, today, idempotencyKey }: Props) {
+  const frozenKey = useIdempotencyKey(idempotencyKey);
   const [state, formAction, isPending] = useActionState(createOrder, INITIAL_STATE);
 
   return (
     <form action={formAction} className="space-y-6">
-      <input type="hidden" name="idempotency_key" value={idempotencyKey} />
+      <input type="hidden" name="idempotency_key" value={frozenKey} />
       {state.error && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
           {state.error}

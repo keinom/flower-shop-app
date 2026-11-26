@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getStaffOrNull } from "@/lib/auth/staff";
 import { findIdByIdempotencyKey, isUniqueViolation, readIdempotencyKey } from "@/lib/idempotency";
 import { findDuplicateCustomers, type DuplicateCustomer } from "@/lib/customerDuplicates";
 
@@ -25,6 +26,9 @@ export async function createCustomer(
   _prevState: CreateCustomerState,
   formData: FormData
 ): Promise<CreateCustomerState> {
+  // staff（admin / employee）以外は、重複確認（全顧客取得）・認証ユーザー作成のいずれにも到達させない
+  if (!(await getStaffOrNull())) redirect("/login");
+
   const supabase = await createClient();
 
   const str = (k: string) => ((formData.get(k) as string | null) ?? "").trim();

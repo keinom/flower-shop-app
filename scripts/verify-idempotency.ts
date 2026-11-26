@@ -51,7 +51,7 @@ function fakeDb() {
             tables[table].push({ ...row, id, idempotency_key: k ?? null });
             data = { id };
           }
-          return { select: () => ({ single: async () => ({ data, error }) }) };
+          return { select: (_cols?: string) => ({ single: async () => ({ data, error }) }) };
         },
         select: () => ({
           eq: (_col: string, key: string) => ({
@@ -191,7 +191,7 @@ async function main() {
       "src/app/customer/orders/new/NewOrderFormClient.tsx",
       "src/app/admin/recurring/new/RecurringTemplateFormClient.tsx",
     ]) {
-      assert.match(read(f), /<input type="hidden" name="idempotency_key" value=\{idempotencyKey\} \/>/, f);
+      assert.match(read(f), /<input type="hidden" name="idempotency_key" value=\{frozenKey\} \/>/, f);
     }
   });
   await t("請求書作成画面がキーを JSON で送る", () => {

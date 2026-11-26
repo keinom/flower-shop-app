@@ -6,6 +6,7 @@ import { RecurrenceRuleInput } from "@/components/admin/RecurrenceRuleInput";
 import { OrderTypeSelector } from "@/components/ui/OrderTypeSelector";
 import { DeliveryTimeInput } from "@/components/ui/DeliveryTimeInput";
 import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
+import { useIdempotencyKey } from "@/lib/useIdempotencyKey";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { createRecurringTemplate } from "./actions";
 import { ORDER_PURPOSES } from "@/lib/constants";
@@ -29,6 +30,7 @@ interface Props {
 }
 
 export function RecurringTemplateFormClient({ customers, today, taxRate, idempotencyKey }: Props) {
+  const frozenKey = useIdempotencyKey(idempotencyKey);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -78,7 +80,7 @@ export function RecurringTemplateFormClient({ customers, today, taxRate, idempot
 
   return (
     <form action={createRecurringTemplate} className="space-y-5" onKeyDown={preventEnterSubmit}>
-      <input type="hidden" name="idempotency_key" value={idempotencyKey} />
+      <input type="hidden" name="idempotency_key" value={frozenKey} />
       {/* ══════════════════════════════════════════
           管理名称
       ══════════════════════════════════════════ */}

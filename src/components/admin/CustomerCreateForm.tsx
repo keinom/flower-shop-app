@@ -6,6 +6,7 @@ import { createCustomer, type CreateCustomerState } from "@/app/admin/customers/
 import { PostalCodeAutoFill } from "@/components/ui/PostalCodeAutoFill";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { DuplicateCustomerWarning } from "@/components/admin/DuplicateCustomerWarning";
+import { useIdempotencyKey } from "@/lib/useIdempotencyKey";
 import { useGuardedSubmit } from "@/lib/useGuardedSubmit";
 
 const INITIAL_STATE: CreateCustomerState = {};
@@ -16,6 +17,7 @@ const INITIAL_STATE: CreateCustomerState = {};
  * 二重送信対策: 送信中の無効化 + 冪等キー（hidden）+ 重複警告（それでも登録する）。
  */
 export function CustomerCreateForm({ idempotencyKey }: { idempotencyKey: string }) {
+  const frozenKey = useIdempotencyKey(idempotencyKey);
   const [state, formAction, isPending] = useActionState(createCustomer, INITIAL_STATE);
   const { formRef, onSubmit, submit } = useGuardedSubmit(formAction, isPending);
 
@@ -26,7 +28,7 @@ export function CustomerCreateForm({ idempotencyKey }: { idempotencyKey: string 
       onSubmit={onSubmit}
       className="card p-6 space-y-6"
     >
-      <input type="hidden" name="idempotency_key" value={idempotencyKey} />
+      <input type="hidden" name="idempotency_key" value={frozenKey} />
       {/* 基本情報 */}
       <section className="space-y-4">
         <h2 className="text-sm font-semibold text-gray-700 border-b pb-2">基本情報</h2>

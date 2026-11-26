@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getStaffOrNull } from "@/lib/auth/staff";
 import { findIdByIdempotencyKey, isUniqueViolation, readIdempotencyKey } from "@/lib/idempotency";
 import { findDuplicateCustomers, type DuplicateCustomer } from "@/lib/customerDuplicates";
 import type { OrderType } from "@/types";
@@ -28,8 +29,8 @@ export async function createAdminOrder(
 ): Promise<CreateAdminOrderState> {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  // staff（admin / employee）以外は、顧客の重複確認・作成のいずれにも到達させない
+  if (!(await getStaffOrNull())) redirect("/login");
 
   const idempotencyKey = readIdempotencyKey(formData);
 
@@ -209,7 +210,6 @@ export async function createAdminOrder(
       } else {
         customerId = created.id;
       }
-      revalidatePath("/admin/customers");
     }
   }
 
@@ -266,12 +266,16 @@ export async function createAdminOrder(
     );
 
   if (itemsError) {
+    revalidatePath("/admin/orders");
+    if (newCustomer) revalidatePath("/admin/customers");
     redirect(
       `/admin/orders/${order.id}?created=true&error=` +
         encodeURIComponent("商品明細の登録に失敗しました")
     );
   }
 
+  // 再描画で画面状態が変わるため、revalidate は成功（redirect 直前）にのみ行う
   revalidatePath("/admin/orders");
+  if (newCustomer) revalidatePath("/admin/customers");
   redirect(`/admin/orders/${order.id}?created=true`);
 }

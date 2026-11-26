@@ -181,7 +181,7 @@ for (const entry of r1Files) {
     const src = files.join("\n");
     assert.ok(src.includes('from "@/components/ui/SubmitButton"'), "SubmitButton を import していない");
     assert.ok(src.includes("<SubmitButton"), "SubmitButton を使っていない");
-    assert.doesNotMatch(src, /<button[^>]*\btype="submit"/s, "素の <button type=\"submit\"> が残っている");
+    assert.doesNotMatch(src, /<button[^>]*\btype="submit"/, "素の <button type=\"submit\"> が残っている");
   });
 }
 

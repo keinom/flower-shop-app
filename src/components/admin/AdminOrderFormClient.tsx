@@ -14,6 +14,7 @@ import { preventEnterSubmit } from "@/lib/formKeyboard";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { DuplicateCustomerWarning } from "@/components/admin/DuplicateCustomerWarning";
 import type { DuplicateCustomer } from "@/lib/customerDuplicates";
+import { useIdempotencyKey } from "@/lib/useIdempotencyKey";
 import { useGuardedSubmit } from "@/lib/useGuardedSubmit";
 import { DeliverySuggestionInput, type DeliverySuggestion } from "@/components/admin/DeliverySuggestionInput";
 
@@ -62,6 +63,7 @@ interface Props {
 }
 
 export function AdminOrderFormClient({ customers, today, taxRate, presetCustomerId, copyDefaults, idempotencyKey }: Props) {
+  const frozenKey = useIdempotencyKey(idempotencyKey);
   // ── 顧客モード ──
   const preset = presetCustomerId
     ? (customers.find((c) => c.id === presetCustomerId) ?? null)
@@ -208,7 +210,7 @@ export function AdminOrderFormClient({ customers, today, taxRate, presetCustomer
       className="space-y-5"
       onKeyDown={preventEnterSubmit}
     >
-      <input type="hidden" name="idempotency_key" value={idempotencyKey} />
+      <input type="hidden" name="idempotency_key" value={frozenKey} />
       {state.error && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
           {state.error}
