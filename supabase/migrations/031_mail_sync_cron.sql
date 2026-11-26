@@ -18,6 +18,9 @@
 -- ── 1. 拡張（Supabase の慣例どおりのスキーマ）──────────────
 -- pg_cron は自身の cron スキーマを作る（拡張オブジェクトは pg_catalog 側）。pg_net は extensions スキーマ（net スキーマも作られる）。
 CREATE EXTENSION IF NOT EXISTS pg_cron WITH SCHEMA pg_catalog;
+-- Supabase 公式「Cron > Install」の手順どおり（postgres がジョブ登録・履歴掃除を行えるようにする）
+GRANT USAGE ON SCHEMA cron TO postgres;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA cron TO postgres;
 CREATE EXTENSION IF NOT EXISTS pg_net  WITH SCHEMA extensions;
 
 -- ── 2. Vault を読んで定期同期を呼ぶ関数 ────────────────────
