@@ -8,7 +8,7 @@ const MAILBOX_KEY = "primary";
 /**
  * Supabase（サービスロール）による SyncStore 実装。
  * createAdminClient() は RLS をバイパスするため、呼び出し元（syncInbox）が必ず
- * staff チェックを通した後にだけ使うこと。
+ * staff チェック、または cron シークレット検証を通した後にだけ使うこと。
  */
 export function createSupabaseSyncStore(): SyncStore {
   const db = createAdminClient();

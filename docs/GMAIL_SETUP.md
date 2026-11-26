@@ -20,8 +20,9 @@ Google Workspace の **サービスアカウント＋ドメイン全体の委任
 5. Vercel に環境変数を登録して再デプロイする
 6. 動作確認する
 7. （必要時）鍵のローテーション／失効
+8. 定期自動取り込み（Supabase pg_cron）を有効にする（手順 8）
 
-あわせて、DB マイグレーション `supabase/migrations/030_inbound_emails.sql` を Supabase に適用しておく必要があります（本番適用は営業時間外を推奨）。
+あわせて、DB マイグレーション `supabase/migrations/030_inbound_emails.sql`（定期同期を使う場合は `031_mail_sync_cron.sql` も）を Supabase に適用しておく必要があります（本番適用は営業時間外を推奨）。
 
 ---
 
@@ -104,7 +105,7 @@ Vercel のプロジェクト → **Settings → Environment Variables** で、�
 ### 動作確認
 
 1. 管理画面にログインし、メニューの **受信メール** を開きます。
-2. 画面を開くと自動で同期が始まり、代表アドレスの **直近 30 日（`GMAIL_INITIAL_SYNC_DAYS`）の受信トレイ** のメールが一覧に並びます（初回はすべて「未対応」）。
+2. 画面を開くと同期が走り（定期同期を有効にしている場合は、すでに 10 分以内の新着が取り込み済みです。手順 8）、代表アドレスの **直近 30 日（`GMAIL_INITIAL_SYNC_DAYS`）の受信トレイ** のメールが一覧に並びます（初回はすべて「未対応」）。
 3. 代表アドレスにテストメールを送り、画面の **↻ 更新** を押すと新着が一覧に現れます。
 4. 日本語の件名・本文・添付ファイル名が文字化けしないこと、添付をダウンロードして開けることを確認します。
 5. Gmail 側で、基幹システムの操作によって **既読/未読・ラベルが変わっていない** ことを確認します。
@@ -159,6 +160,63 @@ Vercel のプロジェクト → **Settings → Environment Variables** で、�
 
 Vercel の環境変数 3 つを削除して再デプロイすれば、画面は「未設定」の案内に戻ります（取り込み済みのデータは残ります）。
 完全に止める場合は、ドメイン全体の委任の登録とサービスアカウント（または鍵）も削除してください。
+
+---
+
+## 8. 定期自動取り込み（Supabase pg_cron + pg_net）
+
+「受信メール」画面を開かなくても、サーバー側が **10 分ごと・24 時間** Gmail を同期します（マイグレーション `031_mail_sync_cron.sql`）。
+
+```
+Supabase pg_cron（10分ごと）→ Vault から URL とシークレットを名前で読む（未登録なら何もしない）
+  → pg_net で HTTPS GET → Vercel: /api/cron/sync-mail（Bearer 認可）→ 既存の同期処理
+```
+
+- Gmail の鍵（`GMAIL_SA_*`）は引き続き **Vercel の Production にのみ** 置きます。Supabase 側に置く秘密は次の 2 つだけです。
+- 画面からの同期（開いたとき・↻ 更新）とは **ロックで排他** されます。同時に走った場合は一方が「他の同期が実行中です」の案内になるだけで、エラーにも二重登録にもなりません。
+- 管理画面のナビの未対応メール件数バッジは、画面を開きっぱなしでも約 3 分ごと・タブに戻ったときに **件数だけ** 自動更新されます（一覧は自動更新されません。↻ 更新または再読み込みで現れます）。
+
+### 8-1. Vault への登録（初回のみ・主任担当が実施）
+
+Supabase ダッシュボード → **Project Settings → Vault**（または左メニューの Vault）→ **Add new secret** で、次の **2 つ** を登録します（名前は完全一致）。
+
+| 名前（Name） | 値（Secret） |
+|---|---|
+| `mail_sync_cron_url` | `/api/cron/sync-mail` までを含む完全な URL（`https://` で始まる、本番の **安定したドメイン**。デプロイごとに変わる URL は不可） |
+| `mail_sync_cron_secret` | Vercel Production の `CRON_SECRET` と同じ値 |
+
+- 値は **画面にだけ入力** し、チャット・Issue・PR・リポジトリ・スクリーンショットに貼らないでください。
+- **どちらか一方でも未登録（または空）の間、ジョブは何もしません**（HTTP を呼ばず、エラーも出しません）。検証用／ブランチ DB の Vault に **本番の値を登録しないでください**。
+- Vercel 側で `CRON_SECRET` が Sensitive で値を再表示できない場合は、新しい値を発行して **Vercel と Vault の両方** に登録し、Vercel を再デプロイします（定期注文生成の実行時刻 15:00 UTC をまたがないように）。
+
+### 8-2. 動作確認
+
+- 管理画面の「受信メール」の **「最終同期」が 10 分ごとに進む**（画面を開いていなくても。開くたびに確認できます）。
+- ジョブの実行履歴（SQL Editor・読み取りのみ）:
+  - `select jobname, schedule, active from cron.job;` → `mail-sync`（`*/10 * * * *`）と `mail-sync-history-cleanup` の 2 件
+  - `select status, return_message, start_time from cron.job_run_details order by start_time desc limit 10;` → `succeeded`
+- pg_net の応答（呼び出しの結果。2xx なら成功、401 ならシークレットの不一致）:
+  - `select status_code, timed_out, error_msg, created from net._http_response order by created desc limit 10;`
+- 失敗（401・タイムアウト等）は Vercel のログではなく **ここ（DB 側）にしか残りません**。日常的には「最終同期」の時刻が古くなっていないかが目安です。
+
+### 8-3. 停止・再開
+
+- **止める（緊急時）**: Vault の `mail_sync_cron_url` か `mail_sync_cron_secret` のどちらかを削除（または空に）するだけで、次の実行から何もしなくなります。
+- **ジョブごと止める**: `select cron.unschedule('mail-sync');`
+- **再開**: `031_mail_sync_cron.sql` を再適用する（何度適用しても結果は同じで、ジョブは重複しません）。Vault の値を戻した場合は次の 10 分の区切りで再開します。
+
+### 8-4. `CRON_SECRET` のローテーション
+
+1. 新しい値を発行する。
+2. **Vercel の `CRON_SECRET`** と **Vault の `mail_sync_cron_secret`** の **2 か所** を同じ新しい値に更新する。
+3. Vercel を再デプロイする。
+
+片方だけ更新した間は、定期同期が 401 になって止まります（データは壊れません。揃えれば次の実行から復旧）。定期注文生成も同じ `CRON_SECRET` を使います。
+
+### 8-5. 保持期間
+
+- `cron.job_run_details`（実行履歴）: 自動では消えないため、`mail-sync-history-cleanup` ジョブが毎日 18:30 UTC（日本時間 03:30）に **14 日より前** の行を削除します（同テーブルの他のジョブの履歴も同様に対象）。
+- `net._http_response`（pg_net の応答）: pg_net が一定時間後に自動削除します（既定は約 6 時間。`show pg_net.ttl;` で確認できます）。応答本文は件数のみで、メールの内容・アドレス・鍵は含みません。
 
 ---
 

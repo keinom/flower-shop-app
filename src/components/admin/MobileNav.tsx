@@ -3,15 +3,16 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { NavItem } from "./NavItem";
+import { useMailBadgeCount } from "./MailBadgeProvider";
 
 interface Props {
   isAdmin:     boolean;
   displayName: string;
-  /** 未対応の受信メール件数（取得失敗時は null → バッジ非表示） */
-  unhandledMailCount?: number | null;
 }
 
-export function MobileNav({ isAdmin, displayName, unhandledMailCount }: Props) {
+export function MobileNav({ isAdmin, displayName }: Props) {
+  // 未対応の受信メール件数（MailBadgeProvider が自動更新。取得失敗時は null → バッジ非表示）
+  const unhandledMailCount = useMailBadgeCount();
   const [open, setOpen]   = useState(false);
   const pathname          = usePathname();
 
@@ -93,7 +94,7 @@ export function MobileNav({ isAdmin, displayName, unhandledMailCount }: Props) {
           <NavItem href="/admin/daily"     label="日報"           icon="📅" />
           <NavItem href="/admin/customers" label="顧客検索"       icon="👥" />
           <NavItem href="/admin/orders"    label="注文検索"       icon="📋" />
-          <NavItem href="/admin/mail"      label="受信メール"     icon="✉️" badge={unhandledMailCount} />
+          <NavItem href="/admin/mail"      label="受信メール"     icon="✉️" mailBadge />
           <NavItem href="/admin/recurring" label="定期注文"       icon="🔄" />
           <NavItem href="/admin/invoices"  label="請求書"         icon="📄" />
           <NavItem href="/admin/fuda"      label="立て札"         icon="🌸" />

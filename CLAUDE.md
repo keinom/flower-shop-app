@@ -17,7 +17,7 @@ src/
   app/
     admin/        # 管理者向けページ（注文・顧客・請求・シフト・立て札・設定）
     customer/     # 顧客向けページ（注文・日次注文）
-    api/          # Route Handlers（cron・顧客・請求・受信メール同期/添付）
+    api/          # Route Handlers（cron 2本・顧客・請求・受信メール同期/添付/未対応件数）
     login/        # 認証ページ
     page.tsx      # ルートリダイレクト（ログイン状態・ロールで振り分け）
   components/
@@ -35,7 +35,7 @@ src/
     database.ts   # Supabase自動生成型
     index.ts      # アプリ共通型
 supabase/
-  migrations/     # DBマイグレーション（001〜030）
+  migrations/     # DBマイグレーション（001〜031）
 ```
 
 ## 主な機能
@@ -47,6 +47,7 @@ supabase/
 - **立て札管理**: PDF OCR（Gemini API）で立て札情報を抽出
 - **顧客管理**: 法人・継続顧客の情報管理
 - **受信メール**: 代表アドレス宛メールを Gmail API で取り込み（読み取り専用）、対応ステータス・担当者・メモ管理、送信者→顧客の自動照合（`/admin/mail`）
+  - 定期同期: Supabase 側（pg_cron + pg_net、10分ごと）が `GET /api/cron/sync-mail` を呼ぶ（マイグレーション 031。URL とシークレットは Supabase Vault に登録。未登録の間は何もしない）。管理画面のナビバッジは開きっぱなしでも件数だけ自動更新（`/api/mail/unhandled-count`）
 
 ## 環境変数
 
@@ -78,6 +79,12 @@ npm run lint   # ESLint実行
 
 - 開発ブランチ: `claude/test-github-connection-bVT62`
 - mainブランチへのマージはPR経由
+
+## cron エンドポイント（`CRON_SECRET` の Bearer 認可。未設定時は常に401）
+
+- `/api/cron/generate-recurring-orders`: 定期注文の生成。Vercel Cron（`vercel.json`、毎日 15:00 UTC）から起動
+- `/api/cron/sync-mail`: 受信メールの定期同期。**Vercel Cron ではなく Supabase の pg_cron（10分ごと）から起動**される。`vercel.json` には書かない
+- `CRON_SECRET` は Vercel と Supabase Vault の2か所に同じ値を置く（ローテーション時は両方更新）
 
 ## DBマイグレーション
 
