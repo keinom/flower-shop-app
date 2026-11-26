@@ -7,9 +7,11 @@ import { NavItem } from "./NavItem";
 interface Props {
   isAdmin:     boolean;
   displayName: string;
+  /** 未対応の受信メール件数（取得失敗時は null → バッジ非表示） */
+  unhandledMailCount?: number | null;
 }
 
-export function MobileNav({ isAdmin, displayName }: Props) {
+export function MobileNav({ isAdmin, displayName, unhandledMailCount }: Props) {
   const [open, setOpen]   = useState(false);
   const pathname          = usePathname();
 
@@ -29,8 +31,12 @@ export function MobileNav({ isAdmin, displayName }: Props) {
         type="button"
         aria-label="メニューを開く"
         onClick={() => setOpen(true)}
-        className="md:hidden flex items-center justify-center w-10 h-10 rounded-lg text-white/80 hover:bg-white/10 active:bg-white/20 transition-colors"
+        className="relative md:hidden flex items-center justify-center w-10 h-10 rounded-lg text-white/80 hover:bg-white/10 active:bg-white/20 transition-colors"
       >
+        {/* 未対応メールがあるときはハンバーガー右上に赤い点 */}
+        {unhandledMailCount != null && unhandledMailCount > 0 && (
+          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-[#1f4e3b]" />
+        )}
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <line x1="3" y1="6"  x2="19" y2="6"  />
           <line x1="3" y1="11" x2="19" y2="11" />
@@ -87,6 +93,7 @@ export function MobileNav({ isAdmin, displayName }: Props) {
           <NavItem href="/admin/daily"     label="日報"           icon="📅" />
           <NavItem href="/admin/customers" label="顧客検索"       icon="👥" />
           <NavItem href="/admin/orders"    label="注文検索"       icon="📋" />
+          <NavItem href="/admin/mail"      label="受信メール"     icon="✉️" badge={unhandledMailCount} />
           <NavItem href="/admin/recurring" label="定期注文"       icon="🔄" />
           <NavItem href="/admin/invoices"  label="請求書"         icon="📄" />
           <NavItem href="/admin/fuda"      label="立て札"         icon="🌸" />
