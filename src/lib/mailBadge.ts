@@ -19,3 +19,17 @@ export async function getUnhandledMailCount(): Promise<number | null> {
     return null;
   }
 }
+
+/**
+ * 件数取得口（GET /api/mail/unhandled-count）の応答の決定。staff 以外には件数を返さない（401）。
+ * 返すのは件数のみ（メールの内容・送信者は含めない）。件数取得に失敗した場合は 503。
+ */
+export async function unhandledCountResponse(deps: {
+  getStaff: () => Promise<unknown>;
+  getCount: () => Promise<number | null>;
+}): Promise<{ httpStatus: number; body: { count: number } | { error: string } }> {
+  if (!(await deps.getStaff())) return { httpStatus: 401, body: { error: "Unauthorized" } };
+  const count = await deps.getCount();
+  if (count === null) return { httpStatus: 503, body: { error: "Unavailable" } };
+  return { httpStatus: 200, body: { count } };
+}

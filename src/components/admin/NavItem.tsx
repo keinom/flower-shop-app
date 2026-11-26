@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMailBadgeCount } from "./MailBadgeProvider";
 
 interface NavItemProps {
   href: string;
@@ -10,10 +11,14 @@ interface NavItemProps {
   exact?: boolean;
   /** 件数バッジ（0・null・undefined のときは表示しない） */
   badge?: number | null;
+  /** true のとき、バッジを「未対応メール件数」（MailBadgeProvider で自動更新される値）にする */
+  mailBadge?: boolean;
 }
 
-export function NavItem({ href, label, icon, exact = false, badge }: NavItemProps) {
+export function NavItem({ href, label, icon, exact = false, badge: badgeProp, mailBadge = false }: NavItemProps) {
   const pathname = usePathname();
+  const mailCount = useMailBadgeCount();
+  const badge = mailBadge ? mailCount : badgeProp;
   const isActive = exact ? pathname === href : pathname.startsWith(href);
 
   return (

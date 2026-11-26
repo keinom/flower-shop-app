@@ -3,6 +3,7 @@ import { getCurrentUserProfile } from "@/lib/supabase/server";
 import { logout } from "@/app/login/actions";
 import { NavItem } from "@/components/admin/NavItem";
 import { MobileNav } from "@/components/admin/MobileNav";
+import { MailBadgeProvider } from "@/components/admin/MailBadgeProvider";
 import { getUnhandledMailCount } from "@/lib/mailBadge";
 
 export default async function AdminLayout({
@@ -24,6 +25,7 @@ export default async function AdminLayout({
   const displayName  = profile?.display_name ?? user.email ?? "";
 
   return (
+    <MailBadgeProvider initialCount={unhandledMailCount}>
     <div className="min-h-screen flex flex-col">
       {/* ── トップナビゲーション ── */}
       <header
@@ -43,7 +45,6 @@ export default async function AdminLayout({
               <MobileNav
                 isAdmin={isAdmin}
                 displayName={displayName}
-                unhandledMailCount={unhandledMailCount}
               />
 
               {/* ロゴ */}
@@ -133,7 +134,7 @@ export default async function AdminLayout({
             <NavItem href="/admin/daily"     label="日報"           icon="📅" />
             <NavItem href="/admin/customers" label="顧客検索"       icon="👥" />
             <NavItem href="/admin/orders"    label="注文検索"       icon="📋" />
-            <NavItem href="/admin/mail"      label="受信メール"     icon="✉️" badge={unhandledMailCount} />
+            <NavItem href="/admin/mail"      label="受信メール"     icon="✉️" mailBadge />
             <NavItem href="/admin/recurring" label="定期注文"       icon="🔄" />
             <NavItem href="/admin/invoices"  label="請求書"         icon="📄" />
             <NavItem href="/admin/fuda"      label="立て札"         icon="🌸" />
@@ -171,5 +172,6 @@ export default async function AdminLayout({
         </main>
       </div>
     </div>
+    </MailBadgeProvider>
   );
 }

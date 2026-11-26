@@ -7,7 +7,7 @@ export type { SyncResult } from "./sync-core";
 
 /**
  * 受信メールを同期する。
- * 呼び出し元（Route Handler）が staff チェックを済ませていること（内部でサービスロールを使うため）。
+ * 呼び出し元（Route Handler）が staff チェック、または cron シークレット検証を済ませていること（内部でサービスロールを使うため）。
  */
 export async function syncInbox(): Promise<SyncResult> {
   if (!isGmailConfigured()) {
