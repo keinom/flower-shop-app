@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { updateInvoiceDetails } from "../actions";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -171,9 +172,9 @@ export default async function InvoiceEditPage({ params, searchParams }: Props) {
 
         {/* ボタン */}
         <div className="flex gap-3">
-          <button type="submit" className="btn-primary px-8">
+          <SubmitButton className="btn-primary px-8" pendingText="保存中...">
             保存する
-          </button>
+          </SubmitButton>
           <Link href={`/admin/invoices/${id}`} className="btn-secondary">
             キャンセル
           </Link>

@@ -35,7 +35,7 @@ src/
     database.ts   # Supabase自動生成型
     index.ts      # アプリ共通型
 supabase/
-  migrations/     # DBマイグレーション（001〜031）
+  migrations/     # DBマイグレーション（001〜032）
 ```
 
 ## 主な機能

@@ -4,6 +4,7 @@ import { AdminOrderFormClient, type AdminOrderCopyDefaults } from "@/components/
 import { isShippingItemName, parseShippingItemName } from "@/lib/shipping";
 import { formatJstDate } from "@/lib/date";
 import { oneLineName } from "@/lib/name";
+import { newIdempotencyKey } from "@/lib/idempotency";
 import type { OrderType } from "@/types";
 
 interface NewAdminOrderPageProps {
@@ -132,6 +133,7 @@ export default async function NewAdminOrderPage({ searchParams }: NewAdminOrderP
         taxRate={taxRate}
         presetCustomerId={presetCustomerId}
         copyDefaults={copyDefaults}
+        idempotencyKey={newIdempotencyKey()}
       />
     </div>
   );

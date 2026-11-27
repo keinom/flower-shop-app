@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { updateTaxRate } from "./actions";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 interface SettingsPageProps {
   searchParams: Promise<{ error?: string; success?: string }>;
@@ -91,9 +92,9 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
               />
             </div>
           </div>
-          <button type="submit" className="btn-primary">
+          <SubmitButton className="btn-primary" pendingText="更新中...">
             税率を更新する
-          </button>
+          </SubmitButton>
         </form>
       </div>
 

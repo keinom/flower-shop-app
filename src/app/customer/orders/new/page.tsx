@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { newIdempotencyKey } from "@/lib/idempotency";
 import { NewOrderFormClient } from "./NewOrderFormClient";
 
 export default async function NewOrderPage() {
@@ -28,7 +29,7 @@ export default async function NewOrderPage() {
         <h1 className="text-xl font-bold text-gray-900">新しい注文をする</h1>
       </div>
 
-      <NewOrderFormClient customer={customer} today={today} />
+      <NewOrderFormClient customer={customer} today={today} idempotencyKey={newIdempotencyKey()} />
     </div>
   );
 }

@@ -3,21 +3,55 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getStaffOrNull } from "@/lib/auth/staff";
+import { findIdByIdempotencyKey, isUniqueViolation, readIdempotencyKey } from "@/lib/idempotency";
+import { findDuplicateCustomers, type DuplicateCustomer } from "@/lib/customerDuplicates";
 import type { OrderType } from "@/types";
 
-export type CreateAdminOrderState = { error?: string };
+export type CreateAdminOrderState = {
+  error?: string;
+  /** 新規顧客の重複候補（顧客も注文も作成していない）。確認後 confirm_duplicate=1 で再送信する */
+  duplicates?: DuplicateCustomer[];
+};
 
+/**
+ * 管理者の注文登録（既存顧客 / 新規顧客インライン作成）
+ *
+ * 二重送信対策（Issue #40）:
+ * - 入力チェック・重複確認はすべて INSERT より前に行う（バリデーションエラーで孤立顧客を作らない）
+ * - 冪等キー: 同じキーの送信は注文 1 件のみ。2 回目以降は作成済みの注文詳細へ遷移する。
+ *   新規顧客の場合、顧客と注文を「1 つの送信」として扱い、同じキーを両テーブルに保存する
+ *   （顧客作成後に注文作成が失敗して再送信されても、顧客は 2 件にならない）
+ */
 export async function createAdminOrder(
   _prevState: CreateAdminOrderState,
   formData: FormData
 ): Promise<CreateAdminOrderState> {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  // staff（admin / employee）以外は、顧客の重複確認・作成のいずれにも到達させない
+  if (!(await getStaffOrNull())) redirect("/login");
 
+  const idempotencyKey = readIdempotencyKey(formData);
+
+  // ── 同じ送信がすでに処理済みなら、作成済みの注文詳細へ ──
+  const doneOrderId = await findIdByIdempotencyKey(supabase, "orders", idempotencyKey);
+  if (doneOrderId) {
+    redirect(`/admin/orders/${doneOrderId}?created=true`);
+  }
+
+  // ── 顧客の入力チェック（まだ何も作成しない）──
   const customerType = formData.get("customer_type") as "existing" | "new";
-  let customerId: string;
+  const confirmDuplicate = formData.get("confirm_duplicate") === "1";
+  let existingCustomerId: string | null = null;
+  let newCustomer: {
+    name: string;
+    phone: string | null;
+    email: string | null;
+    postalCode: string | null;
+    address: string | null;
+    notes: string | null;
+  } | null = null;
 
   if (customerType === "existing") {
     // ── 既存顧客 ──
@@ -25,33 +59,21 @@ export async function createAdminOrder(
     if (!selectedId) {
       return { error: "顧客を選択してください" };
     }
-    customerId = selectedId;
+    existingCustomerId = selectedId;
   } else {
-    // ── 新規顧客を作成 ──
-    const name    = (formData.get("new_customer_name") as string)?.trim();
-    const phone   = (formData.get("new_customer_phone") as string)?.trim() || null;
-    const email   = (formData.get("new_customer_email") as string)?.trim() || null;
-    const address = (formData.get("new_customer_address") as string)?.trim() || null;
-    const notes   = (formData.get("new_customer_notes") as string)?.trim() || null;
-
+    // ── 新規顧客を作成（INSERT は全入力チェックの後）──
+    const name = (formData.get("new_customer_name") as string)?.trim();
     if (!name) {
       return { error: "顧客名は必須です" };
     }
-
-    const postalCode = (formData.get("new_customer_postal_code") as string)?.trim() || null;
-
-    const { data: newCustomer, error: customerError } = await supabase
-      .from("customers")
-      .insert({ name, phone, email, postal_code: postalCode, address, notes })
-      .select("id")
-      .single();
-
-    if (customerError || !newCustomer) {
-      return { error: "顧客の作成に失敗しました" };
-    }
-
-    customerId = newCustomer.id;
-    revalidatePath("/admin/customers");
+    newCustomer = {
+      name,
+      phone:      (formData.get("new_customer_phone") as string)?.trim() || null,
+      email:      (formData.get("new_customer_email") as string)?.trim() || null,
+      postalCode: (formData.get("new_customer_postal_code") as string)?.trim() || null,
+      address:    (formData.get("new_customer_address") as string)?.trim() || null,
+      notes:      (formData.get("new_customer_notes") as string)?.trim() || null,
+    };
   }
 
   // ── お届け先データを取得 ──
@@ -143,6 +165,54 @@ export async function createAdminOrder(
   const totalQuantity      = orderItems.reduce((sum, item) => sum + item.quantity, 0);
   const summaryProductName = orderItems.length === 1 ? orderItems[0].product_name : null;
 
+  // ── 顧客の確定（新規顧客はここで初めて作成する）──
+  let customerId: string;
+  if (existingCustomerId) {
+    customerId = existingCustomerId;
+  } else {
+    const nc = newCustomer!;
+    // 前回の送信で顧客だけ作成済み（注文の作成に失敗）なら、その顧客を再利用する
+    let reused = await findIdByIdempotencyKey(supabase, "customers", idempotencyKey);
+
+    if (!reused && !confirmDuplicate) {
+      let duplicates: DuplicateCustomer[];
+      try {
+        duplicates = await findDuplicateCustomers(supabase, { name: nc.name, email: nc.email, phone: nc.phone });
+      } catch {
+        return { error: "既存顧客の確認に失敗しました。もう一度お試しください。" };
+      }
+      if (duplicates.length > 0) return { duplicates };
+    }
+
+    if (reused) {
+      customerId = reused;
+    } else {
+      const { data: created, error: customerError } = await supabase
+        .from("customers")
+        .insert({
+          name: nc.name,
+          phone: nc.phone,
+          email: nc.email,
+          postal_code: nc.postalCode,
+          address: nc.address,
+          notes: nc.notes,
+          idempotency_key: idempotencyKey,
+        })
+        .select("id")
+        .single();
+
+      if (customerError || !created) {
+        if (isUniqueViolation(customerError)) {
+          reused = await findIdByIdempotencyKey(supabase, "customers", idempotencyKey);
+        }
+        if (!reused) return { error: "顧客の作成に失敗しました" };
+        customerId = reused;
+      } else {
+        customerId = created.id;
+      }
+    }
+  }
+
   // ── 注文を挿入 ──
   const { data: order, error: orderError } = await supabase
     .from("orders")
@@ -167,11 +237,17 @@ export async function createAdminOrder(
       message_card:     messageCard,
       remarks,
       total_amount:     totalAmount,
+      idempotency_key:  idempotencyKey,
     })
     .select("id")
     .single();
 
   if (orderError || !order) {
+    // 並行して同じ送信が先に作成していた場合は、その注文へ遷移する
+    if (isUniqueViolation(orderError)) {
+      const existing = await findIdByIdempotencyKey(supabase, "orders", idempotencyKey);
+      if (existing) redirect(`/admin/orders/${existing}?created=true`);
+    }
     return { error: "注文の登録に失敗しました" };
   }
 
@@ -190,12 +266,16 @@ export async function createAdminOrder(
     );
 
   if (itemsError) {
+    revalidatePath("/admin/orders");
+    if (newCustomer) revalidatePath("/admin/customers");
     redirect(
       `/admin/orders/${order.id}?created=true&error=` +
         encodeURIComponent("商品明細の登録に失敗しました")
     );
   }
 
+  // 再描画で画面状態が変わるため、revalidate は成功（redirect 直前）にのみ行う
   revalidatePath("/admin/orders");
+  if (newCustomer) revalidatePath("/admin/customers");
   redirect(`/admin/orders/${order.id}?created=true`);
 }

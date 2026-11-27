@@ -6,6 +6,8 @@ import { RecurrenceRuleInput } from "@/components/admin/RecurrenceRuleInput";
 import { OrderTypeSelector } from "@/components/ui/OrderTypeSelector";
 import { DeliveryTimeInput } from "@/components/ui/DeliveryTimeInput";
 import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
+import { useIdempotencyKey } from "@/lib/useIdempotencyKey";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 import { createRecurringTemplate } from "./actions";
 import { ORDER_PURPOSES } from "@/lib/constants";
 import { preventEnterSubmit } from "@/lib/formKeyboard";
@@ -23,9 +25,12 @@ interface Props {
   customers: Customer[];
   today: string;
   taxRate: number;
+  /** フォーム表示ごとにサーバーで発行した冪等キー（二重送信対策） */
+  idempotencyKey: string;
 }
 
-export function RecurringTemplateFormClient({ customers, today, taxRate }: Props) {
+export function RecurringTemplateFormClient({ customers, today, taxRate, idempotencyKey }: Props) {
+  const frozenKey = useIdempotencyKey(idempotencyKey);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -75,6 +80,7 @@ export function RecurringTemplateFormClient({ customers, today, taxRate }: Props
 
   return (
     <form action={createRecurringTemplate} className="space-y-5" onKeyDown={preventEnterSubmit}>
+      <input type="hidden" name="idempotency_key" value={frozenKey} />
       {/* ══════════════════════════════════════════
           管理名称
       ══════════════════════════════════════════ */}
@@ -331,7 +337,7 @@ export function RecurringTemplateFormClient({ customers, today, taxRate }: Props
 
       {/* ── 送信 ── */}
       <div className="flex gap-3">
-        <button type="submit" className="btn-primary px-8">定期注文を作成する</button>
+        <SubmitButton className="btn-primary px-8" pendingText="作成中...">定期注文を作成する</SubmitButton>
         <Link href="/admin/recurring" className="btn-secondary">キャンセル</Link>
       </div>
     </form>

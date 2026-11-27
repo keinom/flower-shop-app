@@ -1,6 +1,7 @@
 "use client";
 
 import { deleteOrder } from "@/app/admin/orders/[id]/actions";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 interface Props {
   orderId: string;
@@ -21,12 +22,10 @@ export function DeleteOrderButton({ orderId, deliveryName }: Props) {
   return (
     <form action={deleteOrder} onSubmit={handleSubmit}>
       <input type="hidden" name="order_id" value={orderId} />
-      <button
-        type="submit"
-        className="w-full py-2 rounded-lg text-sm font-medium border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
-      >
+      <SubmitButton
+        className="w-full py-2 rounded-lg text-sm font-medium border border-red-200 text-red-600 hover:bg-red-50 transition-colors" pendingText="削除中...">
         🗑 この注文を削除する
-      </button>
+      </SubmitButton>
     </form>
   );
 }

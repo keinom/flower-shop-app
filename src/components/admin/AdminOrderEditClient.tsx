@@ -12,6 +12,7 @@ import { updateAdminOrder } from "@/app/admin/orders/[id]/edit/actions";
 import type { OrderType } from "@/types";
 import { PostalCodeInput } from "@/components/ui/PostalCodeInput";
 import { preventEnterSubmit } from "@/lib/formKeyboard";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 interface OrderItem {
   product_name: string;
@@ -312,7 +313,7 @@ export function AdminOrderEditClient({
       <OrderTotalBar itemsTotal={itemsTotal} shippingFee={shippingFee} />
 
       <div className="flex gap-3">
-        <button type="submit" className="btn-primary px-8">変更を保存する</button>
+        <SubmitButton className="btn-primary px-8" pendingText="保存中...">変更を保存する</SubmitButton>
         <Link href={`/admin/orders/${orderId}`} className="btn-secondary">キャンセル</Link>
       </div>
     </form>

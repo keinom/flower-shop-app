@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateShifts, confirmShifts } from "./actions";
 import type { ShiftTimeSlot, ShiftStatus } from "@/types/database";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 interface Props {
   searchParams: Promise<{
@@ -195,17 +196,17 @@ export default async function ShiftsAdminPage({ searchParams }: Props) {
         <form action={generateShifts}>
           <input type="hidden" name="year"  value={year} />
           <input type="hidden" name="month" value={month} />
-          <button type="submit" className="btn-primary">
+          <SubmitButton className="btn-primary" pendingText="処理中...">
             🔄 シフトを自動生成（下書き）
-          </button>
+          </SubmitButton>
         </form>
         {hasDraft && (
           <form action={confirmShifts}>
             <input type="hidden" name="year"  value={year} />
             <input type="hidden" name="month" value={month} />
-            <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+            <SubmitButton className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors" pendingText="処理中...">
               ✅ 下書きを確定する
-            </button>
+            </SubmitButton>
           </form>
         )}
         <a href="/admin/shifts/requirements" className="btn-secondary text-sm">

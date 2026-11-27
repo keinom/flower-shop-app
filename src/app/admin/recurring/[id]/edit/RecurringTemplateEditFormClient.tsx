@@ -10,6 +10,7 @@ import { updateRecurringTemplate } from "./actions";
 import { ORDER_PURPOSES } from "@/lib/constants";
 import type { OrderType } from "@/types";
 import { preventEnterSubmit } from "@/lib/formKeyboard";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 interface Customer {
   id: string;
@@ -462,9 +463,9 @@ export function RecurringTemplateEditFormClient({
 
       {/* ── 送信 ── */}
       <div className="flex gap-3">
-        <button type="submit" className="btn-primary px-8">
+        <SubmitButton className="btn-primary px-8" pendingText="更新中...">
           テンプレートを更新する
-        </button>
+        </SubmitButton>
         <Link
           href={`/admin/recurring/${templateId}`}
           className="btn-secondary"

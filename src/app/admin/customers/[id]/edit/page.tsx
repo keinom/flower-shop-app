@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { updateCustomer } from "../../actions";
 import { PostalCodeAutoFill } from "@/components/ui/PostalCodeAutoFill";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 interface EditCustomerPageProps {
   params: Promise<{ id: string }>;
@@ -123,9 +124,9 @@ export default async function EditCustomerPage({
         </section>
 
         <div className="flex gap-3 pt-2">
-          <button type="submit" className="btn-primary">
+          <SubmitButton className="btn-primary" pendingText="保存中...">
             変更を保存
-          </button>
+          </SubmitButton>
           <Link href={`/admin/customers/${id}`} className="btn-secondary">
             キャンセル
           </Link>

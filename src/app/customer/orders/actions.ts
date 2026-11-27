@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { findIdByIdempotencyKey, isUniqueViolation, readIdempotencyKey } from "@/lib/idempotency";
 import type { OrderType } from "@/types";
 
 export type CreateOrderState = { error?: string };
@@ -25,6 +26,13 @@ export async function createOrder(
 
   if (!customer) {
     return { error: "顧客情報が見つかりません。管理者にお問い合わせください。" };
+  }
+
+  // 同じ送信（冪等キー）がすでに処理済みなら、作成済みの注文詳細へ
+  const idempotencyKey = readIdempotencyKey(formData);
+  const doneId = await findIdByIdempotencyKey(supabase, "orders", idempotencyKey);
+  if (doneId) {
+    redirect(`/customer/orders/${doneId}?created=true`);
   }
 
   // フォームデータを取得
@@ -79,11 +87,16 @@ export async function createOrder(
       purpose,
       message_card:     messageCard,
       remarks,
+      idempotency_key:  idempotencyKey,
     })
     .select("id")
     .single();
 
   if (insertError || !order) {
+    if (isUniqueViolation(insertError)) {
+      const existing = await findIdByIdempotencyKey(supabase, "orders", idempotencyKey);
+      if (existing) redirect(`/customer/orders/${existing}?created=true`);
+    }
     return { error: "注文の登録に失敗しました。もう一度お試しください。" };
   }
 

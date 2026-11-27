@@ -5,6 +5,7 @@ import { ORDER_PURPOSES } from "@/lib/constants";
 import { DeliveryTimeInput } from "@/components/ui/DeliveryTimeInput";
 import { OrderItemsInput } from "@/components/admin/OrderItemsInput";
 import { updateCustomerOrder } from "./actions";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 interface CustomerEditOrderPageProps {
   params: Promise<{ id: string }>;
@@ -225,7 +226,7 @@ export default async function CustomerEditOrderPage({
         </section>
 
         <div className="flex gap-3">
-          <button type="submit" className="btn-primary px-8">変更を保存する</button>
+          <SubmitButton className="btn-primary px-8" pendingText="保存中...">変更を保存する</SubmitButton>
           <Link href={`/customer/orders/${id}`} className="btn-secondary">キャンセル</Link>
         </div>
       </form>
